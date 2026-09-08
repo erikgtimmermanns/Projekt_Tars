@@ -101,15 +101,70 @@
             <p>Musterfirma GmbH</p>
         </div>
 
-        <div class="info-card">
-            <div class="card-icon">ℹ️</div>
-            <h3>Empfang</h3>
+<div class="info-card">
+    <div class="card-icon">ℹ️</div>
+    <h3>Empfang</h3>
 
-            <p>Bitte am Empfang anmelden</p>
-            <p>Gast-WLAN verfügbar</p>
+    <p>Bitte am Empfang anmelden</p>
+    <p>Gast-WLAN verfügbar</p>
+</div>
+
+<div class="info-card">
+    <div class="card-icon">🚆</div>
+    <h3>Bahn</h3>
+
+    <div id="train-list">
+        Wird geladen...
+    </div>
+</div>
+
+
+
+
+<div class="info-card news-card">
+
+    <div class="card-icon">📰</div>
+
+    <h3>Computacenter News</h3>
+
+    <div class="news-list">
+
+        <div class="news-item">
+            <span class="news-date">15.06.2026</span>
+            <span class="news-title">
+                Lenovo Global Award
+            </span>
+        </div>
+
+        <div class="news-item">
+            <span class="news-date">16.04.2026</span>
+            <span class="news-title">
+                NVIDIA Partner 2026
+            </span>
+        </div>
+
+        <div class="news-item">
+            <span class="news-date">07.08.2026</span>
+            <span class="news-title">
+                ISG Leader 2026
+            </span>
         </div>
 
     </div>
+
+</div>
+
+</div>
+
+<div class="news-ticker">
+
+    <span>
+        📰 Computacenter erhält globale Lenovo-Auszeichnung •
+        NVIDIA EMEA Partner 2026 •
+        ISG Leader Future of Work Services 2026
+    </span>
+
+</div>
 
 </div>
 
@@ -220,6 +275,20 @@
   loadWeather();
 
   setInterval(loadWeather, 600000);
+
+function loadTrainDepartures() {
+
+    document.getElementById("train-list")
+        .innerHTML = `
+            <div>ICE 623 - 13:15</div>
+            <div>RE1 - 13:22</div>
+            <div>U79 - 13:27</div>
+            <div>RE4 - 13:32</div>
+        `;
+}
+
+loadTrainDepartures();
+
   </script>
 </body>
 
