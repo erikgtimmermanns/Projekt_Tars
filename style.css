@@ -125,16 +125,38 @@
     }
     .datetime .date {
       color: var(--text-soft);
-      font-size: clamp(17px, 1.4vw, 28px);
+      font-size: clamp(34px, 1.4vw, 28px);
       font-weight: 500;
       text-transform: capitalize;
     }
     .datetime .time {
       margin-top: 5px;
       color: var(--cc-blue);
-      font-size: clamp(34px, 3.2vw, 64px);
+      font-size: clamp(80px, 3.2vw, 64px);
       font-weight: 700;
       letter-spacing: -0.045em;
+    }
+    .weather {
+        margin-top: 20px;
+        text-align: right;
+    }
+
+    #weather-icon {
+        font-size: 40px;
+    }
+
+    #temperature {
+        font-size: 42px;
+        font-weight: 700;
+        color: var(--cc-blue);
+    }
+
+    #weather-description,
+    #humidity,
+    #wind {
+        color: var(--text-soft);
+        font-size: 18px;
+        margin-top: 5px;
     }
     /* Hauptbereich */
     .hero {
