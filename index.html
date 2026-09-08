@@ -17,12 +17,11 @@
     <header class="topbar">
       <!-- Offizielles Computacenter-Logo -->
       <div class="brand">
-        computacenter-logo-blue.svgstyle.display='block';
-          "
+        <img
+          src="./assets/Computacenter_logo.svg"
+          alt="Offizielles Computacenter-Logo"
+          class="brand-logo"
         >
-        <div id="logoFallback" class="logo-fallback">
-          Offizielles Computacenter-Logo einsetzen
-        </div>
       </div>
       <!-- Begrüßung -->
       <section class="headline" aria-label="Begrüßung">
@@ -45,17 +44,18 @@
     <!-- Großer Begrüßungsbereich -->
     <section class="hero">
       <div class="hero-inner">
-        <div class="welcome-mark">
-          Willkommen
-        </div>
-        <h2>
-          Schön, dass Sie
-          <span>bei uns sind.</span>
-        </h2>
-        <p>
-          Wir wünschen Ihnen einen angenehmen Aufenthalt und
-          einen erfolgreichen Termin bei Computacenter Düsseldorf.
-        </p>
+        <div id="weather">Wetter wird geladen...</div>
+        <script> 
+          async function loadWeather() {
+          const response = await fetch('https://api.open-meteo.com/v1/forecast?latitude=51.2277&longitude=6.7735&current=temperature_2m,relative_humidity_2m%27');
+          const data = await response.json();
+          document.getElementById('weather').innerHTML ="🌤 Temperatur: ${data.current.temperature_2m} °C<br>💧 Luftfeuchtigkeit: ${data.current.relative_humidity_2m} %";
+          }
+        loadWeather();
+        setInterval(loadWeather, 600000); // alle 10 Minuten aktualisieren
+    </script>
+
+ 
       </div>
     </section>
     <!-- Fußzeile -->
