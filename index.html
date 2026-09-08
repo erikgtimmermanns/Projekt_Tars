@@ -66,22 +66,55 @@
   </section>
     </header>
     <!-- Großer Begrüßungsbereich -->
-    <section class="hero">
-      <div class="hero-inner">
-        <div id="weather">Wetter wird geladen...</div>
-        <script> 
-          async function loadWeather() {
-          const response = await fetch('https://api.open-meteo.com/v1/forecast?latitude=51.2277&longitude=6.7735&current=temperature_2m,relative_humidity_2m%27');
-          const data = await response.json();
-          document.getElementById('weather').innerHTML ="🌤 Temperatur: ${data.current.temperature_2m} °C<br>💧 Luftfeuchtigkeit: ${data.current.relative_humidity_2m} %";
-          }
-        loadWeather();
-        setInterval(loadWeather, 600000); // alle 10 Minuten aktualisieren
-    </script>
+<div class="hero-inner">
 
- 
-      </div>
-    </section>
+    <div class="welcome-mark">
+        Willkommen
+    </div>
+
+    <h2>
+        Schön, dass Sie
+        <span>bei uns sind.</span>
+    </h2>
+
+    <p>
+        Wir wünschen Ihnen einen angenehmen Aufenthalt.
+    </p>
+
+    <div class="info-cards">
+
+        <div class="info-card">
+            <div class="card-icon">🏢</div>
+            <h3>Räume</h3>
+
+            <p>✅ Rhein</p>
+            <p>✅ Ruhr</p>
+            <p>❌ Düsseldorf</p>
+        </div>
+
+        <div class="info-card">
+            <div class="card-icon">👋</div>
+            <h3>Gäste</h3>
+
+            <p>Herzlich Willkommen</p>
+            <p>Max Mustermann</p>
+            <p>Musterfirma GmbH</p>
+        </div>
+
+        <div class="info-card">
+            <div class="card-icon">ℹ️</div>
+            <h3>Empfang</h3>
+
+            <p>Bitte am Empfang anmelden</p>
+            <p>Gast-WLAN verfügbar</p>
+        </div>
+
+    </div>
+
+</div>
+
+  </section>
+
     <!-- Fußzeile -->
     <footer class="footer">
       <span>

@@ -136,10 +136,28 @@
       font-weight: 700;
       letter-spacing: -0.045em;
     }
-    .weather {
-        margin-top: 20px;
-        text-align: right;
-    }
+.weather {
+
+    position: absolute;
+
+    left: 40px;
+
+    top: 250px;
+
+    width: 250px;
+
+    background: white;
+
+    padding: 24px;
+
+    border-radius: 24px;
+
+    text-align: center;
+
+    box-shadow:
+        0 10px 30px rgba(0,0,0,.08);
+}
+
 
     #weather-icon {
         font-size: 40px;
@@ -166,8 +184,26 @@
       text-align: center;
     }
     .hero-inner {
-      max-width: 1250px;
+
+        width: 100%;
+
+        max-width: 1800px;
+
+        margin: 0 auto;
+
+        display: flex;
+
+        flex-direction: column;
+
+        align-items: center;
+
+        justify-content: center;
+
+        text-align: center;
+
+        padding-top: 30px;
     }
+
     .welcome-mark {
       display: inline-flex;
       align-items: center;
@@ -188,11 +224,10 @@
       background: var(--cc-cyan);
     }
     .hero h2 {
-      margin: 0;
-      font-size: clamp(52px, 7.1vw, 138px);
-      font-weight: 700;
-      line-height: 0.98;
-      letter-spacing: -0.055em;
+
+        font-size: 110px;
+
+        margin-bottom: 25px;
     }
     .hero h2 span {
       display: block;
@@ -200,11 +235,12 @@
       color: var(--cc-blue);
     }
     .hero p {
-      max-width: 980px;
-      margin: clamp(28px, 3.4vw, 58px) auto 0;
-      color: var(--text-soft);
-      font-size: clamp(22px, 2vw, 40px);
-      line-height: 1.45;
+
+        font-size: 32px;
+
+        max-width: 1000px;
+
+        margin: auto;
     }
     /* Unterer Bereich */
     .footer {
@@ -247,3 +283,63 @@
         border-top: 1px solid var(--line);
       }
     }
+
+.info-cards {
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: stretch;
+
+    gap: 50px;
+
+    margin-top: 80px;
+
+    width: 100%;
+}
+
+.info-card {
+
+    width: 380px;
+
+    min-height: 280px;
+
+    padding: 35px;
+
+    border-radius: 30px;
+
+    background: white;
+
+    box-shadow:
+        0 15px 35px rgba(0,0,0,.08);
+}
+
+.info-card:hover {
+
+    transform: translateY(-5px);
+}
+
+.card-icon {
+
+    font-size: 60px;
+
+    margin-bottom: 20px;
+}
+
+.info-card h3 {
+
+    font-size: 34px;
+
+    margin-bottom: 25px;
+
+    color: #0067b9;
+}
+
+
+.info-card p {
+
+    font-size: 22px;
+
+    line-height: 1.6;
+}
