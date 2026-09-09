@@ -1,345 +1,595 @@
-    :root {
-      --cc-blue: #0067b9;
-      --cc-dark: #17324d;
-      --cc-cyan: #38c6e8;
-      --background: #f4f7fa;
-      --text-soft: #5c6b78;
-      --line: #dce5ec;
-    }
-    * {
-      box-sizing: border-box;
-    }
-    html,
-    body {
-      width: 100%;
-      height: 100%;
-      margin: 0;
-    }
-    body {
-      overflow: hidden;
-      background: var(--background);
-      color: var(--cc-dark);
-      font-family: "Albert Sans", Arial, sans-serif;
-    }
-    .screen {
-      position: relative;
-      display: grid;
-      grid-template-rows: auto 1fr auto;
-      min-height: 100vh;
-      padding: clamp(28px, 3.2vw, 64px);
-      isolation: isolate;
-    }
-    /* Farbige Linie am oberen Bildschirmrand */
-    .screen::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      right: 0;
-      left: 0;
-      height: 10px;
-      background:
-        linear-gradient(
-          90deg,
-          var(--cc-blue) 0 70%,
-          var(--cc-cyan) 70% 100%
-        );
-      z-index: -1;
-    }
-    /* Dezentes Gestaltungselement im Hintergrund */
-    .screen::after {
-      content: "";
-      position: absolute;
-      right: -10vw;
-      bottom: -18vw;
-      width: 50vw;
-      aspect-ratio: 1;
-      border: clamp(42px, 5vw, 96px)
-        solid rgba(0, 103, 185, 0.055);
-      border-radius: 50%;
-      z-index: -1;
-    }
-    /* Oberer Bereich */
-    .topbar {
-      display: grid;
-      grid-template-columns:
-        minmax(240px, 1fr)
-        minmax(480px, 2.8fr)
-        minmax(280px, 1fr);
-      align-items: center;
-      gap: clamp(24px, 3vw, 60px);
-      padding-bottom: clamp(24px, 2.4vw, 44px);
-      border-bottom: 1px solid var(--line);
-    }
-    /* Logo */
-    .brand {
-      min-width: 0;
-    }
-    .brand img {
-      display: block;
-      width: min(320px, 100%);
-      max-height: 82px;
-      object-fit: contain;
-      object-position: left center;
-    }
-    /* Wird nur angezeigt, wenn das Logo fehlt */
-    .logo-fallback {
-      display: none;
-      max-width: 320px;
-      padding: 13px 16px;
-      border: 2px dashed var(--cc-blue);
-      color: var(--cc-blue);
-      font-size: clamp(16px, 1.25vw, 24px);
-      font-weight: 700;
-      letter-spacing: 0.04em;
-    }
-    /* Begrüßung in der Kopfzeile */
-    .headline {
-      padding-inline: clamp(20px, 3vw, 60px);
-      border-right: 1px solid var(--line);
-      border-left: 1px solid var(--line);
-      text-align: center;
-    }
-    .headline .eyebrow {
-      margin: 0 0 8px;
-      color: var(--cc-blue);
-      font-size: clamp(15px, 1.1vw, 22px);
-      font-weight: 700;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-    }
-    .headline h1 {
-      margin: 0;
-      font-size: clamp(28px, 3.15vw, 62px);
-      font-weight: 700;
-      line-height: 1.08;
-      letter-spacing: -0.035em;
-    }
-    .headline h1 span {
-      color: var(--cc-blue);
-      white-space: nowrap;
-    }
-    /* Datum und Uhrzeit */
-    .datetime {
-      text-align: right;
-      font-variant-numeric: tabular-nums;
-    }
-    .datetime .date {
-      color: var(--text-soft);
-      font-size: clamp(34px, 1.4vw, 28px);
-      font-weight: 500;
-      text-transform: capitalize;
-    }
-    .datetime .time {
-      margin-top: 5px;
-      color: var(--cc-blue);
-      font-size: clamp(80px, 3.2vw, 64px);
-      font-weight: 700;
-      letter-spacing: -0.045em;
-    }
-.weather {
-
-    position: absolute;
-
-    left: 40px;
-
-    top: 250px;
-
-    width: 250px;
-
-    background: white;
-
-    padding: 24px;
-
-    border-radius: 24px;
-
-    text-align: center;
-
-    box-shadow:
-        0 10px 30px rgba(0,0,0,.08);
+:root {
+    --cc-blue: #0067b9;
+    --cc-dark: #17324d;
+    --cc-cyan: #38c6e8;
+    --background: #f4f7fa;
+    --text-soft: #5c6b78;
+    --line: #dce5ec;
+    --white: #ffffff;
 }
 
+* {
+    box-sizing: border-box;
+}
 
-    #weather-icon {
-        font-size: 40px;
+html,
+body {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+}
+
+body {
+    overflow: hidden;
+    background: var(--background);
+    color: var(--cc-dark);
+    font-family: "Albert Sans", Arial, sans-serif;
+}
+
+/* Hauptlayout */
+
+.screen {
+    position: relative;
+    display: grid;
+    grid-template-rows: auto 1fr auto auto;
+    min-height: 100vh;
+    padding: 28px 24px 20px;
+    isolation: isolate;
+}
+
+/* Farbige Linie am oberen Bildschirmrand */
+
+.screen::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 8px;
+
+    background: linear-gradient(
+        90deg,
+        var(--cc-blue) 0 70%,
+        var(--cc-cyan) 70% 100%
+    );
+
+    z-index: -1;
+}
+
+/* Großer Hintergrundkreis */
+
+.screen::after {
+    content: "";
+    position: absolute;
+    right: -14vw;
+    bottom: -33vw;
+    width: 66vw;
+    aspect-ratio: 1;
+
+    border:
+        clamp(48px, 5vw, 100px)
+        solid
+        rgba(0, 103, 185, 0.055);
+
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* Kopfzeile */
+
+.topbar {
+    display: grid;
+
+    grid-template-columns:
+        minmax(190px, 1fr)
+        minmax(520px, 2.5fr)
+        minmax(320px, 1fr);
+
+    align-items: center;
+    gap: 28px;
+    min-height: 108px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--line);
+}
+
+/* Logo */
+
+.brand {
+    min-width: 0;
+    padding-left: 2px;
+}
+
+.brand-logo {
+    display: block;
+    width: 105px;
+    max-height: 62px;
+    object-fit: contain;
+    object-position: left center;
+}
+
+/* Begrüßung im Header */
+
+.headline {
+    padding: 0 34px;
+    border-right: 1px solid var(--line);
+    border-left: 1px solid var(--line);
+    text-align: center;
+}
+
+.eyebrow {
+    margin: 0 0 7px;
+    color: var(--cc-blue);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+.headline h1 {
+    margin: 0;
+    font-size: clamp(30px, 2.2vw, 46px);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.035em;
+}
+
+.headline h1 span {
+    color: var(--cc-blue);
+}
+
+/* Datum und Uhrzeit */
+
+.datetime {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.date {
+    color: var(--text-soft);
+    font-size: clamp(16px, 1.2vw, 23px);
+    font-weight: 500;
+    text-transform: capitalize;
+}
+
+.time {
+    margin-top: 5px;
+    color: var(--cc-blue);
+    font-size: clamp(44px, 3.1vw, 66px);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.05em;
+}
+
+/* Wetterkarte links */
+
+.weather {
+    position: absolute;
+    top: 137px;
+    left: 9px;
+    width: 152px;
+    padding: 18px 14px;
+
+    border:
+        1px solid
+        rgba(0, 103, 185, 0.05);
+
+    border-radius: 17px;
+    background: var(--white);
+
+    box-shadow:
+        0 12px 28px
+        rgba(23, 50, 77, 0.08);
+
+    text-align: center;
+    z-index: 2;
+}
+
+#weather-icon {
+    font-size: 30px;
+    line-height: 1;
+
+    animation:
+        weather-float
+        4s
+        ease-in-out
+        infinite;
+}
+
+#temperature {
+    margin: 5px 0 2px;
+    color: var(--cc-blue);
+    font-size: 27px;
+    font-weight: 700;
+}
+
+#weather-description,
+#humidity,
+#wind {
+    margin-top: 4px;
+    color: var(--text-soft);
+    font-size: 11px;
+    line-height: 1.25;
+}
+
+@keyframes weather-float {
+    0%,
+    100% {
+        transform: translateY(0);
     }
 
-    #temperature {
-        font-size: 42px;
-        font-weight: 700;
-        color: var(--cc-blue);
+    50% {
+        transform: translateY(-5px);
     }
+}
 
-    #weather-description,
-    #humidity,
-    #wind {
-        color: var(--text-soft);
-        font-size: 18px;
-        margin-top: 5px;
-    }
-    /* Hauptbereich */
-    .hero {
-      display: grid;
-      place-items: center;
-      padding: clamp(42px, 7vh, 110px) 5vw;
-      text-align: center;
-    }
-    .hero-inner {
+/* Haupt- und Begrüßungsbereich */
 
-        width: 100%;
+.hero {
+    display: flex;
+    justify-content: center;
+    padding: 23px 0 14px;
+    text-align: center;
+}
 
-        max-width: 1800px;
+.hero-inner {
+    width: 100%;
+    max-width: 1120px;
+    margin: 0 auto;
+}
 
-        margin: 0 auto;
+.welcome-mark {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 34px;
 
-        display: flex;
+    color: var(--cc-blue);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.17em;
+    text-transform: uppercase;
+}
 
-        flex-direction: column;
+.welcome-mark::before,
+.welcome-mark::after {
+    content: "";
+    width: 62px;
+    height: 2px;
+    background: var(--cc-cyan);
+}
 
-        align-items: center;
+.hero h2 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 700;
+}
 
-        justify-content: center;
+.hero-text {
+    margin: 24px 0 0;
+    color: var(--text-soft);
+    font-size: 11px;
+}
 
-        text-align: center;
-
-        padding-top: 30px;
-    }
-
-    .welcome-mark {
-      display: inline-flex;
-      align-items: center;
-      gap: 14px;
-      margin-bottom: clamp(22px, 2.5vw, 44px);
-      color: var(--cc-blue);
-      font-size: clamp(15px, 1.2vw, 24px);
-      font-weight: 700;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-    }
-    .welcome-mark::before,
-    .welcome-mark::after {
-      content: "";
-      width: clamp(42px, 5vw, 100px);
-      height: 3px;
-      border-radius: 999px;
-      background: var(--cc-cyan);
-    }
-    .hero h2 {
-
-        font-size: 110px;
-
-        margin-bottom: 25px;
-    }
-    .hero h2 span {
-      display: block;
-      margin-top: 0.12em;
-      color: var(--cc-blue);
-    }
-    .hero p {
-
-        font-size: 32px;
-
-        max-width: 1000px;
-
-        margin: auto;
-    }
-    /* Unterer Bereich */
-    .footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 30px;
-      padding-top: clamp(20px, 2vw, 36px);
-      border-top: 1px solid var(--line);
-      color: var(--text-soft);
-      font-size: clamp(15px, 1.05vw, 21px);
-    }
-    .footer strong {
-      color: var(--cc-dark);
-    }
-    .status {
-      display: inline-flex;
-      align-items: center;
-      gap: 11px;
-      white-space: nowrap;
-    }
-    .status::before {
-      content: "";
-      width: 11px;
-      height: 11px;
-      border-radius: 50%;
-      background: var(--cc-cyan);
-      box-shadow: 0 0 0 6px rgba(56, 198, 232, 0.16);
-    }
-    /* Anpassung für schmalere Bildschirme */
-    @media (max-width: 1000px) {
-      .topbar {
-        grid-template-columns: 1fr auto;
-      }
-      .headline {
-        grid-column: 1 / -1;
-        grid-row: 2;
-        padding: 24px 0 0;
-        border: 0;
-        border-top: 1px solid var(--line);
-      }
-    }
+/* Informationskarten */
 
 .info-cards {
+    display: grid;
 
-    display: flex;
+    grid-template-columns:
+        repeat(6, minmax(0, 1fr));
 
-    justify-content: center;
-
-    align-items: stretch;
-
-    gap: 50px;
-
-    margin-top: 80px;
-
-    width: 100%;
+    gap: 30px;
+    margin-top: 57px;
 }
 
 .info-card {
+    min-width: 0;
+    min-height: 298px;
+    padding: 29px 20px 24px;
 
-    width: 380px;
+    border:
+        1px solid
+        rgba(0, 103, 185, 0.045);
 
-    min-height: 280px;
-
-    padding: 35px;
-
-    border-radius: 30px;
-
-    background: white;
+    border-radius: 17px;
+    background: var(--white);
 
     box-shadow:
-        0 15px 35px rgba(0,0,0,.08);
+        0 12px 28px
+        rgba(23, 50, 77, 0.08);
+
+    transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease;
 }
 
 .info-card:hover {
+    transform: translateY(-6px);
 
-    transform: translateY(-5px);
+    box-shadow:
+        0 19px 38px
+        rgba(23, 50, 77, 0.13);
 }
 
 .card-icon {
-
-    font-size: 60px;
-
-    margin-bottom: 20px;
+    margin-bottom: 22px;
+    font-size: 33px;
+    line-height: 1;
 }
 
 .info-card h3 {
-
-    font-size: 34px;
-
-    margin-bottom: 25px;
-
-    color: #0067b9;
+    margin: 0 0 20px;
+    color: var(--cc-blue);
+    font-size: 20px;
+    line-height: 1.18;
 }
 
-
 .info-card p {
+    margin: 14px 0;
+    font-size: 13px;
+    line-height: 1.55;
+}
 
-    font-size: 22px;
+/* Raumstatus */
 
-    line-height: 1.6;
+.room-icon {
+    display: inline-grid;
+    width: 15px;
+    height: 15px;
+    margin-right: 6px;
+
+    border-radius: 2px;
+    color: white;
+
+    font-size: 11px;
+    font-weight: 700;
+
+    place-items: center;
+}
+
+.room-icon.free {
+    background: #49c77b;
+}
+
+.room-icon.busy {
+    background: #ff5b76;
+}
+
+/* Bahn und Flughafen */
+
+.compact-card {
+    text-align: left;
+}
+
+.compact-card .card-icon,
+.compact-card h3 {
+    text-align: center;
+}
+
+.transport-row {
+    padding: 9px 0;
+    border-bottom: 1px solid #e8eef3;
+}
+
+.transport-row:last-child {
+    border-bottom: 0;
+}
+
+.transport-main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.transport-main strong {
+    color: var(--cc-dark);
+    font-size: 8px;
+}
+
+.transport-main span {
+    color: var(--cc-blue);
+    font-size: 9px;
+}
+
+.status-badge {
+    display: inline-block;
+    margin-top: 4px;
+    padding: 2px 6px;
+
+    border-radius: 999px;
+
+    font-size: 6px;
+    font-weight: 700;
+}
+
+.status-ok {
+    background: #e7f8ed;
+    color: #138a36;
+}
+
+.status-warning {
+    background: #fff4e5;
+    color: #d97706;
+}
+
+/* News-Karte */
+
+.news-card {
+    text-align: left;
+}
+
+.news-card .card-icon,
+.news-card h3 {
+    text-align: center;
+}
+
+.news-item {
+    padding: 10px 0;
+    border-bottom: 1px solid #e8eef3;
+    line-height: 1.3;
+}
+
+.news-item:last-child {
+    border-bottom: 0;
+}
+
+.news-date {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--text-soft);
+    font-size: 7px;
+}
+
+.news-item strong {
+    font-size: 9px;
+}
+
+/* Laufender News-Ticker */
+
+.news-ticker {
+    width: 100%;
+    min-height: 28px;
+    margin: 0 auto 18px;
+    padding: 7px 12px;
+
+    overflow: hidden;
+
+    border:
+        1px solid
+        rgba(0, 103, 185, 0.04);
+
+    border-radius: 9px;
+    background: var(--white);
+
+    box-shadow:
+        0 5px 18px
+        rgba(23, 50, 77, 0.04);
+
+    white-space: nowrap;
+}
+
+.ticker-track {
+    display: inline-block;
+    min-width: 100%;
+
+    color: var(--text-soft);
+    font-size: 10px;
+
+    animation:
+        ticker
+        28s
+        linear
+        infinite;
+}
+
+.ticker-track span {
+    margin: 0 10px;
+    color: var(--cc-cyan);
+}
+
+@keyframes ticker {
+    from {
+        transform: translateX(20%);
+    }
+
+    to {
+        transform: translateX(-100%);
+    }
+}
+
+/* Fußzeile */
+
+.footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 25px;
+
+    padding-top: 5px;
+
+    color: var(--text-soft);
+    font-size: 12px;
+}
+
+.footer strong {
+    color: var(--cc-dark);
+}
+
+.footer-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.footer-status::before {
+    content: "";
+    width: 9px;
+    height: 9px;
+
+    border-radius: 50%;
+    background: var(--cc-cyan);
+
+    box-shadow:
+        0 0 0 4px
+        rgba(56, 198, 232, 0.14);
+}
+
+/* Kleinere Bildschirme */
+
+@media (max-width: 1400px) {
+    body {
+        overflow: auto;
+    }
+
+    .screen {
+        min-width: 0;
+    }
+
+    .info-cards {
+        grid-template-columns:
+            repeat(3, minmax(210px, 1fr));
+    }
+
+    .weather {
+        position: static;
+        margin: 18px auto 0;
+    }
+}
+
+@media (max-width: 850px) {
+    .topbar {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+
+    .brand-logo {
+        margin: auto;
+    }
+
+    .headline {
+        padding: 18px 0;
+
+        border-right: 0;
+        border-left: 0;
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+    }
+
+    .datetime {
+        text-align: center;
+    }
+
+    .info-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .info-card {
+        min-height: auto;
+    }
+
+    .footer {
+        align-items: flex-start;
+        flex-direction: column;
+    }
 }
