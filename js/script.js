@@ -2,6 +2,15 @@
 
 console.log("script.js wurde erfolgreich geladen");
 
+const kioskConfig = window.SUPABASE_CONFIG || {};
+const kioskSupabaseUrl = kioskConfig.url || "";
+const kioskSupabaseKey = kioskConfig.anonKey || "";
+const kioskBucketName = kioskConfig.bucketName || "visitor-assets";
+const kioskTableName = kioskConfig.tableName || "visitor_profiles";
+const kioskSupabase = kioskSupabaseUrl && kioskSupabaseKey && !kioskSupabaseUrl.includes("YOUR-") && !kioskSupabaseKey.includes("YOUR-")
+    ? window.supabase.createClient(kioskSupabaseUrl, kioskSupabaseKey)
+    : null;
+
 function updateDateTime() {
     const now = new Date();
     const dateElement = document.getElementById("date");
@@ -31,7 +40,9 @@ function updateDateTime() {
 function updateVisitorPanel() {
     const panel = document.getElementById("visitor-panel");
     const nameTarget = document.getElementById("visitor-name-placeholder");
-    const nameValue = (window.visitorName || "Max Mustermann").trim();
+    const logoBox = document.querySelector(".visitor-logo");
+    const imageUrl = window.visitorImageUrl || "";
+    const nameValue = (window.visitorName || "").trim();
 
     if (!panel || !nameTarget) {
         return;
@@ -44,6 +55,56 @@ function updateVisitorPanel() {
         nameTarget.textContent = "___";
         panel.hidden = true;
     }
+
+    if (logoBox) {
+        if (imageUrl) {
+            logoBox.style.backgroundImage = `url("${imageUrl}")`;
+            logoBox.style.backgroundSize = "cover";
+            logoBox.style.backgroundPosition = "center";
+            logoBox.style.color = "transparent";
+            logoBox.textContent = "";
+        } else {
+            logoBox.style.backgroundImage = "none";
+            logoBox.style.color = "#0067b9";
+            logoBox.textContent = "Logo";
+        }
+    }
+}
+
+async function loadVisitorProfile() {
+    if (!kioskSupabase) {
+        window.visitorName = "Max Mustermann";
+        window.visitorImageUrl = "";
+        updateVisitorPanel();
+        return;
+    }
+
+    try {
+        const { data, error } = await kioskSupabase
+            .from(kioskTableName)
+            .select("visitor_name, image_url")
+            .order("updated_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+        if (error) {
+            throw error;
+        }
+
+        if (data && data.visitor_name) {
+            window.visitorName = data.visitor_name;
+            window.visitorImageUrl = data.image_url || "";
+        } else {
+            window.visitorName = "";
+            window.visitorImageUrl = "";
+        }
+    } catch (error) {
+        console.warn("Visitor profile load failed:", error.message || error);
+        window.visitorName = "";
+        window.visitorImageUrl = "";
+    }
+
+    updateVisitorPanel();
 }
 
 function getWeatherDescription(code) {
@@ -151,13 +212,14 @@ async function loadWeather() {
     }
 }
 
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", async function () {
     console.log("HTML wurde vollständig geladen");
 
     updateDateTime();
-    updateVisitorPanel();
+    await loadVisitorProfile();
     loadWeather();
 
     setInterval(updateDateTime, 1000);
     setInterval(loadWeather, 600000);
+    setInterval(loadVisitorProfile, 15000);
 });
