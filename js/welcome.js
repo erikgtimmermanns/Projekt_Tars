@@ -1,45 +1,39 @@
 console.log("welcome.js wurde geladen");
 
 /* =========================
-   HEADER-BEGRÜSSUNG
+   WECHSELNDE HEADER-TEXTE
 ========================= */
 
 const welcomeMessages = [
 
     {
         eyebrow: "HERZLICH WILLKOMMEN",
-        location: "In unserer Geschäftsstelle",
-        city: "Düsseldorf"
+        headline: "In unserer Geschäftsstelle <span>Düsseldorf</span>"
     },
 
     {
         eyebrow: "WELCOME",
-        location: "At our office in",
-        city: "Düsseldorf"
+        headline: "At our office in <span>Düsseldorf</span>"
     },
 
     {
         eyebrow: "BIENVENUE",
-        location: "Dans notre agence de",
-        city: "Düsseldorf"
+        headline: "Dans notre agence de <span>Düsseldorf</span>"
     },
 
     {
         eyebrow: "BENVENUTI",
-        location: "Nella nostra sede di",
-        city: "Düsseldorf"
+        headline: "Nella nostra sede di <span>Düsseldorf</span>"
     },
 
     {
         eyebrow: "WITAMY",
-        location: "W naszym biurze w",
-        city: "Düsseldorf"
+        headline: "W naszym biurze w <span>Düsseldorf</span>"
     },
 
     {
         eyebrow: "ДОБРО ПОЖАЛОВАТЬ",
-        location: "В нашем офисе в",
-        city: "Дюссельдорфе"
+        headline: "В нашем офисе в <span>Дюссельдорфе</span>"
     }
 
 ];
@@ -53,20 +47,14 @@ function rotateWelcome() {
             "eyebrow-text"
         );
 
-    const location =
+    const headline =
         document.getElementById(
-            "location-text"
-        );
-
-    const city =
-        document.getElementById(
-            "city-text"
+            "headline-text"
         );
 
     if (
         !eyebrow ||
-        !location ||
-        !city
+        !headline
     ) {
         console.error(
             "Header-Elemente nicht gefunden"
@@ -83,11 +71,8 @@ function rotateWelcome() {
     eyebrow.textContent =
         current.eyebrow;
 
-    location.textContent =
-        current.location;
-
-    city.textContent =
-        current.city;
+    headline.innerHTML =
+        current.headline;
 
     welcomeIndex++;
 
@@ -99,7 +84,7 @@ function rotateWelcome() {
     }
 }
 
-/* Sofort anzeigen */
+/* Sofort starten */
 
 rotateWelcome();
 
