@@ -521,3 +521,40 @@ body {
     transition:
         opacity 0.5s ease;
 }
+
+#fact-box {
+
+    margin-top: 30px;
+
+    padding: 14px 24px;
+
+    background: white;
+
+    border-radius: 14px;
+
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 12px;
+
+    box-shadow:
+        0 6px 18px rgba(0,0,0,.05);
+
+    transition:
+        opacity .5s ease;
+}
+
+#fact-icon {
+
+    font-size: 26px;
+}
+
+#fact-text {
+
+    color: var(--cc-dark);
+
+    font-size: 16px;
+
+    font-weight: 600;
+}
