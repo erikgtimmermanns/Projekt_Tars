@@ -1,51 +1,39 @@
 const welcomeMessages = [
 
     {
-        title: "Willkommen",
-        office: "In unserer Geschäftsstelle",
-        city: "Düsseldorf",
-        headline: "Schön, dass Sie bei uns sind.",
-        text: "Wir wünschen Ihnen einen angenehmen Aufenthalt."
+        eyebrow: "Herzlich willkommen",
+        location: "In unserer Geschäftsstelle",
+        city: "Düsseldorf"
     },
 
     {
-        title: "Welcome",
-        office: "At our office in",
-        city: "Düsseldorf",
-        headline: "Welcome to Computacenter Düsseldorf.",
-        text: "We wish you a pleasant stay."
+        eyebrow: "WELCOME",
+        location: "At our office in",
+        city: "Düsseldorf"
     },
 
     {
-        title: "Bienvenue",
-        office: "Dans notre agence de",
-        city: "Düsseldorf",
-        headline: "Bienvenue chez Computacenter Düsseldorf.",
-        text: "Nous vous souhaitons un agréable séjour."
+        eyebrow: "BIENVENUE",
+        location: "Dans notre agence de",
+        city: "Düsseldorf"
     },
 
     {
-        title: "Benvenuti",
-        office: "Nella nostra sede di",
-        city: "Düsseldorf",
-        headline: "Benvenuti da Computacenter Düsseldorf.",
-        text: "Vi auguriamo un piacevole soggiorno."
+        eyebrow: "BENVENUTI",
+        location: "Nella nostra sede di",
+        city: "Düsseldorf"
     },
 
     {
-        title: "Witamy",
-        office: "W naszym biurze w",
-        city: "Düsseldorf",
-        headline: "Witamy w Computacenter Düsseldorf.",
-        text: "Życzymy miłego pobytu."
+        eyebrow: "WITAMY",
+        location: "W naszym biurze w",
+        city: "Düsseldorf"
     },
 
     {
-        title: "Добро пожаловать",
-        office: "В нашем офисе в",
-        city: "Дюссельдорфе",
-        headline: "Добро пожаловать в Computacenter Düsseldorf.",
-        text: "Желаем приятного пребывания."
+        eyebrow: "ДОБРО ПОЖАЛОВАТЬ",
+        location: "В нашем офисе в",
+        city: "Дюссельдорфе"
     }
 
 ];
@@ -54,37 +42,19 @@ let welcomeIndex = 0;
 
 function rotateWelcome() {
 
-    const welcomeText =
+    const eyebrow =
         document.getElementById(
-            "welcome-text"
+            "eyebrow-text"
         );
 
-    const officeHeadline =
+    const location =
         document.getElementById(
-            "office-headline"
-        );
-
-    const officeCity =
-        document.getElementById(
-            "office-city"
-        );
-
-    const welcomeHeadline =
-        document.getElementById(
-            "welcome-headline"
-        );
-
-    const welcomeSubtext =
-        document.getElementById(
-            "welcome-subtext"
+            "location-text"
         );
 
     if (
-        !welcomeText ||
-        !officeHeadline ||
-        !officeCity ||
-        !welcomeHeadline ||
-        !welcomeSubtext
+        !eyebrow ||
+        !location
     ) {
         return;
     }
@@ -103,20 +73,14 @@ function rotateWelcome() {
             welcomeIndex
         ];
 
-    welcomeText.textContent =
-        current.title;
+    eyebrow.textContent =
+        current.eyebrow;
 
-    officeHeadline.innerHTML =
-        `${current.office}
-         <span id="office-city">
-             ${current.city}
-         </span>`;
-
-    welcomeHeadline.textContent =
-        current.headline;
-
-    welcomeSubtext.textContent =
-        current.text;
+    location.innerHTML =
+        `${current.location}
+        <span>
+            ${current.city}
+        </span>`;
 }
 
 setInterval(
