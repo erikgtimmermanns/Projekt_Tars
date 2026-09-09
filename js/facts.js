@@ -1,56 +1,61 @@
+console.log("facts.js geladen");
 const facts = [
 
     "Computacenter ist in über 20 Ländern vertreten.",
 
     "Computacenter gehört zu den führenden IT-Dienstleistern Europas.",
 
-    "Computacenter unterstützt Unternehmen bei Cloud-, Workplace- und Datacenter-Lösungen.",
+    "Computacenter arbeitet mit Microsoft, Lenovo und NVIDIA zusammen.",
 
-    "Computacenter arbeitet mit führenden Technologiepartnern wie Microsoft, Lenovo und NVIDIA zusammen.",
+    "Computacenter unterstützt Unternehmen bei der digitalen Transformation.",
 
-    "Computacenter bietet Dienstleistungen entlang des gesamten IT-Lebenszyklus an.",
+    "Computacenter bietet Workplace-, Cloud- und Datacenter-Lösungen an."
 
-    "Computacenter unterstützt Kunden weltweit bei der digitalen Transformation.",
-
-    "Computacenter Deutschland betreibt zahlreiche Geschäftsstellen in Deutschland.",
-
-    "Computacenter verbindet Technologie, Service und Innovation."
 ];
 
-let factIndex = 0;
+let currentFact = 0;
 
 function rotateFact() {
 
-    const fact =
+    const factElement =
         document.getElementById(
             "fact-text"
         );
 
-    if (!fact) {
+    if (!factElement) {
+
+        console.log(
+            "fact-text nicht gefunden"
+        );
+
         return;
     }
 
-    fact.style.opacity = 0;
+    currentFact++;
 
-    setTimeout(() => {
+    if (
+        currentFact >= facts.length
+    ) {
+        currentFact = 0;
+    }
 
-        factIndex++;
+    factElement.textContent =
+        facts[currentFact];
 
-        if (
-            factIndex >= facts.length
-        ) {
-            factIndex = 0;
-        }
-
-        fact.textContent =
-            facts[factIndex];
-
-        fact.style.opacity = 1;
-
-    }, 500);
+    console.log(
+        "Neuer Fakt:",
+        facts[currentFact]
+    );
 }
 
-setInterval(
-    rotateFact,
-    8000
+window.addEventListener(
+    "load",
+    () => {
+
+        setInterval(
+            rotateFact,
+            5000
+        );
+
+    }
 );
