@@ -1,3 +1,4 @@
+console.log("welcome.js wurde geladen");
 const welcomeMessages = [
 
     {
