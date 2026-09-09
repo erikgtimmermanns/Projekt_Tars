@@ -2,26 +2,22 @@ const floorplans = [
 
     {
         name: "Erdgeschoss",
-        image:
-            "assets/floorplans/Raumplan_Erdgeschoss.png"
+        image: "./assets/floorplans/Raumplan_Erdgeschoss.svg"
     },
 
     {
         name: "1. Obergeschoss",
-        image:
-            "assets/floorplans/Raumplan_1OG.png"
+        image: "./assets/floorplans/Raumplan_1OG.svg"
     },
 
     {
         name: "2. Obergeschoss",
-        image:
-            "assets/floorplans/Raumplan_2OG.png"
+        image: "./assets/floorplans/Raumplan_2OG.svg"
     },
 
     {
         name: "3. Obergeschoss",
-        image:
-            "assets/floorplans/Raumplan_3OG.png"
+        image: "./assets/floorplans/Raumplan_3OG.svg"
     }
 
 ];
