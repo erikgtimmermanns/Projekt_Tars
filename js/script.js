@@ -31,7 +31,7 @@ function updateDateTime() {
 function updateVisitorPanel() {
     const panel = document.getElementById("visitor-panel");
     const nameTarget = document.getElementById("visitor-name-placeholder");
-    const nameValue = (window.visitorName || "").trim();
+    const nameValue = (window.visitorName || "Max Mustermann").trim();
 
     if (!panel || !nameTarget) {
         return;
