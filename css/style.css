@@ -513,3 +513,11 @@ body {
         flex-direction: column;
     }
 }
+
+#welcome-text,
+#welcome-headline,
+#welcome-subtext {
+
+    transition:
+        opacity 0.5s ease;
+}
