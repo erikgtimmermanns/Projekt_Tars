@@ -4,7 +4,6 @@ console.log("script.js wurde erfolgreich geladen");
 
 function updateDateTime() {
     const now = new Date();
-
     const dateElement = document.getElementById("date");
     const timeElement = document.getElementById("time");
 
@@ -26,6 +25,24 @@ function updateDateTime() {
 
     if (timeElement) {
         timeElement.textContent = formattedTime + " Uhr";
+    }
+}
+
+function updateVisitorPanel() {
+    const panel = document.getElementById("visitor-panel");
+    const nameTarget = document.getElementById("visitor-name-placeholder");
+    const nameValue = (window.visitorName || "").trim();
+
+    if (!panel || !nameTarget) {
+        return;
+    }
+
+    if (nameValue.length > 0) {
+        nameTarget.textContent = nameValue;
+        panel.hidden = false;
+    } else {
+        nameTarget.textContent = "___";
+        panel.hidden = true;
     }
 }
 
@@ -58,69 +75,42 @@ function getWeatherDescription(code) {
 }
 
 async function loadWeather() {
-    const weatherIcon =
-        document.getElementById("weather-icon");
-
-    const temperature =
-        document.getElementById("temperature");
-
-    const weatherDescription =
-        document.getElementById("weather-description");
-
-    const humidity =
-        document.getElementById("humidity");
-
-    const wind =
-        document.getElementById("wind");
+    const weatherIcon = document.getElementById("weather-icon");
+    const temperature = document.getElementById("temperature");
+    const weatherDescription = document.getElementById("weather-description");
+    const humidity = document.getElementById("humidity");
+    const wind = document.getElementById("wind");
 
     try {
-        const apiUrl =
-            "https://api.open-meteo.com/v1/forecast" +
+        const apiUrl = "https://api.open-meteo.com/v1/forecast" +
             "?latitude=51.2277" +
             "&longitude=6.7735" +
-            "&current=temperature_2m," +
-            "relative_humidity_2m," +
-            "wind_speed_10m," +
-            "weather_code" +
+            "&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code" +
             "&timezone=Europe%2FBerlin";
 
-        const response = await fetch(apiUrl, {
-            cache: "no-store"
-        });
+        const response = await fetch(apiUrl, { cache: "no-store" });
 
         if (!response.ok) {
-            throw new Error(
-                "HTTP-Fehler: " + response.status
-            );
+            throw new Error("HTTP-Fehler: " + response.status);
         }
 
         const data = await response.json();
 
         if (!data.current) {
-            throw new Error(
-                "Keine aktuellen Wetterdaten erhalten"
-            );
+            throw new Error("Keine aktuellen Wetterdaten erhalten");
         }
 
         const current = data.current;
-
-        const weather = getWeatherDescription(
-            current.weather_code
-        );
-
-        const roundedTemperature =
-            Math.round(current.temperature_2m * 10) / 10;
-
-        const roundedWind =
-            Math.round(current.wind_speed_10m * 10) / 10;
+        const weather = getWeatherDescription(current.weather_code);
+        const roundedTemperature = Math.round(current.temperature_2m * 10) / 10;
+        const roundedWind = Math.round(current.wind_speed_10m * 10) / 10;
 
         if (weatherIcon) {
             weatherIcon.textContent = weather[0];
         }
 
         if (temperature) {
-            temperature.textContent =
-                roundedTemperature + "°C";
+            temperature.textContent = roundedTemperature + "°C";
         }
 
         if (weatherDescription) {
@@ -128,26 +118,16 @@ async function loadWeather() {
         }
 
         if (humidity) {
-            humidity.textContent =
-                "Luftfeuchte: " +
-                current.relative_humidity_2m +
-                "%";
+            humidity.textContent = "Luftfeuchte: " + current.relative_humidity_2m + "%";
         }
 
         if (wind) {
-            wind.textContent =
-                "Wind: " +
-                roundedWind +
-                " km/h";
+            wind.textContent = "Wind: " + roundedWind + " km/h";
         }
 
         console.log("Wetterdaten erfolgreich geladen");
-
     } catch (error) {
-        console.error(
-            "Fehler beim Laden der Wetterdaten:",
-            error
-        );
+        console.error("Fehler beim Laden der Wetterdaten:", error);
 
         if (weatherIcon) {
             weatherIcon.textContent = "⚠️";
@@ -158,13 +138,11 @@ async function loadWeather() {
         }
 
         if (weatherDescription) {
-            weatherDescription.textContent =
-                "Wetterdaten nicht verfügbar";
+            weatherDescription.textContent = "Wetterdaten nicht verfügbar";
         }
 
         if (humidity) {
-            humidity.textContent =
-                "Luftfeuchte: --";
+            humidity.textContent = "Luftfeuchte: --";
         }
 
         if (wind) {
@@ -177,6 +155,7 @@ document.addEventListener("DOMContentLoaded", function () {
     console.log("HTML wurde vollständig geladen");
 
     updateDateTime();
+    updateVisitorPanel();
     loadWeather();
 
     setInterval(updateDateTime, 1000);

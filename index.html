@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" translate="no">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
@@ -13,315 +13,57 @@
 </head>
 <body>
   <main class="screen">
-    <!-- Obere Kopfzeile -->
     <header class="topbar">
-      <!-- Offizielles Computacenter-Logo -->
       <div class="brand">
-        <img
-          src="./assets/Computacenter_logo.svg"
-          alt="Offizielles Computacenter-Logo"
-          class="brand-logo"
-        >
+        <img src="./assets/Computacenter_logo.svg" alt="Offizielles Computacenter-Logo" class="brand-logo">
       </div>
-      <!-- Begrüßung -->
+
       <section class="headline" aria-label="Begrüßung">
         <p class="eyebrow">Herzlich willkommen</p>
-        <h1>
-          In unserer Geschäftsstelle
-          <span>Düsseldorf</span>
-        </h1>
+        <h1>In unserer Geschäftsstelle <span>Düsseldorf</span></h1>
       </section>
-      <!-- Automatisches Datum und Uhrzeit -->
+
       <section class="datetime" aria-label="Datum und Uhrzeit">
-        <div class="date" id="date">
-          Montag, 07. September 2026
-        </div>
-        <div class="time" id="time">
-          15:00 Uhr
-        </div>
+        <div class="date" id="date">Montag, 07. September 2026</div>
+        <div class="time" id="time">15:00 Uhr</div>
       </section>
-
-  <section class="weather">
-
-    <div id="weather-icon">
-        ☀️
-    </div>
-
-    <div id="temperature">
-        --°C
-    </div>
-
-    <div id="weather-description">
-        Wetter wird geladen...
-    </div>
-
-    <div id="humidity">
-        Luftfeuchte: --
-    </div>
-
-    <div id="wind">
-        Wind: --
-    </div>
-
-  </section>
     </header>
-    <!-- Großer Begrüßungsbereich -->
-<div class="hero-inner">
 
-    <div
-    class="welcome-mark"
-    id="welcome-text"
->
-    Willkommen
-</div>
+    <section class="visitor-panel" id="visitor-panel" hidden>
+      <div class="visitor-box">
+        <div class="visitor-logo">Logo</div>
+        <p class="visitor-message">
+          Wir freuen uns heute,
+          <span id="visitor-name-placeholder">___</span>
+          bei uns in der Geschäftsstelle Düsseldorf begrüßen zu dürfen.
+        </p>
+      </div>
+    </section>
+
+    <section class="room-plan" aria-label="Raumplan">
+      <div class="plan-header">Raumplan</div>
+      <div class="plan-placeholder">Platzhalter für Raumplan / Bild</div>
+    </section>
+
+    <aside class="weather-strip" aria-label="Wetter">
+      <div class="weather-main">
+        <span id="weather-icon">☀️</span>
+        <strong id="temperature">--°C</strong>
+      </div>
+
+      <div class="weather-meta">
+        <div id="weather-description">Wetter wird geladen...</div>
+        <div id="humidity">Luftfeuchte: --</div>
+        <div id="wind">Wind: --</div>
+      </div>
+    </aside>
 
-<h2 id="welcome-headline">
-    Schön, dass Sie bei uns sind.
-</h2>
-
-<p
-    class="hero-text"
-    id="welcome-subtext"
->
-    Wir wünschen Ihnen einen angenehmen Aufenthalt.
-</p>
-
-<div id="fact-box">
-
-    <span id="fact-icon">
-        💡
-    </span>
-
-    <span id="fact-text">
-
-        Computacenter ist in über 20 Ländern vertreten.
-
-    </span>
-
-</div>
-
-
-    <div class="info-cards">
-
-        <div class="info-card">
-            <div class="card-icon">🏢</div>
-            <h3>Räume</h3>
-
-            <p>✅ Rhein</p>
-            <p>✅ Ruhr</p>
-            <p>❌ Düsseldorf</p>
-        </div>
-
-        <div class="info-card">
-            <div class="card-icon">👋</div>
-            <h3>Gäste</h3>
-
-            <p>Herzlich Willkommen</p>
-            <p>Max Mustermann</p>
-            <p>Musterfirma GmbH</p>
-        </div>
-
-<div class="info-card">
-    <div class="card-icon">ℹ️</div>
-    <h3>Empfang</h3>
-
-    <p>Bitte am Empfang anmelden</p>
-    <p>Gast-WLAN verfügbar</p>
-</div>
-
-<div class="info-card">
-
-    <div class="card-icon">🚆</div>
-
-    <h3>Bahn</h3>
-
-    <div class="transport-row">
-
-        <div>
-            <strong>ICE 623</strong>
-            <span>13:15</span>
-        </div>
-
-        <span class="status-badge status-ok">
-            Pünktlich
-        </span>
-
-    </div>
-
-    <div class="transport-row">
-
-        <div>
-            <strong>RE1</strong>
-            <span>13:22</span>
-        </div>
-
-        <span class="status-badge status-warning">
-            +3 Min
-        </span>
-
-    </div>
-
-    <div class="transport-row">
-
-        <div>
-            <strong>U79</strong>
-            <span>13:27</span>
-        </div>
-
-        <span class="status-badge status-ok">
-            Pünktlich
-        </span>
-
-    </div>
-
-</div>
-
-<div class="info-card">
-
-    <div class="card-icon">✈️</div>
-
-    <h3>
-        Flughafen<br>
-        Düsseldorf
-    </h3>
-
-    <div class="transport-row">
-
-        <div>
-            <strong>LH201</strong>
-            <span>13:45</span>
-        </div>
-
-        <span class="status-badge status-ok">
-            Pünktlich
-        </span>
-
-    </div>
-
-    <div class="transport-row">
-
-        <div>
-            <strong>KL1804</strong>
-            <span>14:10</span>
-        </div>
-
-        <span class="status-badge status-warning">
-            +15 Min
-        </span>
-
-    </div>
-
-    <div class="transport-row">
-
-        <div>
-            <strong>EW9460</strong>
-            <span>14:25</span>
-        </div>
-
-        <span class="status-badge status-ok">
-            Pünktlich
-        </span>
-
-    </div>
-
-</div>
-
-<div class="info-card news-card">
-
-    <div class="card-icon">📰</div>
-
-    <h3>Computacenter News</h3>
-
-    <div class="news-item">
-
-        <span class="news-date">
-            15.06.2026
-        </span>
-
-        <strong>
-            Lenovo Global Award
-        </strong>
-
-    </div>
-
-    <div class="news-item">
-
-        <span class="news-date">
-            16.04.2026
-        </span>
-
-        <strong>
-            NVIDIA Partner 2026
-        </strong>
-
-    </div>
-
-    <div class="news-item">
-
-        <span class="news-date">
-            07.08.2026
-        </span>
-
-        <strong>
-            ISG Leader 2026
-        </strong>
-
-    </div>
-
-</div>
-
-<div class="info-card floorplan-card">
-
-    <div class="card-icon">
-        🗺️
-    </div>
-
-    <h3>
-        Raumplan
-    </h3>
-
-    <div id="floorplan-name">
-        Erdgeschoss
-    </div>
-
-    <img
-        id="floorplan-image"
-        src="assets/floorplans/Raumplan_Erdgeschoss.png"
-    >
-
-
-</div>
-
-</div> <!-- HIER endet info-cards -->
-
-</div>
-
-<div class="news-ticker">
-
-    <span>
-        📰 Computacenter erhält globale Lenovo-Auszeichnung •
-        NVIDIA EMEA Partner 2026 •
-        ISG Leader Future of Work Services 2026
-    </span>
-
-</div>
-
-
-</div>
-
-  </section>
-
-    <!-- Fußzeile -->
     <footer class="footer">
-      <span>
-        <strong>Computacenter Deutschland</strong>
-        · Geschäftsstelle Düsseldorf
-      </span>
-      <span class="status">
-        Bitte melden Sie sich am Empfang an
-      </span>
+      <span><strong>Computacenter Deutschland</strong> · Geschäftsstelle Düsseldorf</span>
+      <span class="status">Bitte melden Sie sich am Empfang an</span>
     </footer>
   </main>
+
   <script src="script.js"></script>
   <script src="js/welcome.js"></script>
   <script src="js/facts.js"></script>
