@@ -428,3 +428,11 @@ body {
         transform: translateY(-8px);
     }
 }
+
+#welcome-text,
+#welcome-headline,
+#welcome-subtext {
+
+    transition:
+        opacity 0.5s ease;
+}
