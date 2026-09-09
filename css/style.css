@@ -558,3 +558,28 @@ body {
 
     font-weight: 600;
 }
+
+.floorplan-card {
+
+    width: 320px;
+}
+
+#floorplan-name {
+
+    color: var(--cc-blue);
+
+    font-weight: 700;
+
+    margin-bottom: 10px;
+}
+
+#floorplan-image {
+
+    width: 100%;
+
+    border-radius: 12px;
+
+    border: 1px solid #ddd;
+
+    transition: opacity .5s ease;
+}
