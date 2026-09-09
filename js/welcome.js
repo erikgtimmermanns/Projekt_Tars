@@ -1,43 +1,39 @@
+console.log("welcome.js wurde geladen");
+
 /* =========================
-   WECHSELNDE BEGRÜSSUNG
+   WECHSELNDE HEADER-TEXTE
 ========================= */
 
 const welcomeMessages = [
 
     {
-        title: "Willkommen",
-        headline: "Schön, dass Sie bei uns sind.",
-        text: "Wir wünschen Ihnen einen angenehmen Aufenthalt."
+        eyebrow: "HERZLICH WILLKOMMEN",
+        headline: "In unserer Geschäftsstelle <span>Düsseldorf</span>"
     },
 
     {
-        title: "Welcome",
-        headline: "Welcome to Computacenter Düsseldorf.",
-        text: "We wish you a pleasant stay."
+        eyebrow: "WELCOME",
+        headline: "At our office in <span>Düsseldorf</span>"
     },
 
     {
-        title: "Bienvenue",
-        headline: "Bienvenue chez Computacenter Düsseldorf.",
-        text: "Nous vous souhaitons un agréable séjour."
+        eyebrow: "BIENVENUE",
+        headline: "Dans notre agence de <span>Düsseldorf</span>"
     },
 
     {
-        title: "Benvenuti",
-        headline: "Benvenuti da Computacenter Düsseldorf.",
-        text: "Vi auguriamo un piacevole soggiorno."
+        eyebrow: "BENVENUTI",
+        headline: "Nella nostra sede di <span>Düsseldorf</span>"
     },
 
     {
-        title: "Witamy",
-        headline: "Witamy w Computacenter Düsseldorf.",
-        text: "Życzymy miłego pobytu."
+        eyebrow: "WITAMY",
+        headline: "W naszym biurze w <span>Düsseldorf</span>"
     },
 
     {
-        title: "Добро пожаловать",
-        headline: "Добро пожаловать в Computacenter Düsseldorf.",
-        text: "Желаем приятного пребывания."
+        eyebrow: "ДОБРО ПОЖАЛОВАТЬ",
+        headline: "В нашем офисе в <span>Дюссельдорфе</span>"
     }
 
 ];
@@ -46,66 +42,53 @@ let welcomeIndex = 0;
 
 function rotateWelcome() {
 
-    const welcomeText =
+    const eyebrow =
         document.getElementById(
-            "welcome-text"
+            "eyebrow-text"
         );
 
-    const welcomeHeadline =
+    const headline =
         document.getElementById(
-            "welcome-headline"
-        );
-
-    const welcomeSubtext =
-        document.getElementById(
-            "welcome-subtext"
+            "headline-text"
         );
 
     if (
-        !welcomeText ||
-        !welcomeHeadline ||
-        !welcomeSubtext
+        !eyebrow ||
+        !headline
     ) {
+        console.error(
+            "Header-Elemente nicht gefunden"
+        );
+
         return;
     }
 
-    welcomeText.style.opacity = 0;
-    welcomeHeadline.style.opacity = 0;
-    welcomeSubtext.style.opacity = 0;
+    const current =
+        welcomeMessages[
+            welcomeIndex
+        ];
 
-    setTimeout(() => {
+    eyebrow.textContent =
+        current.eyebrow;
 
-        welcomeIndex++;
+    headline.innerHTML =
+        current.headline;
 
-        if (
-            welcomeIndex >=
-            welcomeMessages.length
-        ) {
-            welcomeIndex = 0;
-        }
+    welcomeIndex++;
 
-        const current =
-            welcomeMessages[
-                welcomeIndex
-            ];
-
-        welcomeText.textContent =
-            current.title;
-
-        welcomeHeadline.textContent =
-            current.headline;
-
-        welcomeSubtext.textContent =
-            current.text;
-
-        welcomeText.style.opacity = 1;
-        welcomeHeadline.style.opacity = 1;
-        welcomeSubtext.style.opacity = 1;
-
-    }, 500);
+    if (
+        welcomeIndex >=
+        welcomeMessages.length
+    ) {
+        welcomeIndex = 0;
+    }
 }
 
-/* Start */
+/* Sofort starten */
+
+rotateWelcome();
+
+/* Alle 5 Sekunden wechseln */
 
 setInterval(
     rotateWelcome,
