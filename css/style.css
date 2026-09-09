@@ -561,7 +561,9 @@ body {
 
 .floorplan-card {
 
-    width: 320px;
+    width: 600px;
+
+    min-height: 450px;
 }
 
 #floorplan-name {
@@ -577,9 +579,11 @@ body {
 
     width: 100%;
 
+    height: 260px;
+
+    object-fit: contain;
+
     border-radius: 12px;
 
-    border: 1px solid #ddd;
-
-    transition: opacity .5s ease;
+    background: white;
 }
