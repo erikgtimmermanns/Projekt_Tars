@@ -1,8 +1,13 @@
 console.log("welcome.js wurde geladen");
+
+/* =========================
+   HEADER-BEGRÜSSUNG
+========================= */
+
 const welcomeMessages = [
 
     {
-        eyebrow: "Herzlich willkommen",
+        eyebrow: "HERZLICH WILLKOMMEN",
         location: "In unserer Geschäftsstelle",
         city: "Düsseldorf"
     },
@@ -53,20 +58,21 @@ function rotateWelcome() {
             "location-text"
         );
 
+    const city =
+        document.getElementById(
+            "city-text"
+        );
+
     if (
         !eyebrow ||
-        !location
+        !location ||
+        !city
     ) {
+        console.error(
+            "Header-Elemente nicht gefunden"
+        );
+
         return;
-    }
-
-    welcomeIndex++;
-
-    if (
-        welcomeIndex >=
-        welcomeMessages.length
-    ) {
-        welcomeIndex = 0;
     }
 
     const current =
@@ -77,12 +83,27 @@ function rotateWelcome() {
     eyebrow.textContent =
         current.eyebrow;
 
-    location.innerHTML =
-        `${current.location}
-        <span>
-            ${current.city}
-        </span>`;
+    location.textContent =
+        current.location;
+
+    city.textContent =
+        current.city;
+
+    welcomeIndex++;
+
+    if (
+        welcomeIndex >=
+        welcomeMessages.length
+    ) {
+        welcomeIndex = 0;
+    }
 }
+
+/* Sofort anzeigen */
+
+rotateWelcome();
+
+/* Alle 5 Sekunden wechseln */
 
 setInterval(
     rotateWelcome,
