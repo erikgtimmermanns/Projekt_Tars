@@ -60,18 +60,93 @@
       </div>
     </section>
 
-    <aside class="weather-strip" aria-label="Wetter">
-      <div class="weather-main">
-        <span id="weather-icon">☀️</span>
-        <strong id="temperature">--°C</strong>
-      </div>
+    <section
+        class="weather weather-default"
+        id="weather-card"
+        aria-label="Aktuelles Wetter in Düsseldorf"
+    >
+        <!-- Animierter Hintergrund -->
+        <div class="weather-animation" aria-hidden="true">
 
-      <div class="weather-meta">
-        <div id="weather-description">Wetter wird geladen...</div>
-        <div id="humidity">Luftfeuchte: --</div>
-        <div id="wind">Wind: --</div>
-      </div>
-    </aside>
+            <div class="weather-sun"></div>
+
+            <div class="weather-cloud cloud-one"></div>
+            <div class="weather-cloud cloud-two"></div>
+
+            <div class="rain-layer"></div>
+            <div class="snow-layer"></div>
+            <div class="fog-layer"></div>
+            <div class="lightning"></div>
+
+        </div>
+
+        <!-- Wetterinformationen -->
+        <div class="weather-content">
+
+            <div class="weather-primary">
+
+                <div
+                    id="weather-icon"
+                    class="weather-icon"
+                    aria-hidden="true"
+                >
+                    🌤️
+                </div>
+
+                <div
+                    id="temperature"
+                    class="weather-temperature"
+                >
+                    --°C
+                </div>
+
+                <div
+                    id="weather-description"
+                    class="weather-description"
+                >
+                    Wetter wird geladen ...
+                </div>
+
+            </div>
+
+            <div class="weather-detail">
+
+                <span class="weather-detail-icon">
+                    💧
+                </span>
+
+                <div>
+                    <span class="weather-detail-label">
+                        Luftfeuchte
+                    </span>
+
+                    <strong id="humidity">
+                        --%
+                    </strong>
+                </div>
+
+            </div>
+
+            <div class="weather-detail">
+
+                <span class="weather-detail-icon">
+                    🌬️
+                </span>
+
+                <div>
+                    <span class="weather-detail-label">
+                        Wind
+                    </span>
+
+                    <strong id="wind">
+                        -- km/h
+                    </strong>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
 
     <footer class="footer">
       <span><strong>Computacenter Deutschland</strong> · Geschäftsstelle Düsseldorf</span>
