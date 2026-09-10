@@ -209,6 +209,73 @@ body {
     padding: 16px;
 }
 
+/* Floorplan overlay and markers */
+.plan-stage {
+    position: relative;
+}
+
+.floorplan-overlay {
+    position: absolute;
+    inset: 0 0 34px 0; /* keep space for plan name */
+    pointer-events: none;
+    z-index: 6;
+}
+
+.fp-marker {
+    position: absolute;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(0,103,185,0.95);
+    color: white;
+    display: grid;
+    place-items: center;
+    font-size: 18px;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 6px 14px rgba(18,38,63,0.12);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+.fp-marker:hover {
+    transform: translate(-50%, -50%) scale(1.08);
+    box-shadow: 0 10px 20px rgba(18,38,63,0.18);
+}
+
+.fp-label {
+    position: absolute;
+    left: 50%;
+    top: calc(100% + 8px);
+    transform: translateX(-50%);
+    background: rgba(255,255,255,0.96);
+    color: var(--cc-dark);
+    padding: 6px 8px;
+    border-radius: 8px;
+    font-size: 13px;
+    white-space: nowrap;
+    box-shadow: 0 6px 14px rgba(18,38,63,0.06);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.12s ease, transform 0.12s ease;
+}
+
+.fp-marker:hover .fp-label { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+.btn-small {
+    position: absolute;
+    right: 18px;
+    top: 18px;
+    z-index: 8;
+    background: rgba(255,255,255,0.85);
+    border: 1px solid rgba(0,0,0,0.06);
+    padding: 6px 10px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+
 #floorplan-image {
     display: block;
     width: 100%;
