@@ -215,7 +215,9 @@ function updateWeatherAnimation(code) {
     // Optional: GIF-Hintergrund pro Wetterklasse setzen.
     // Lege GIFs unter ./assets/gifs/ ab (z. B. sunny.gif, rain.gif, snow.gif, fog.gif, thunder.gif)
     const gifMap = {
+        "weather-default": 'none',
         "weather-sunny":  'url("./assets/gifs/sunny.gif")',
+        "weather-cloudy": 'none',
         "weather-rain":   'url("./assets/gifs/rain.gif")',
         "weather-snow":   'url("./assets/gifs/snow.gif")',
         "weather-fog":    'url("./assets/gifs/fog.gif")',

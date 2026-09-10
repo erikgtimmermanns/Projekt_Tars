@@ -629,6 +629,23 @@ body {
     animation: sunRotate 8s linear infinite, weatherFloat 3s ease-in-out infinite;
 }
 
+.weather-cloudy {
+    background: linear-gradient(135deg, #edf5fb, #dbeaf7);
+}
+
+.weather-cloudy::before {
+    content: "";
+    position: absolute;
+    inset: -24px -30px 0;
+    background:
+        radial-gradient(circle at 18% 24%, rgba(255,255,255,0.9) 0 9%, transparent 11%),
+        radial-gradient(circle at 33% 30%, rgba(255,255,255,0.82) 0 12%, transparent 14%),
+        radial-gradient(circle at 58% 26%, rgba(255,255,255,0.8) 0 11%, transparent 13%),
+        radial-gradient(circle at 76% 22%, rgba(255,255,255,0.78) 0 10%, transparent 12%);
+    opacity: 0.75;
+    animation: cloudLayerMove 18s ease-in-out infinite alternate;
+}
+
 .weather-cloudy .weather-icon {
     animation: cloudSway 4s ease-in-out infinite, weatherFloat 3s ease-in-out infinite;
 }
@@ -1032,6 +1049,16 @@ body {
 
     50% {
         transform: translateY(-8px);
+    }
+}
+
+@keyframes cloudLayerMove {
+    from {
+        transform: translateX(-4%) translateY(5px);
+    }
+
+    to {
+        transform: translateX(4%) translateY(-4px);
     }
 }
 
