@@ -72,13 +72,14 @@ function rotateFloorplan() {
         }
 
 
+        // Wechsel Bild, und warte auf load bevor Marker gerendert werden
         image.src = floorplans[currentFloor].image;
         title.textContent = floorplans[currentFloor].name;
 
-        // Render markers für neue Etage
-        renderFloorplanMarkers(currentFloor);
-
-        image.style.opacity = 1;
+        image.onload = () => {
+            renderFloorplanMarkers(currentFloor);
+            image.style.opacity = 1;
+        };
 
     }, 500);
 }
@@ -94,27 +95,41 @@ setInterval(
 
 function iconForType(type) {
     const map = {
-        elevator: '🛗',
-        exit: '🚪',
-        info: 'ℹ️',
-        restroom: '🚻',
-        stairs: '⬆️',
-        meeting: '📁',
-        important: '⚠️'
+        elevator: './assets/icons/elevator.svg',
+        exit: './assets/icons/exit.svg',
+        info: './assets/icons/info.svg',
+        restroom: './assets/icons/restroom.svg',
+        stairs: './assets/icons/stairs.svg',
+        meeting: './assets/icons/meeting.svg',
+        important: './assets/icons/important.svg'
     };
 
-    return map[type] || '📍';
+    return map[type] || './assets/icons/important.svg';
 }
 
 function renderFloorplanMarkers(floorIndex) {
     const overlay = document.getElementById('floorplan-overlay');
 
-    if (!overlay) return;
+    const image = document.getElementById('floorplan-image');
+    const planStage = image ? image.closest('.plan-stage') : null;
+
+    if (!overlay || !image || !planStage) return;
+
+    // Bestimme Bild-Position und Größe relativ zur plan-stage
+    const imgRect = image.getBoundingClientRect();
+    const stageRect = planStage.getBoundingClientRect();
+
+    const relLeft = imgRect.left - stageRect.left;
+    const relTop = imgRect.top - stageRect.top;
+
+    overlay.style.left = relLeft + 'px';
+    overlay.style.top = relTop + 'px';
+    overlay.style.width = imgRect.width + 'px';
+    overlay.style.height = imgRect.height + 'px';
 
     overlay.innerHTML = '';
 
     const fp = floorplans[floorIndex];
-
     if (!fp || !fp.hotspots) return;
 
     fp.hotspots.forEach(h => {
@@ -122,34 +137,51 @@ function renderFloorplanMarkers(floorIndex) {
         marker.className = 'fp-marker';
         marker.type = 'button';
         marker.setAttribute('aria-label', h.label);
-        marker.style.left = h.x + '%';
-        marker.style.top = h.y + '%';
+
+        // position in pixels relative to overlay
+        const px = (h.x / 100) * imgRect.width;
+        const py = (h.y / 100) * imgRect.height;
+
+        marker.style.left = px + 'px';
+        marker.style.top = py + 'px';
 
         // set background color for exits / important
         if (h.type === 'exit') {
             marker.style.background = 'linear-gradient(180deg,#ff6b6b,#ff3b3b)';
         } else if (h.type === 'important' || h.type === 'server') {
             marker.style.background = 'linear-gradient(180deg,#ffb84d,#ff9a1f)';
+        } else {
+            marker.style.background = ''; // use default
         }
 
-        const icon = document.createElement('span');
-        icon.className = 'fp-icon';
-        icon.textContent = iconForType(h.type);
+        const img = document.createElement('img');
+        img.src = iconForType(h.type);
+        img.alt = h.label;
+        img.loading = 'lazy';
+        img.className = 'fp-marker-img';
 
         const label = document.createElement('span');
         label.className = 'fp-label';
         label.textContent = h.label;
 
-        marker.appendChild(icon);
+        marker.appendChild(img);
         marker.appendChild(label);
 
-        marker.addEventListener('click', () => {
-            // einfache Interaktion: kurze Info im Konsolen-Log und visuelles Feedback
+        marker.addEventListener('click', (ev) => {
+            ev.stopPropagation();
             console.log('Hotspot angeklickt:', h);
             marker.animate([
-                { transform: 'translate(-50%,-50%) scale(1.08)' },
+                { transform: 'translate(-50%,-50%) scale(1.12)' },
                 { transform: 'translate(-50%,-50%) scale(1)' }
             ], { duration: 300 });
+
+            // show info panel
+            const info = document.getElementById('fp-info');
+            if (info) {
+                info.innerHTML = `\n+                    <h4>${h.label}</h4>\n+                    <p>Typ: ${h.type}</p>\n+                    <p>ID: ${h.id}</p>\n+                `;
+                info.style.display = 'block';
+                info.setAttribute('aria-hidden','false');
+            }
         });
 
         overlay.appendChild(marker);
@@ -158,17 +190,51 @@ function renderFloorplanMarkers(floorIndex) {
 
 // Initial render
 document.addEventListener('DOMContentLoaded', () => {
-    renderFloorplanMarkers(currentFloor);
-
-    const toggle = document.getElementById('toggle-highlights');
+    const image = document.getElementById('floorplan-image');
     const overlay = document.getElementById('floorplan-overlay');
+    const toggle = document.getElementById('toggle-highlights');
+
+    function safeRender() {
+        renderFloorplanMarkers(currentFloor);
+    }
+
+    if (image) {
+        if (image.complete) {
+            safeRender();
+        } else {
+            image.addEventListener('load', safeRender);
+        }
+
+        // ResizeObserver to keep markers in place on layout changes
+        if (window.ResizeObserver) {
+            const ro = new ResizeObserver(safeRender);
+            ro.observe(image);
+            // also observe parent in case layout shifts
+            const parent = image.parentElement;
+            if (parent) ro.observe(parent);
+        } else {
+            window.addEventListener('resize', safeRender);
+        }
+    }
 
     if (toggle && overlay) {
         toggle.addEventListener('click', () => {
             const visible = overlay.style.display !== 'none';
             overlay.style.display = visible ? 'none' : '';
             toggle.setAttribute('aria-pressed', String(!visible));
-            toggle.textContent = visible ? 'Highlights' : 'Highlights';
         });
     }
+
+    // close info panel when clicking outside
+    document.addEventListener('click', (ev) => {
+        const info = document.getElementById('fp-info');
+        const overlayEl = document.getElementById('floorplan-overlay');
+        if (!info || !overlayEl) return;
+
+        const isClickInside = overlayEl.contains(ev.target) || info.contains(ev.target) || (toggle && toggle.contains(ev.target));
+        if (!isClickInside) {
+            info.style.display = 'none';
+            info.setAttribute('aria-hidden', 'true');
+        }
+    });
 });
