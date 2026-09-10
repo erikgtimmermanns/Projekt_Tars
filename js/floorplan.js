@@ -192,7 +192,7 @@ function renderFloorplanMarkers(floorIndex) {
     (async () => {
         const contentBox = await getContentBox(image, fp);
 
-        fp.hotspots.forEach(h => {
+        fp.hotspots.filter(h => h.type === 'elevator' || h.type === 'restroom').forEach(h => {
         // inside async loop now
         const marker = document.createElement('button');
         marker.className = 'fp-marker';
@@ -491,14 +491,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    const downloadPatchBtn = document.getElementById('download-hotspots-source');
-    if (downloadPatchBtn) {
-        downloadPatchBtn.addEventListener('click', () => {
-            downloadHotspotsPatch();
-            downloadPatchBtn.textContent = 'Erstellt';
-            setTimeout(() => downloadPatchBtn.textContent = 'Download Patch', 1200);
-        });
-    }
+    // download patch button removed per request
 
     // close info panel when clicking outside
     document.addEventListener('click', (ev) => {
