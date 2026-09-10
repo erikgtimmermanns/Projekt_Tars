@@ -61,13 +61,14 @@ function updateVisitorPanel() {
         return;
     }
 
-    const nameValue = String(
-        window.visitorName || ""
-    ).trim();
+    const visitorName =
+        String(
+            window.visitorName || ""
+        ).trim();
 
-    if (nameValue.length > 0) {
+    if (visitorName.length > 0) {
         nameTarget.textContent =
-            nameValue;
+            visitorName;
 
         panel.hidden = false;
     } else {
@@ -133,7 +134,7 @@ function getWeatherDescription(code) {
 
 
 /* =========================================
-   WETTERKLASSE ERMITTELN
+   PASSENDE CSS-KLASSE BESTIMMEN
 ========================================= */
 
 function getWeatherClass(code) {
@@ -173,7 +174,7 @@ function getWeatherClass(code) {
 
 
 /* =========================================
-   WETTERANIMATION AKTUALISIEREN
+   ANIMATIONSKLASSE SETZEN
 ========================================= */
 
 function updateWeatherAnimation(code) {
@@ -184,7 +185,7 @@ function updateWeatherAnimation(code) {
 
     if (!weatherCard) {
         console.error(
-            "#weather-card wurde nicht gefunden."
+            "Das Element #weather-card wurde nicht gefunden."
         );
 
         return;
@@ -204,22 +205,22 @@ function updateWeatherAnimation(code) {
         ...weatherClasses
     );
 
-    const newClass =
+    const currentWeatherClass =
         getWeatherClass(code);
 
     weatherCard.classList.add(
-        newClass
+        currentWeatherClass
     );
 
     console.log(
-        "Wetteranimation:",
-        newClass
+        "Aktive Wetterklasse:",
+        currentWeatherClass
     );
 }
 
 
 /* =========================================
-   WETTERDATEN LADEN
+   WETTERDATEN VON OPEN-METEO LADEN
 ========================================= */
 
 async function loadWeather() {
@@ -260,12 +261,17 @@ async function loadWeather() {
             "weather_code" +
             "&timezone=Europe%2FBerlin";
 
-        const response = await fetch(
-            apiUrl,
-            {
-                cache: "no-store"
-            }
+        console.log(
+            "Wetterdaten werden geladen ..."
         );
+
+        const response =
+            await fetch(
+                apiUrl,
+                {
+                    cache: "no-store"
+                }
+            );
 
         if (!response.ok) {
             throw new Error(
@@ -303,6 +309,13 @@ async function loadWeather() {
                 ) * 10
             ) / 10;
 
+        const roundedHumidity =
+            Math.round(
+                Number(
+                    current.relative_humidity_2m
+                )
+            );
+
         const roundedWind =
             Math.round(
                 Number(
@@ -328,7 +341,7 @@ async function loadWeather() {
 
         if (humidity) {
             humidity.textContent =
-                current.relative_humidity_2m +
+                roundedHumidity +
                 "%";
         }
 
@@ -345,18 +358,23 @@ async function loadWeather() {
         console.log(
             "Wetterdaten erfolgreich geladen:",
             {
-                code: weatherCode,
-                animation:
+                weatherCode:
+                    weatherCode,
+
+                weatherClass:
                     getWeatherClass(
                         weatherCode
                     ),
+
                 description:
                     weather[1],
+
                 temperature:
                     roundedTemperature,
+
                 humidity:
-                    current
-                        .relative_humidity_2m,
+                    roundedHumidity,
+
                 wind:
                     roundedWind
             }
@@ -393,27 +411,82 @@ async function loadWeather() {
                 "-- km/h";
         }
 
-        const weatherCard =
-            document.getElementById(
-                "weather-card"
-            );
-
-        if (weatherCard) {
-            weatherCard.classList.remove(
-                "weather-sunny",
-                "weather-cloudy",
-                "weather-rain",
-                "weather-snow",
-                "weather-fog",
-                "weather-thunder"
-            );
-
-            weatherCard.classList.add(
-                "weather-default"
-            );
-        }
+        updateWeatherAnimation(-1);
     }
 }
+
+
+/* =========================================
+   OPTIONALER TESTMODUS
+========================================= */
+
+/*
+ * Diese Funktion kannst du in der
+ * Browser-Konsole aufrufen.
+ *
+ * Beispiele:
+ *
+ * testWeather(0);  Sonne
+ * testWeather(3);  Wolken
+ * testWeather(45); Nebel
+ * testWeather(61); Regen
+ * testWeather(71); Schnee
+ * testWeather(95); Gewitter
+ */
+
+function testWeather(code) {
+    const weatherIcon =
+        document.getElementById(
+            "weather-icon"
+        );
+
+    const weatherDescription =
+        document.getElementById(
+            "weather-description"
+        );
+
+    const weather =
+        getWeatherDescription(
+            Number(code)
+        );
+
+    if (weatherIcon) {
+        weatherIcon.textContent =
+            weather[0];
+    }
+
+    if (weatherDescription) {
+        weatherDescription.textContent =
+            weather[1] +
+            " · Testmodus";
+    }
+
+    updateWeatherAnimation(
+        Number(code)
+    );
+
+    console.log(
+        "Wetter-Test gestartet:",
+        {
+            code: Number(code),
+            class:
+                getWeatherClass(
+                    Number(code)
+                ),
+            description:
+                weather[1]
+        }
+    );
+}
+
+
+/* Für Tests über die Browser-Konsole */
+
+window.testWeather =
+    testWeather;
+
+window.loadWeather =
+    loadWeather;
 
 
 /* =========================================
