@@ -4,12 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
   <meta name="color-scheme" content="light">
-  <link rel="stylesheet" href="./css/style.css">
+  <link rel="stylesheet" href="./css/kiosk/style.css">
   <title>Willkommen | Computacenter Düsseldorf</title>
+
   <!-- Google Font: Albert Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Single Entry Point --> 
+  <script type="module" src="./js/kiosk/app.js"></script>
+
 </head>
 <body>
   <main class="screen">
@@ -55,7 +61,7 @@
     <section class="room-plan" aria-label="Raumplan">
       <div class="plan-header">Raumplan</div>
       <div class="plan-stage">
-        <img id="floorplan-image" src="./assets/floorplans/Raumplan_Erdgeschoss.svg" alt="Raumplan Erdgeschoss" />
+        <img id="floorplan-image" src="./assets/floorplans/Raumplan_Erdgeschoss.png" alt="Raumplan Erdgeschoss" />
         <div id="floorplan-name" class="plan-name">Erdgeschoss</div>
       </div>
     </section>
@@ -153,12 +159,6 @@
       <span class="status">Bitte melden Sie sich am Empfang an</span>
     </footer>
   </main>
-
-  <script src="script.js"></script>
-  <script src="js/welcome.js"></script>
-  <script src="js/facts.js"></script>
-  <script src="js/floorplan.js"></script>
-  <script src="./js/script.js"></script>
 </body>
 
 </html>

@@ -15,7 +15,7 @@ const facts = [
 
 let currentFact = 0;
 
-function rotateFact() {
+export function rotateFact() {
 
     const factElement =
         document.getElementById(

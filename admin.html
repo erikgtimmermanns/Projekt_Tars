@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visitor Admin</title>
+  <link rel="stylesheet" href="./css/admin/style.css">
+</head>
+<body>
+  <div class="admin-shell">
+    <div class="admin-card">
+      <div class="panel-header">
+        <div class="brand">Computacenter Visitor Admin</div>
+        <div class="header-actions">
+          <span class="status-pill" id="auth-status">Nicht angemeldet</span>
+          <button class="logout-btn danger-btn" id="logoutButton" type="button" style="display: none;">Abmelden</button>
+        </div>
+      </div>
+
+      <section id="authScreen" class="auth-screen active">
+        <div class="auth-layout">
+          <div class="info-panel">
+            <h2>Besucherverwaltung</h2>
+            <p>Verwalten Sie zentrale Besucherinformationen für die Lobbyanzeige und laden Sie optional ein Bild für den Willkommen-Bereich hoch.</p>
+            <ul class="feature-list">
+              <li>Login mit Supabase Auth</li>
+              <li>Passwortschutz für die Adminseite</li>
+              <li>Upload von Bilddateien</li>
+              <li>Nur gültige Dateitypen zulassen</li>
+            </ul>
+          </div>
+
+          <div class="auth-form">
+            <div class="auth-tabs">
+              <button class="auth-tab active" type="button" data-mode="login">Login</button>
+              <button class="auth-tab" type="button" data-mode="signup">Neues Konto</button>
+            </div>
+
+            <form id="authForm" class="form-grid">
+              <div class="field">
+                <label for="email">E-Mail</label>
+                <input id="email" type="email" name="email" placeholder="name@firma.de" required>
+              </div>
+
+              <div class="field">
+                <label for="password">Passwort</label>
+                <input id="password" type="password" name="password" placeholder="Mindestens 6 Zeichen" required>
+              </div>
+
+              <div class="field" id="confirmField" style="display: none;">
+                <label for="confirmPassword">Passwort bestätigen</label>
+                <input id="confirmPassword" type="password" name="confirmPassword" placeholder="Passwort erneut eingeben">
+              </div>
+
+              <div class="helper-row">
+                <span id="formModeText">Sie haben noch kein Konto?</span>
+                <a href="#" id="toggleModeLink">Registrieren</a>
+              </div>
+
+              <div id="authMessage" class="inline-message"></div>
+
+              <button class="primary-btn" id="submitAuthBtn" type="submit">Anmelden</button>
+            </form>
+
+            <div style="margin-top: 18px; text-align: center;">
+              <a href="#" id="resetPasswordLink">Passwort vergessen?</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="adminScreen" class="admin-screen">
+        <div class="admin-grid">
+          <div class="card">
+            <h3>Besucher konfigurieren</h3>
+
+            <form id="visitorForm" class="visitor-form">
+              <div class="field">
+                <label for="visitorName">Besuchername</label>
+                <input id="visitorName" type="text" placeholder="z. B. Max Mustermann" required>
+              </div>
+
+              <div class="field">
+                <label for="visitorImageFile">Bild hochladen</label>
+                <div id="uploadDropZone" class="upload-drop" tabindex="0" role="button" aria-label="Bild hochladen">
+                  <div>
+                    <div style="font-size: 2rem; margin-bottom: 8px;">🖼️</div>
+                    <div><strong>Bild hier ablegen</strong></div>
+                    <div class="file-meta">Erlaubt: PNG, JPG, JPEG, WEBP, SVG</div>
+                  </div>
+                </div>
+                <input id="visitorImageFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden>
+              </div>
+
+              <div id="uploadMessage" class="notice-box"></div>
+
+              <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <button class="primary-btn" type="submit">Besucher speichern</button>
+                <button class="secondary-btn" type="button" id="previewButton">Vorschau</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="card preview-card">
+            <h3>Vorschau auf dem Kiosk</h3>
+            <div id="previewBox" class="preview-box empty">
+              Noch keine Vorschau vorhanden
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./config.js"></script>
+  <script src="./admin.js"></script>
+</body>
+</html>

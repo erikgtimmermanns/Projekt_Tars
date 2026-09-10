@@ -24,7 +24,7 @@ const floorplans = [
 
 let currentFloor = 0;
 
-function rotateFloorplan() {
+export function rotateFloorplan() {
 
     const image =
         document.getElementById(
