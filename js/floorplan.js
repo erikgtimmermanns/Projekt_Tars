@@ -296,6 +296,23 @@ function enableMarkerDragging(overlay, image) {
     if (!overlay) return;
 
     let dragging = null;
+    let autosaveTimer = null;
+
+    function scheduleAutosave() {
+        if (autosaveTimer) clearTimeout(autosaveTimer);
+        autosaveTimer = setTimeout(() => {
+            try {
+                const ok = saveHotspotsToLocal();
+                const saveBtn = document.getElementById('save-hotspots');
+                if (saveBtn) {
+                    saveBtn.textContent = ok ? 'Gespeichert' : 'Fehler';
+                    setTimeout(() => saveBtn.textContent = 'Positionen speichern', 1200);
+                }
+            } catch (e) {
+                console.error('Auto-save failed', e);
+            }
+        }, 800);
+    }
 
     const onPointerMove = (ev) => {
         if (!dragging) return;
@@ -330,6 +347,8 @@ function enableMarkerDragging(overlay, image) {
                 if (overlay._selectedHotspotId === id) {
                     updateHotspotEditorDisplay(hh);
                 }
+                // schedule autosave so user doesn't need to press save
+                scheduleAutosave();
             }
         }
     };
@@ -338,6 +357,21 @@ function enableMarkerDragging(overlay, image) {
         if (!dragging) return;
         dragging.classList.remove('dragging');
         try { dragging.releasePointerCapture(ev.pointerId); } catch (e) {}
+
+        // clear pending autosave and save immediately
+        if (autosaveTimer) {
+            clearTimeout(autosaveTimer);
+            autosaveTimer = null;
+        }
+        try {
+            const ok = saveHotspotsToLocal();
+            const saveBtn = document.getElementById('save-hotspots');
+            if (saveBtn) {
+                saveBtn.textContent = ok ? 'Gespeichert' : 'Fehler';
+                setTimeout(() => saveBtn.textContent = 'Positionen speichern', 1200);
+            }
+        } catch (e) { console.error('Save on pointerup failed', e); }
+
         dragging = null;
         document.removeEventListener('pointermove', onPointerMove);
         document.removeEventListener('pointerup', onPointerUp);
