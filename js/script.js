@@ -1,31 +1,25 @@
 "use strict";
 
-console.log(
-    "script.js wurde erfolgreich geladen"
-);
+console.log("script.js wurde erfolgreich geladen");
 
 
 /* =========================================
    DATUM UND UHRZEIT
 ========================================= */
 
-function updateDateTime() {*    const now =
-        new Date()*
+function updateDateTime() {
+    const now = new Date();
 
     const dateElement =
-        *ocument.getElementById(
-          * "date"
-        );
+        document.getElementById("date");
 
-    const time*lement =
-        document.getEleme*tById(
-            "time"
-        *;
+    const timeElement =
+        document.getElementById("time");
 
     if (dateElement) {
-        *ateElement.textContent =
-         *  new Intl.DateTimeFormat(
-       *        "de-DE",
+        dateElement.textContent =
+            new Intl.DateTimeFormat(
+                "de-DE",
                 {
                     weekday: "long",
                     day: "2-digit",
@@ -43,8 +37,7 @@ function updateDateTime() {*    const now =
                     hour: "2-digit",
                     minute: "2-digit"
                 }
-            ).format(now) +
-            " Uhr";
+            ).format(now) + " Uhr";
     }
 }
 
@@ -53,9 +46,10 @@ function updateDateTime() {*    const now =
    BESUCHERANZEIGE
 ========================================= */
 
-function updateVisitorPanel() {*    const panel =
-        document*getElementById(
-            "visit*r-panel"
+function updateVisitorPanel() {
+    const panel =
+        document.getElementById(
+            "visitor-panel"
         );
 
     const nameTarget =
@@ -90,48 +84,35 @@ function updateVisitorPanel() {*    const panel =
    WETTERBESCHREIBUNGEN
 ========================================= */
 
-function getWeatherDescript*on(code) {
-    const weatherCodes * {
+function getWeatherDescription(code) {
+    const weatherCodes = {
         0: ["☀️", "Sonnig"],
 
- *      1: ["🌤️", "Leicht bewölkt"]*
+        1: ["🌤️", "Leicht bewölkt"],
         2: ["⛅", "Teilweise bewölkt"],
-        3: ["☁️", "Bewölkt"],*
+        3: ["☁️", "Bewölkt"],
+
         45: ["🌫️", "Nebel"],
-   *    48: ["🌫️", "Gefrierender Nebel"],
+        48: ["🌫️", "Gefrierender Nebel"],
 
         51: ["🌦️", "Leichter Nieselregen"],
         53: ["🌦️", "Nieselregen"],
         55: ["🌧️", "Starker Nieselregen"],
 
-        *6: [
-            "🌧️",
-            "Gefrierender Nieselregen"
-        ],
+        56: ["🌧️", "Gefrierender Nieselregen"],
+        57: ["🌧️", "Starker gefrierender Nieselregen"],
 
-        57: [
-            "🌧️",
-            "Starker gefrierender Nieselregen"
-        ],
+        61: ["🌧️", "Leichter Regen"],
+        63: ["🌧️", "Regen"],
+        65: ["🌧️", "Starker Regen"],
 
-       *61: ["🌧️", "Leichter Regen"],
-   *    63: ["🌧️", "Regen"],
-        *5: ["🌧️", "Starker Regen"],
-
-    *   66: [
-            "🌧️",
-            "Gefrierender Regen"
-        ],
-
-        67: [
-            "🌧️",
-            "Starker gefrierender Regen"
-        ],
+        66: ["🌧️", "Gefrierender Regen"],
+        67: ["🌧️", "Starker gefrierender Regen"],
 
         71: ["❄️", "Leichter Schneefall"],
-       *73: ["❄️", "Schneefall"],
-        *5: ["❄️", "Starker Schneefall"],
- *      77: ["❄️", "Schneegriesel"],
+        73: ["❄️", "Schneefall"],
+        75: ["❄️", "Starker Schneefall"],
+        77: ["❄️", "Schneegriesel"],
 
         80: ["🌦️", "Leichte Regenschauer"],
         81: ["🌧️", "Regenschauer"],
@@ -142,11 +123,7 @@ function getWeatherDescript*on(code) {
 
         95: ["⛈️", "Gewitter"],
         96: ["⛈️", "Gewitter mit Hagel"],
-
-        99: [
-            "⛈️",
-            "Starkes Gewitter mit Hagel"
-        ]
+        99: ["⛈️", "Starkes Gewitter mit Hagel"]
     };
 
     return weatherCodes[code] || [
@@ -157,52 +134,38 @@ function getWeatherDescript*on(code) {
 
 
 /* =========================================
-   PASSENDE WETTERKLASSE
+   PASSENDE CSS-KLASSE BESTIMMEN
 ========================================= */
 
-function getWeatherClass(c*de) {
+function getWeatherClass(code) {
     if (code === 0) {
-      * return "weather-sunny";
+        return "weather-sunny";
     }
 
-  * if (code >= 1 && code <= 3) {
-   *    return "weather-cloudy";
-    }*
-    if (
-        code === 45 ||
- *      code === 48
-    ) {
-        *eturn "weather-fog";
+    if (code >= 1 && code <= 3) {
+        return "weather-cloudy";
+    }
+
+    if (code === 45 || code === 48) {
+        return "weather-fog";
     }
 
     if (
-        (
-            code >= 51 &&
-            code <= 67
-        ) ||
-        (
-            code >= 80 &&
-            code <= 82
-        )
+        (code >= 51 && code <= 67) ||
+        (code >= 80 && code <= 82)
     ) {
         return "weather-rain";
     }
 
     if (
-        (
-            code >= 71 &&
-            code <= 77
-        ) ||
+        (code >= 71 && code <= 77) ||
         code === 85 ||
         code === 86
     ) {
         return "weather-snow";
     }
 
-    if (
-        code >= 95 &&
-        code <= 99
-    ) {
+    if (code >= 95 && code <= 99) {
         return "weather-thunder";
     }
 
@@ -211,19 +174,19 @@ function getWeatherClass(c*de) {
 
 
 /* =========================================
-   WETTERANIMATION AKTUALISIEREN
+   ANIMATIONSKLASSE SETZEN
 ========================================= */
 
-function updateWeatherA*imation(code) {
-    const weatherC*rd =
-        document.getElementBy*d(
+function updateWeatherAnimation(code) {
+    const weatherCard =
+        document.getElementById(
             "weather-card"
-    *   );
+        );
 
     if (!weatherCard) {
-   *    console.error(
-            "#w*ather-card wurde nicht gefunden."
-*       );
+        console.error(
+            "Das Element #weather-card wurde nicht gefunden."
+        );
 
         return;
     }
@@ -242,185 +205,190 @@ function updateWeatherA*imation(code) {
         ...weatherClasses
     );
 
-    const newClass =
-        getWeatherClass(
-            Number(code)
-        );
+    const currentWeatherClass =
+        getWeatherClass(code);
 
     weatherCard.classList.add(
-        newClass
+        currentWeatherClass
     );
 
     console.log(
         "Aktive Wetterklasse:",
-        newClass
+        currentWeatherClass
     );
 }
 
 
 /* =========================================
-   WETTERDATEN LADEN
+   WETTERDATEN VON OPEN-METEO LADEN
 ========================================= */
 
-async function loadWeather() {*    const weatherIcon =
-        do*ument.getElementById(
-            *weather-icon"
+async function loadWeather() {
+    const weatherIcon =
+        document.getElementById(
+            "weather-icon"
         );
 
-    cons* temperature =
-        document.ge*ElementById(
-            "temperat*re"
+    const temperature =
+        document.getElementById(
+            "temperature"
         );
 
-    const weatherD*scription =
-        document.getEl*mentById(
-            "weather-des*ription"
+    const weatherDescription =
+        document.getElementById(
+            "weather-description"
         );
 
-    const hum*dity =
-        document.getElement*yId(
+    const humidity =
+        document.getElementById(
             "humidity"
-      * );
+        );
 
     const wind =
-        docu*ent.getElementById(
-            "w*nd"
+        document.getElementById(
+            "wind"
         );
 
     try {
-        *onst apiUrl =
+        const apiUrl =
             "https://api.open-meteo.com/v1/forecast" +
-*           "?latitude=51.2277" +
- *          "&longitude=6.7735" +
-  *         "&current=" +
-           *"temperature_2m," +
-            "r*lative_humidity_2m," +
-           *"wind_speed_10m," +
-            "w*ather_code" +
-            "&timezo*e=Europe%2FBerlin";
-
-        const*response =
-            await fetch*
-                apiUrl,
-         *      {
-                    cache:*                        "no-store"*                }
-            );
-
-*       if (!response.ok) {
-       *    throw new Error(
-             *  "HTTP-Fehler: " +
-              * response.status
-            );
-  *     }
-
-        const data =
-     *      await response.json();
-
-    *   if (!data.current) {
-          * throw new Error(
-                *Keine aktuellen Wetterdaten vorhan*en."
-            );
-        }
-
-   *    const current =
-            da*a.current;
-
-        const weatherC*de =
-            Number(
-         *      current.weather_code
-       *    );
-
-        const weather =
-  *         getWeatherDescription(
-  *             weatherCode
-         *  );
-
-        const roundedTempera*ure =
-            Math.round(
-    *           Number(
-               *    current.temperature_2m
-       *        ) * 10
-            ) / 10;*
-        const roundedHumidity =
- *          Math.round(
-            *   Number(
-                    cur*ent
-                        .relat*ve_humidity_2m
-                )
- *          );
-
-        const rounde*Wind =
-            Math.round(
-   *            Number(
-              *     current.wind_speed_10m
-      *         ) * 10
-            ) / 10*
-
-        if (weatherIcon) {
-     *      weatherIcon.textContent =
-  *             weather[0];
-        }*
-        if (temperature) {
-      *     temperature.textContent =
-   *            roundedTemperature +
- *              "°C";
-        }
-
-   *    if (weatherDescription) {
-    *       weatherDescription.textCont*nt =
-                weather[1];
- *      }
-
-        if (humidity) {
- *          humidity.textContent =
- *              roundedHumidity +
-  *             "%";
-        }
-
-     *  if (wind) {
-            wind.tex*Content =
-                roundedW*nd +
-                " km/h";
-    *   }
-
-        updateWeatherAnimati*n(
-            weatherCode
-       *);
+            "?latitude=51.2277" +
+            "&longitude=6.7735" +
+            "&current=" +
+            "temperature_2m," +
+            "relative_humidity_2m," +
+            "wind_speed_10m," +
+            "weather_code" +
+            "&timezone=Europe%2FBerlin";
 
         console.log(
-         *  "Wetterdaten geladen:",
-        *   {
-                code:
-       *            weatherCode,
-
-        *       description:
-              *     weather[1],
-
-                *eatherClass:
-                    g*tWeatherClass(
-                   *    weatherCode
-                  * ),
-
-                temperature:
-*                   roundedTemperat*re,
-
-                humidity:
-   *                roundedHumidity,
-
-*               wind:
-             *      roundedWind
-            }
-  *     );
-
-    } catch (error) {
-   *    console.error(
-            "Fe*ler beim Laden der Wetterdaten:",
-*           error
+            "Wetterdaten werden geladen ..."
         );
 
-     *  if (weatherIcon) {
-            w*atherIcon.textContent =
-          *     "⚠️";
+        const response =
+            await fetch(
+                apiUrl,
+                {
+                    cache: "no-store"
+                }
+            );
+
+        if (!response.ok) {
+            throw new Error(
+                "HTTP-Fehler: " +
+                response.status
+            );
+        }
+
+        const data =
+            await response.json();
+
+        if (!data.current) {
+            throw new Error(
+                "Keine aktuellen Wetterdaten erhalten."
+            );
+        }
+
+        const current =
+            data.current;
+
+        const weatherCode =
+            Number(
+                current.weather_code
+            );
+
+        const weather =
+            getWeatherDescription(
+                weatherCode
+            );
+
+        const roundedTemperature =
+            Math.round(
+                Number(
+                    current.temperature_2m
+                ) * 10
+            ) / 10;
+
+        const roundedHumidity =
+            Math.round(
+                Number(
+                    current.relative_humidity_2m
+                )
+            );
+
+        const roundedWind =
+            Math.round(
+                Number(
+                    current.wind_speed_10m
+                ) * 10
+            ) / 10;
+
+        if (weatherIcon) {
+            weatherIcon.textContent =
+                weather[0];
+        }
+
+        if (temperature) {
+            temperature.textContent =
+                roundedTemperature +
+                "°C";
+        }
+
+        if (weatherDescription) {
+            weatherDescription.textContent =
+                weather[1];
+        }
+
+        if (humidity) {
+            humidity.textContent =
+                roundedHumidity +
+                "%";
+        }
+
+        if (wind) {
+            wind.textContent =
+                roundedWind +
+                " km/h";
+        }
+
+        updateWeatherAnimation(
+            weatherCode
+        );
+
+        console.log(
+            "Wetterdaten erfolgreich geladen:",
+            {
+                weatherCode:
+                    weatherCode,
+
+                weatherClass:
+                    getWeatherClass(
+                        weatherCode
+                    ),
+
+                description:
+                    weather[1],
+
+                temperature:
+                    roundedTemperature,
+
+                humidity:
+                    roundedHumidity,
+
+                wind:
+                    roundedWind
+            }
+        );
+
+    } catch (error) {
+        console.error(
+            "Fehler beim Laden der Wetterdaten:",
+            error
+        );
+
+        if (weatherIcon) {
+            weatherIcon.textContent =
+                "⚠️";
         }
 
         if (temperature) {
@@ -443,37 +411,47 @@ async function loadWeather() {*    const weatherIcon =
                 "-- km/h";
         }
 
-        updateWeatherAnimation(
-            -1
-        );
+        updateWeatherAnimation(-1);
     }
 }
 
 
 /* =========================================
-   WETTER-TESTFUNKTION
+   OPTIONALER TESTMODUS
 ========================================= */
 
-function testWeather(code) {*    const numericCode =
-        Nu*ber(code);
+/*
+ * Diese Funktion kannst du in der
+ * Browser-Konsole aufrufen.
+ *
+ * Beispiele:
+ *
+ * testWeather(0);  Sonne
+ * testWeather(3);  Wolken
+ * testWeather(45); Nebel
+ * testWeather(61); Regen
+ * testWeather(71); Schnee
+ * testWeather(95); Gewitter
+ */
+
+function testWeather(code) {
+    const weatherIcon =
+        document.getElementById(
+            "weather-icon"
+        );
+
+    const weatherDescription =
+        document.getElementById(
+            "weather-description"
+        );
 
     const weather =
-  *     getWeatherDescription(
-      *     numericCode
+        getWeatherDescription(
+            Number(code)
         );
 
-    c*nst weatherIcon =
-        document*getElementById(
-            "weath*r-icon"
-        );
-
-    const weat*erDescription =
-        document.g*tElementById(
-            "weather*description"
-        );
-
-    if (w*atherIcon) {
-        weatherIcon.t*xtContent =
+    if (weatherIcon) {
+        weatherIcon.textContent =
             weather[0];
     }
 
@@ -484,20 +462,17 @@ function testWeather(code) {*    const numericCode =
     }
 
     updateWeatherAnimation(
-        numericCode
+        Number(code)
     );
 
     console.log(
-        "Wetter-Test:",
+        "Wetter-Test gestartet:",
         {
-            code:
-                numericCode,
-
-            weatherClass:
+            code: Number(code),
+            class:
                 getWeatherClass(
-                    numericCode
+                    Number(code)
                 ),
-
             description:
                 weather[1]
         }
@@ -505,7 +480,7 @@ function testWeather(code) {*    const numericCode =
 }
 
 
-/* Funktionen für die Browser-Konsole */
+/* Für Tests über die Browser-Konsole */
 
 window.testWeather =
     testWeather;
@@ -538,10 +513,7 @@ function startDashboard() {
     );
 }
 
-if (
-    document.readyState ===
-    "loading"
-) {
+if (document.readyState === "loading") {
     document.addEventListener(
         "DOMContentLoaded",
         startDashboard
