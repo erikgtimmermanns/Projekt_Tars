@@ -42,6 +42,34 @@ const floorplans = [
 
 let currentFloor = 0;
 
+// Ensure every floorplan has at least one hotspot for each highlight type
+function ensureAllHotspotTypes(fp) {
+    if (!fp || !fp.hotspots) return;
+    const types = ['elevator','restroom','stairs','exit','info','meeting','important'];
+    const labels = {
+        elevator: 'Aufzug',
+        restroom: 'Toiletten',
+        stairs: 'Treppenhaus',
+        exit: 'Notausgang',
+        info: 'Empfang',
+        meeting: 'Besprechung',
+        important: 'Wichtig'
+    };
+
+    const existingTypes = new Set(fp.hotspots.map(h => h.type));
+    // Place missing icons along the right edge with vertical spacing
+    let idx = 0;
+    types.forEach((t) => {
+        if (!existingTypes.has(t)) {
+            const id = `placeholder-${t}-${Math.random().toString(36).slice(2,7)}`;
+            const x = 88; // percent inside content box
+            const y = 8 + (idx * 12); // staggered vertically
+            fp.hotspots.push({ id, label: labels[t] + ' (Platzhalter)', x, y, type: t });
+            idx++;
+        }
+    });
+}
+
 function rotateFloorplan() {
 
     const image =
