@@ -62,7 +62,29 @@
       <div class="plan-header">Raumplan</div>
       <div class="plan-stage">
         <img id="floorplan-image" src="./assets/floorplans/Raumplan_Erdgeschoss.png" alt="Raumplan Erdgeschoss" />
+
+        <!-- Overlay für interaktive Markierungen -->
+        <div id="floorplan-overlay" class="floorplan-overlay" aria-hidden="false"></div>
+
         <div id="floorplan-name" class="plan-name">Erdgeschoss</div>
+
+        <!-- Toggle-Button, um Highlights an/auszuschalten -->
+        <button id="toggle-highlights" class="btn-small" aria-pressed="true">Highlights</button>
+
+        <!-- Legende und Info-Panel -->
+        <div id="fp-legend" class="fp-legend" aria-hidden="false">
+          <div class="legend-item"><img src="./assets/icons/elevator.svg" alt="Aufzug"> Aufzug</div>
+          <div class="legend-item"><img src="./assets/icons/stairs.svg" alt="Treppenhaus"> Treppenhaus</div>
+          <div class="legend-item"><img src="./assets/icons/restroom.svg" alt="Toilette"> Toiletten</div>
+          <div class="legend-item"><img src="./assets/icons/exit.svg" alt="Notausgang"> Notausgang</div>
+        </div>
+
+        <div id="fp-info" class="fp-info" aria-hidden="true"></div>
+        
+        <!-- Save / Export -->
+        <div style="position:absolute; right:18px; top:56px; z-index:9;">
+          <button id="save-hotspots" class="btn-small">Positionen speichern</button>
+        </div>
       </div>
     </section>
 
