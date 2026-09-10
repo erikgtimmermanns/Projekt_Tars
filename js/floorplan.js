@@ -132,15 +132,81 @@ function renderFloorplanMarkers(floorIndex) {
     const fp = floorplans[floorIndex];
     if (!fp || !fp.hotspots) return;
 
-    fp.hotspots.forEach(h => {
+    // compute content bounding box (non-transparent pixels) for current image
+    // cache result on floorplan object to avoid repeated work
+    async function getContentBox(img, fp) {
+        if (fp._contentBox) return fp._contentBox;
+
+        const w = img.naturalWidth;
+        const h = img.naturalHeight;
+
+        if (!w || !h) {
+            // fallback: whole image
+            fp._contentBox = { x: 0, y: 0, width: w || 1, height: h || 1 };
+            return fp._contentBox;
+        }
+
+        try {
+            const canvas = document.createElement('canvas');
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, w, h);
+            const data = ctx.getImageData(0, 0, w, h).data;
+
+            let minX = w, minY = h, maxX = 0, maxY = 0;
+            let found = false;
+            for (let y = 0; y < h; y += 2) { // sample every 2 rows for speed
+                for (let x = 0; x < w; x += 2) {
+                    const idx = (y * w + x) * 4;
+                    const alpha = data[idx + 3];
+                    if (alpha > 10) {
+                        found = true;
+                        if (x < minX) minX = x;
+                        if (y < minY) minY = y;
+                        if (x > maxX) maxX = x;
+                        if (y > maxY) maxY = y;
+                    }
+                }
+            }
+
+            if (!found) {
+                fp._contentBox = { x: 0, y: 0, width: w, height: h };
+            } else {
+                // expand bounds a bit for safety
+                minX = Math.max(0, minX - 2);
+                minY = Math.max(0, minY - 2);
+                maxX = Math.min(w - 1, maxX + 2);
+                maxY = Math.min(h - 1, maxY + 2);
+                fp._contentBox = { x: minX, y: minY, width: maxX - minX + 1, height: maxY - minY + 1 };
+            }
+
+            return fp._contentBox;
+        } catch (e) {
+            // if any error (CORS, etc.) fall back to full image
+            fp._contentBox = { x: 0, y: 0, width: w, height: h };
+            return fp._contentBox;
+        }
+    }
+
+    (async () => {
+        const contentBox = await getContentBox(image, fp);
+
+        fp.hotspots.forEach(h => {
+        // inside async loop now
         const marker = document.createElement('button');
         marker.className = 'fp-marker';
         marker.type = 'button';
         marker.setAttribute('aria-label', h.label);
 
-        // position in pixels relative to overlay
-        const px = (h.x / 100) * imgRect.width;
-        const py = (h.y / 100) * imgRect.height;
+        // position mapping: interpret hotspot x/y as percent inside the image CONTENT BOX
+        // compute natural coordinate inside full image
+        const natX = contentBox.x + (h.x / 100) * contentBox.width;
+        const natY = contentBox.y + (h.y / 100) * contentBox.height;
+
+        // map natural coordinate to displayed image pixel
+        const px = (natX / image.naturalWidth) * imgRect.width;
+        const py = (natY / image.naturalHeight) * imgRect.height;
 
         marker.style.left = px + 'px';
         marker.style.top = py + 'px';
@@ -185,7 +251,8 @@ function renderFloorplanMarkers(floorIndex) {
         });
 
         overlay.appendChild(marker);
-    });
+        });
+    })();
 }
 
 // Initial render
@@ -199,6 +266,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (image) {
+        // try load persisted hotspots
+        loadHotspotsFromLocal();
         if (image.complete) {
             safeRender();
         } else {
@@ -225,6 +294,23 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Save / Export buttons
+    const saveBtn = document.getElementById('save-hotspots');
+    const exportBtn = document.getElementById('export-hotspots');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', () => {
+            const ok = saveHotspotsToLocal();
+            saveBtn.textContent = ok ? 'Gespeichert' : 'Fehler';
+            setTimeout(() => saveBtn.textContent = 'Positionen speichern', 1200);
+        });
+    }
+
+    if (exportBtn) {
+        exportBtn.addEventListener('click', () => {
+            exportHotspots();
+        });
+    }
+
     // close info panel when clicking outside
     document.addEventListener('click', (ev) => {
         const info = document.getElementById('fp-info');
@@ -236,5 +322,112 @@ document.addEventListener('DOMContentLoaded', () => {
             info.style.display = 'none';
             info.setAttribute('aria-hidden', 'true');
         }
+
+
+                // ----------------------------
+                // Dragging + Persistence
+                // ----------------------------
+
+                function enableMarkerDragging(overlay, image) {
+                    if (!overlay) return;
+
+                    let dragging = null;
+                    let startX = 0, startY = 0;
+
+                    const onPointerMove = (ev) => {
+                        if (!dragging) return;
+                        const rect = overlay.getBoundingClientRect();
+                        const x = ev.clientX - rect.left;
+                        const y = ev.clientY - rect.top;
+                        const w = rect.width;
+                        const h = rect.height;
+
+                        const clampedX = Math.max(0, Math.min(w, x));
+                        const clampedY = Math.max(0, Math.min(h, y));
+
+                        dragging.style.left = clampedX + 'px';
+                        dragging.style.top = clampedY + 'px';
+
+                        // update associated hotspot in fp data
+                        const fp = overlay._fp;
+                        const contentBox = overlay._contentBox;
+                        if (fp && contentBox) {
+                            const natX = (clampedX / w) * image.naturalWidth;
+                            const natY = (clampedY / h) * image.naturalHeight;
+
+                            const newPercentX = ((natX - contentBox.x) / contentBox.width) * 100;
+                            const newPercentY = ((natY - contentBox.y) / contentBox.height) * 100;
+
+                            const id = dragging.dataset.hotspotId;
+                            const hh = fp.hotspots.find(z => z.id === id);
+                            if (hh) {
+                                hh.x = Math.max(0, Math.min(100, Number(newPercentX.toFixed(2))));
+                                hh.y = Math.max(0, Math.min(100, Number(newPercentY.toFixed(2))));
+                            }
+                        }
+                    };
+
+                    const onPointerUp = (ev) => {
+                        if (!dragging) return;
+                        dragging.classList.remove('dragging');
+                        try { dragging.releasePointerCapture(ev.pointerId); } catch (e) {}
+                        dragging = null;
+                        document.removeEventListener('pointermove', onPointerMove);
+                        document.removeEventListener('pointerup', onPointerUp);
+                    };
+
+                    overlay.querySelectorAll('.fp-marker').forEach(marker => {
+                        marker.addEventListener('pointerdown', (ev) => {
+                            ev.preventDefault();
+                            marker.setPointerCapture(ev.pointerId);
+                            dragging = marker;
+                            marker.classList.add('dragging');
+                            document.addEventListener('pointermove', onPointerMove);
+                            document.addEventListener('pointerup', onPointerUp);
+                        });
+                    });
+                }
+
+                function saveHotspotsToLocal() {
+                    try {
+                        const data = JSON.stringify(floorplans, null, 2);
+                        localStorage.setItem('floorplan_hotspots_v1', data);
+                        return true;
+                    } catch (e) {
+                        console.error('Saving hotspots failed', e);
+                        return false;
+                    }
+                }
+
+                function exportHotspots() {
+                    const data = JSON.stringify(floorplans, null, 2);
+                    const blob = new Blob([data], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'hotspots.json';
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                    URL.revokeObjectURL(url);
+                }
+
+                function loadHotspotsFromLocal() {
+                    try {
+                        const raw = localStorage.getItem('floorplan_hotspots_v1');
+                        if (!raw) return false;
+                        const parsed = JSON.parse(raw);
+                        // basic merge: replace hotspots arrays where present
+                        parsed.forEach((p, idx) => {
+                            if (p && p.hotspots && floorplans[idx]) {
+                                floorplans[idx].hotspots = p.hotspots;
+                            }
+                        });
+                        return true;
+                    } catch (e) {
+                        console.error('Loading hotspots failed', e);
+                        return false;
+                    }
+                }
     });
 });
