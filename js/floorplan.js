@@ -192,7 +192,10 @@ function renderFloorplanMarkers(floorIndex) {
     (async () => {
         const contentBox = await getContentBox(image, fp);
 
-        fp.hotspots.filter(h => h.type === 'elevator' || h.type === 'restroom').forEach(h => {
+        // render all hotspots (includes elevator, restroom, stairs, etc.)
+        overlay._fp = fp;
+        overlay._contentBox = contentBox;
+        fp.hotspots.forEach(h => {
         // inside async loop now
         const marker = document.createElement('button');
         marker.className = 'fp-marker';
@@ -226,6 +229,9 @@ function renderFloorplanMarkers(floorIndex) {
         img.loading = 'lazy';
         img.className = 'fp-marker-img';
 
+        // associate dataset id for dragging logic
+        marker.dataset.hotspotId = h.id;
+
         const label = document.createElement('span');
         label.className = 'fp-label';
         label.textContent = h.label;
@@ -248,6 +254,9 @@ function renderFloorplanMarkers(floorIndex) {
 
         overlay.appendChild(marker);
         });
+
+        // enable pointer dragging for newly rendered markers
+        enableMarkerDragging(overlay, image);
     })();
 }
 
@@ -476,7 +485,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Save / Export buttons
     const saveBtn = document.getElementById('save-hotspots');
-    const exportBtn = document.getElementById('export-hotspots');
     if (saveBtn) {
         saveBtn.addEventListener('click', () => {
             const ok = saveHotspotsToLocal();
@@ -485,11 +493,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    if (exportBtn) {
-        exportBtn.addEventListener('click', () => {
-            exportHotspots();
-        });
-    }
 
     // download patch button removed per request
 
