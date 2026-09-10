@@ -504,7 +504,6 @@ body {
 
     width: 100%;
 
-    /* Etwas kompakteres Panel */
     min-height: 110px;
 
     margin-top: 14px;
@@ -523,15 +522,22 @@ body {
         );
 
     box-shadow:
-        0 10px 20px
-        rgba(18,38,63,.06);
+        0 12px 28px rgba(18,38,63,.08),
+        inset 0 1px 0 rgba(255,255,255,.7);
 
     transition:
         background 1s ease,
-        box-shadow 1s ease;
+        box-shadow 1s ease,
+        transform 0.5s ease;
 
-    /* Optionales GIF als Hintergrund: setze --weather-gif in JS oder überschreibe per Klasse */
+    backdrop-filter: blur(2px);
+
     --weather-gif: none;
+}
+
+.weather:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 16px 32px rgba(18,38,63,.1), inset 0 1px 0 rgba(255,255,255,.85);
 }
 
 /* Inhalt */
@@ -617,6 +623,15 @@ body {
     transition: opacity 0.6s ease;
 }
 
+.weather::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.18), transparent 30%, rgba(11,33,61,0.04));
+    pointer-events: none;
+    z-index: 3;
+}
+
 /* Standard-Variablen für GIFs (Platzhalter - GIFs unter assets/gifs/ ablegen) */
 .weather-sunny { --weather-gif: none; }
 .weather-rain  { --weather-gif: none; }
@@ -645,6 +660,14 @@ body {
         radial-gradient(circle at 76% 22%, rgba(255,255,255,0.78) 0 10%, transparent 12%);
     opacity: 0.85;
     animation: cloudLayerMove 18s ease-in-out infinite alternate;
+}
+
+.weather-cloudy::after {
+    content: "";
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 42%;
+    background: linear-gradient(180deg, rgba(255,255,255,0), rgba(188, 208, 228, 0.18));
 }
 
 .weather-cloudy .weather-icon {
