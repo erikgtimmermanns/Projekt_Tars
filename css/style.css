@@ -336,6 +336,21 @@ body {
 
 .fp-marker img { width: 100%; height: 100%; object-fit: contain; display:block; }
 
+/* small action buttons */
+.small-action {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 6px 8px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.95);
+    border: 1px solid rgba(0,0,0,0.06);
+    font-size: 13px;
+}
+
+.fp-pos { font-weight:700; margin-top:8px; }
+.fp-nudge { display:flex; gap:6px; margin-top:8px; }
+.fp-nudge button { padding:6px 8px; border-radius:6px; }
+
 
 
 #floorplan-image {
