@@ -45,15 +45,13 @@ let currentFloor = 0;
 // Ensure every floorplan has at least one hotspot for each highlight type
 function ensureAllHotspotTypes(fp) {
     if (!fp || !fp.hotspots) return;
-    const types = ['elevator','restroom','stairs','exit','info','meeting','important'];
+    // Only ensure these four types are present on every floorplan
+    const types = ['elevator','restroom','stairs','exit'];
     const labels = {
         elevator: 'Aufzug',
         restroom: 'Toiletten',
         stairs: 'Treppenhaus',
-        exit: 'Notausgang',
-        info: 'Empfang',
-        meeting: 'Besprechung',
-        important: 'Wichtig'
+        exit: 'Notausgang'
     };
 
     const existingTypes = new Set(fp.hotspots.map(h => h.type));
@@ -220,10 +218,11 @@ function renderFloorplanMarkers(floorIndex) {
     (async () => {
         const contentBox = await getContentBox(image, fp);
 
-        // render all hotspots (includes elevator, restroom, stairs, etc.)
+        // Only render the four visible types on the plan
         overlay._fp = fp;
         overlay._contentBox = contentBox;
-        fp.hotspots.forEach(h => {
+        const visibleTypes = new Set(['elevator','restroom','stairs','exit']);
+        fp.hotspots.filter(h => visibleTypes.has(h.type)).forEach(h => {
         // inside async loop now
         const marker = document.createElement('button');
         marker.className = 'fp-marker';
