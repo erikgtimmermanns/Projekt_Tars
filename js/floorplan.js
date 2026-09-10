@@ -158,6 +158,9 @@ function renderFloorplanMarkers(floorIndex) {
     const fp = floorplans[floorIndex];
     if (!fp || !fp.hotspots) return;
 
+    // ensure placeholders for the four required pin types exist for this floor
+    ensureAllHotspotTypes(fp);
+
     // compute content bounding box (non-transparent pixels) for current image
     // cache result on floorplan object to avoid repeated work
     async function getContentBox(img, fp) {
