@@ -212,6 +212,38 @@ function updateWeatherAnimation(code) {
         currentWeatherClass
     );
 
+    // Optional: GIF-Hintergrund pro Wetterklasse setzen.
+    // Lege GIFs unter ./assets/gifs/ ab (z. B. sunny.gif, rain.gif, snow.gif, fog.gif, thunder.gif)
+    const gifMap = {
+        "weather-sunny":  'url("./assets/gifs/sunny.gif")',
+        "weather-rain":   'url("./assets/gifs/rain.gif")',
+        "weather-snow":   'url("./assets/gifs/snow.gif")',
+        "weather-fog":    'url("./assets/gifs/fog.gif")',
+        "weather-thunder":'url("./assets/gifs/thunder.gif")'
+    };
+
+    const gif = gifMap[currentWeatherClass] || 'none';
+
+    try {
+        weatherCard.style.setProperty('--weather-gif', gif);
+    } catch (e) {
+        // Defensive: falls style nicht verfügbar ist
+        console.warn('Konnte --weather-gif nicht setzen', e);
+    }
+
+    // Aktivieren / Deaktivieren der HTML-Animate-Layer
+    const animRoot = weatherCard.querySelector('.weather-animation');
+
+    if (animRoot) {
+        // entferne alle spezifischen data-state Attribute
+        animRoot.querySelectorAll('.weather-sun, .weather-cloud, .cloud-two, .rain-layer, .snow-layer, .fog-layer, .lightning').forEach(el => {
+            el.style.display = '';
+        });
+
+        // Sichtbarkeit wird durch CSS-Klassen auf #weather-card gesteuert; ensure layers exist
+        // (Falls Elemente fehlen, nichts tun.)
+    }
+
     console.log(
         "Aktive Wetterklasse:",
         currentWeatherClass
