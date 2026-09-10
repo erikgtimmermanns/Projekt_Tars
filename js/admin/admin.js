@@ -1,7 +1,7 @@
-const supabaseUrl = config.url || "https://lybzifzwgvttyhwqpaig.supabase.co";
-const supabaseKey = config.anonKey || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5YnppZnp3Z3Z0dHlod3FwYWlnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5NTMwNDcsImV4cCI6MjEwNDUyOTA0N30.LaRdl7zXgNX_GE3jOMfZ085tGcdFNFxpDIuhbLfoqgk";
-const bucketName = config.bucketName || "visitor-assets";
-const tableName = config.tableName || "visitor_profiles";
+const supabaseUrl = (window.config && window.config.url) || "https://lybzifzwgvttyhwqpaig.supabase.co";
+const supabaseKey = (window.config && window.config.anonKey) || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5YnppZnp3Z3Z0dHlod3FwYWlnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5NTMwNDcsImV4cCI6MjEwNDUyOTA0N30.LaRdl7zXgNX_GE3jOMfZ085tGcdFNFxpDIuhbLfoqgk";
+const bucketName = (window.config && window.config.bucketName) || "visitor-assets";
+const tableName = (window.config && window.config.tableName) || "visitor_profiles";
 
 const configIsSet = Boolean(supabaseUrl && supabaseKey) && !supabaseUrl.includes("YOUR-") && !supabaseKey.includes("YOUR-");
 const supabase = window.supabaseClient || null;

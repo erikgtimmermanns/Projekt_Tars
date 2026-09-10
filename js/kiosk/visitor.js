@@ -33,7 +33,7 @@ function updateVisitorPanel() {
 }
 
 export async function loadVisitorProfile() {
-    if (!kioskSupabase) {
+    if (!window.kioskSupabase) {
         window.visitorName = "Max Mustermann";
         window.visitorImageUrl = "";
         updateVisitorPanel();
@@ -41,8 +41,8 @@ export async function loadVisitorProfile() {
     }
 
     try {
-        const { data, error } = await kioskSupabase
-            .from(kioskTableName)
+        const { data, error } = await window.kioskSupabase
+            .from(window.kioskTableName)
             .select("visitor_name, image_url")
             .order("updated_at", { ascending: false })
             .limit(1)

@@ -15,3 +15,15 @@ const kioskTableName = kioskConfig.tableName || "visitor_profiles";
 const kioskSupabase = kioskSupabaseUrl && kioskSupabaseKey && !kioskSupabaseUrl.includes("YOUR-") && !kioskSupabaseKey.includes("YOUR-")
     ? window.supabase.createClient(kioskSupabaseUrl, kioskSupabaseKey)
     : null;
+
+// Expose legacy globals for non-module scripts and other modules
+window.kioskSupabase = kioskSupabase;
+window.kioskTableName = kioskTableName;
+
+// Provide a simple `config` global expected by admin scripts
+window.config = window.config || {
+  url: kioskSupabaseUrl || supabaseConfig.url || "",
+  anonKey: kioskSupabaseKey || supabaseConfig.anonKey || "",
+  bucketName: kioskBucketName,
+  tableName: kioskTableName
+};

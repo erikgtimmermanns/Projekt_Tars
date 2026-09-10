@@ -43,14 +43,8 @@ export function rotateWelcome() {
         document.getElementById(
             "welcome-subtext"
         );
-    if (
-        !eyebrow ||
-        !headline
-    ) {
-        console.error(
-            "Header-Elemente nicht gefunden"
-        );
-
+    if (!welcomeText || !welcomeHeadline) {
+        console.error("Header-Elemente nicht gefunden");
         return;
     }
     welcomeText.style.opacity = 0;
@@ -68,12 +62,10 @@ export function rotateWelcome() {
             welcomeMessages[
                 welcomeIndex
             ];
-        welcomeText.textContent =
-            current.title;
-        welcomeHeadline.textContent =
-            current.headline;
-        welcomeSubtext.textContent =
-            current.text;
+        // messages use `eyebrow` and `headline` keys; headline may contain HTML
+        welcomeText.textContent = current.eyebrow || "";
+        welcomeHeadline.innerHTML = current.headline || "";
+        if (welcomeSubtext) welcomeSubtext.textContent = current.subtext || "";
         welcomeText.style.opacity = 1;
         welcomeHeadline.style.opacity = 1;
         welcomeSubtext.style.opacity = 1;
