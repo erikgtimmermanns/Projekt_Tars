@@ -469,106 +469,62 @@ async function loadWeather() {
         );
 
     try {
-        const apiUrl =
-            "https://api.open-meteo.com/v1/forecast" +
+        // Use Open-Meteo current_weather + hourly humidity to get reliable fields
+        const apiUrl = "https://api.open-meteo.com/v1/forecast" +
             "?latitude=51.2277" +
             "&longitude=6.7735" +
-            "&current=" +
-            "temperature_2m," +
-            "relative_humidity_2m," +
-            "wind_speed_10m," +
-            "weather_code" +
+            "&current_weather=true" +
+            "&hourly=relativehumidity_2m" +
             "&timezone=Europe%2FBerlin";
 
-        console.log(
-            "Wetterdaten werden geladen ..."
-        );
+        console.log("Wetterdaten werden geladen ...", apiUrl);
 
-        const response =
-            await fetch(
-                apiUrl,
-                {
-                    cache: "no-store"
-                }
-            );
+        const response = await fetch(apiUrl, { cache: "no-store" });
+        if (!response.ok) throw new Error("HTTP-Fehler: " + response.status);
+        const data = await response.json();
 
-        if (!response.ok) {
-            throw new Error(
-                "HTTP-Fehler: " +
-                response.status
-            );
+        // Determine current weather values with fallbacks for older response shapes
+        let weatherCode = null;
+        let temp = null;
+        let windSpeed = null;
+        let humidityVal = null;
+
+        if (data.current_weather) {
+            const cw = data.current_weather;
+            weatherCode = Number(cw.weathercode ?? cw.weather_code ?? null);
+            temp = Number(cw.temperature ?? null);
+            windSpeed = Number(cw.windspeed ?? cw.wind_speed_10m ?? null);
+
+            // humidity: try to get matching hourly value
+            if (data.hourly && Array.isArray(data.hourly.time) && Array.isArray(data.hourly.relativehumidity_2m)) {
+                const times = data.hourly.time;
+                const hums = data.hourly.relativehumidity_2m;
+                const idx = times.indexOf(cw.time);
+                if (idx >= 0) humidityVal = Number(hums[idx]);
+                else humidityVal = Number(hums[hums.length - 1]);
+            }
+        } else if (data.current) {
+            // legacy: some APIs used `current` with different field names
+            const cur = data.current;
+            weatherCode = Number(cur.weather_code ?? cur.weathercode ?? null);
+            temp = Number(cur.temperature_2m ?? cur.temperature ?? null);
+            windSpeed = Number(cur.wind_speed_10m ?? cur.windspeed ?? null);
+            humidityVal = Number(cur.relative_humidity_2m ?? cur.relativehumidity_2m ?? null);
+        } else {
+            throw new Error('Keine aktuellen Wetterdaten erhalten.');
         }
 
-        const data =
-            await response.json();
+        const roundedTemperature = (temp == null || isNaN(temp)) ? null : Math.round(temp * 10) / 10;
+        const roundedHumidity = (humidityVal == null || isNaN(humidityVal)) ? null : Math.round(humidityVal);
+        const roundedWind = (windSpeed == null || isNaN(windSpeed)) ? null : Math.round(windSpeed * 10) / 10;
 
-        if (!data.current) {
-            throw new Error(
-                "Keine aktuellen Wetterdaten erhalten."
-            );
-        }
+        const weather = getWeatherDescription(Number(weatherCode));
 
-        const current =
-            data.current;
-
-        const weatherCode =
-            Number(
-                current.weather_code
-            );
-
-        const weather =
-            getWeatherDescription(
-                weatherCode
-            );
-
-        const roundedTemperature =
-            Math.round(
-                Number(
-                    current.temperature_2m
-                ) * 10
-            ) / 10;
-
-        const roundedHumidity =
-            Math.round(
-                Number(
-                    current.relative_humidity_2m
-                )
-            );
-
-        const roundedWind =
-            Math.round(
-                Number(
-                    current.wind_speed_10m
-                ) * 10
-            ) / 10;
-
-        if (weatherIcon) {
-            weatherIcon.textContent =
-                weather[0];
-        }
-
-        if (temperature) {
-            temperature.textContent =
-                roundedTemperature +
-                "°C";
-        }
-
-        if (weatherDescription) {
-            weatherDescription.textContent =
-                weather[1];
-        }
-
-        if (humidity) {
-            humidity.textContent =
-                roundedHumidity +
-                "%";
-        }
-
-        if (wind) {
-            wind.textContent =
-                roundedWind +
-                " km/h";
-        }
+        if (weatherIcon) weatherIcon.textContent = weather[0];
+        if (temperature) temperature.textContent = (roundedTemperature == null ? '--°C' : roundedTemperature + '°C');
+        if (weatherDescription) weatherDescription.textContent = weather[1];
+        if (humidity) humidity.textContent = (roundedHumidity == null ? '--%' : roundedHumidity + '%');
+        if (wind) wind.textContent = (roundedWind == null ? '-- km/h' : roundedWind + ' km/h');
 
         // Icon dynamics: mark icons and set CSS variables for animations
         try {
