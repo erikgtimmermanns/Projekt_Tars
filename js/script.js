@@ -76,10 +76,21 @@ function updateVisitorPanel() {
             "___";
 
         panel.hidden = true;
-    }
-}
-
-
+            if (rainLayer) {
+                if (cls === 'weather-rain') { rainLayer.style.display = 'block'; rainLayer.style.opacity = '0.9'; }
+                else { rainLayer.style.opacity = '0'; rainLayer.style.display = 'none'; }
+            }
+            if (snowLayer) {
+                if (cls === 'weather-snow') { snowLayer.style.display = 'block'; snowLayer.style.opacity = '0.9'; }
+                else { snowLayer.style.opacity = '0'; snowLayer.style.display = 'none'; }
+            }
+            if (fogLayer) {
+                if (cls === 'weather-fog') { fogLayer.style.display = 'block'; fogLayer.style.opacity = '0.85'; }
+                else { fogLayer.style.opacity = '0'; fogLayer.style.display = 'none'; }
+            }
+            if (lightning) {
+                if (cls === 'weather-thunder') { lightning.style.display = 'block'; lightning.style.opacity = '1'; }
+                else { lightning.style.opacity = '0'; lightning.style.display = 'none'; }
 /* =========================================
    WETTERBESCHREIBUNGEN
 ========================================= */
