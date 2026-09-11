@@ -648,16 +648,28 @@ body.time-night .screen::before {
 
     display: grid;
 
-    grid-template-columns:
-        1.2fr
-        0.9fr
-        0.9fr;
+    grid-template-columns: 1.35fr 1.15fr;
 
-    align-items: center;
+    align-items: stretch;
+
+    gap: 18px;
 
     min-height: 110px;
 
     padding: 14px 20px;
+}
+
+.weather-current {
+    display: grid;
+    align-content: center;
+    gap: 14px;
+    min-width: 0;
+}
+
+.weather-details {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
 }
 
 /* Linker Bereich */
@@ -955,14 +967,22 @@ body.time-night .screen::before {
 
     display: flex;
 
-    justify-content: center;
+    justify-content: flex-start;
 
     align-items: center;
 
     gap: 10px;
 
-    border-left:
-        1px solid rgba(0,0,0,.08);
+    min-height: 64px;
+    padding: 10px 12px;
+    border-left: 1px solid rgba(0,0,0,.08);
+    border-radius: 12px;
+    background: rgba(255,255,255,0.18);
+}
+
+.weather-detail:first-child {
+    border-left: 0;
+    padding-left: 0;
 }
 
 .weather-detail-icon {
@@ -1035,9 +1055,9 @@ body.time-night .screen::before {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 10px;
-    margin-top: 12px;
-    padding-top: 10px;
-    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    align-items: stretch;
+    padding: 6px 0;
+    border-right: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .forecast-day {

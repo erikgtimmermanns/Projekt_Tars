@@ -106,69 +106,73 @@
         <!-- Wetterinformationen -->
         <div class="weather-content">
 
-            <div class="weather-primary">
-
-                <div
-                    id="weather-icon"
-                    class="weather-icon"
-                    aria-hidden="true"
-                >
-                    🌤️
-                </div>
-
-                <div
-                    id="temperature"
-                    class="weather-temperature"
-                >
-                    --°C
-                </div>
-
-                <div
-                    id="weather-description"
-                    class="weather-description"
-                >
-                    Wetter wird geladen ...
-                </div>
-
-            </div>
-
-            <div class="weather-detail">
-
-                <span class="weather-detail-icon">
-                    💧
-                </span>
-
-                <div>
-                    <span class="weather-detail-label">
-                        Luftfeuchte
-                    </span>
-
-                    <strong id="humidity">
-                        --%
-                    </strong>
-                </div>
-
-            </div>
-
-            <div class="weather-detail">
-
-                <span class="weather-detail-icon">
-                    🌬️
-                </span>
-
-                <div>
-                    <span class="weather-detail-label">
-                        Wind
-                    </span>
-
-                    <strong id="wind">
-                        -- km/h
-                    </strong>
-                </div>
-
-            </div>
-
             <div id="weather-forecast" class="weather-forecast" aria-live="polite"></div>
+
+            <div class="weather-current">
+                <div class="weather-primary">
+
+                    <div
+                        id="weather-icon"
+                        class="weather-icon"
+                        aria-hidden="true"
+                    >
+                        🌤️
+                    </div>
+
+                    <div
+                        id="temperature"
+                        class="weather-temperature"
+                    >
+                        --°C
+                    </div>
+
+                    <div
+                        id="weather-description"
+                        class="weather-description"
+                    >
+                        Wetter wird geladen ...
+                    </div>
+
+                </div>
+
+                <div class="weather-details">
+                    <div class="weather-detail">
+
+                        <span class="weather-detail-icon">
+                            💧
+                        </span>
+
+                        <div>
+                            <span class="weather-detail-label">
+                                Luftfeuchte
+                            </span>
+
+                            <strong id="humidity">
+                                --%
+                            </strong>
+                        </div>
+
+                    </div>
+
+                    <div class="weather-detail">
+
+                        <span class="weather-detail-icon">
+                            🌬️
+                        </span>
+
+                        <div>
+                            <span class="weather-detail-label">
+                                Wind
+                            </span>
+
+                            <strong id="wind">
+                                -- km/h
+                            </strong>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
 
         </div>
     </section>
