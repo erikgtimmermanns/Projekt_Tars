@@ -237,8 +237,9 @@ function updateWeatherAnimation(code) {
     const overlayMap = {
         'weather-default': 'transparent',
         'weather-sunny': 'rgba(255,255,240,0.02)',
-        'weather-cloudy': 'rgba(40,50,60,0.18)',
-        'weather-rain': 'rgba(30,40,50,0.16)',
+        // For cloudy we want white clouds moving in the background, not a dark overlay
+        'weather-cloudy': 'transparent',
+        'weather-rain': 'rgba(30,40,50,0.12)',
         'weather-snow': 'rgba(240,245,250,0.04)',
         'weather-fog': 'rgba(255,255,255,0.06)',
         'weather-thunder': 'rgba(20,24,30,0.22)'
@@ -362,8 +363,9 @@ class WeatherAnimator {
             case 'weather-cloudy':
                 // heavy overcast: many large soft clouds and a subtle dim overlay
                 this.wind = 12;
-                this.targetCounts.cloud = Math.max(10, Math.round(w / 90));
-                this.targetCounts.fog = Math.max(1, Math.round(w / 600));
+                // fewer, larger, softer white clouds for background motion
+                this.targetCounts.cloud = Math.max(4, Math.round(w / 220));
+                this.targetCounts.fog = Math.max(0, Math.round(w / 1200));
                 break;
             default:
                 this.wind = 6;
@@ -543,16 +545,20 @@ class WeatherAnimator {
                 ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
                 ctx.fill();
             } else if (p.type === 'cloud') {
-                // soft cloud using multiple circles; apply blur per layer
+                // soft cloud using multiple circles; apply gentle blur per layer
                 ctx.save();
-                const blurPx = Math.max(0, p.layer * 4);
+                const blurPx = Math.max(0, p.layer * 3);
                 ctx.filter = `blur(${blurPx}px)`;
 
-                // darker clouds for cloudy/rain/thunder
-                let baseColor = `rgba(255,255,255,${p.alpha})`;
-                if (this.targetMode === 'weather-cloudy' || this.targetMode === 'weather-rain' || this.targetMode === 'weather-thunder') {
+                // For cloudy mode show white/soft clouds in background
+                let baseColor;
+                if (this.targetMode === 'weather-cloudy') {
+                    baseColor = `rgba(255,255,255,${Math.min(0.95, 0.6 * p.alpha + 0.25)})`;
+                } else if (this.targetMode === 'weather-rain' || this.targetMode === 'weather-thunder') {
                     const a = Math.min(0.9, 0.18 + p.alpha * 0.6);
                     baseColor = `rgba(70,80,95,${a})`;
+                } else {
+                    baseColor = `rgba(255,255,255,${p.alpha})`;
                 }
 
                 ctx.fillStyle = baseColor;
