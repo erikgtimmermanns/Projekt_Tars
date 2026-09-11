@@ -398,7 +398,18 @@ body {
 
 .weather-content {
     position: relative;
+    z-index: 2;
+}
+
+/* overlay to darken/diffuse the whole weather card depending on conditions */
+.weather::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 0 0;
+    background: var(--weather-overlay, transparent);
+    pointer-events: none;
     z-index: 1;
+    transition: background-color 420ms linear;
 }
 
 .weather-strip {

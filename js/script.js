@@ -233,6 +233,20 @@ function updateWeatherAnimation(code) {
         console.warn('Konnte --weather-gif nicht setzen', e);
     }
 
+    // Set overlay color per weather class to visually represent cloudiness/dimness
+    const overlayMap = {
+        'weather-default': 'transparent',
+        'weather-sunny': 'rgba(255,255,240,0.02)',
+        'weather-cloudy': 'rgba(40,50,60,0.18)',
+        'weather-rain': 'rgba(30,40,50,0.16)',
+        'weather-snow': 'rgba(240,245,250,0.04)',
+        'weather-fog': 'rgba(255,255,255,0.06)',
+        'weather-thunder': 'rgba(20,24,30,0.22)'
+    };
+
+    const overlay = overlayMap[currentWeatherClass] || 'transparent';
+    try { weatherCard.style.setProperty('--weather-overlay', overlay); } catch (e) { /* ignore */ }
+
     // Aktivieren / Deaktivieren der HTML-Animate-Layer
     const animRoot = weatherCard.querySelector('.weather-animation');
 
@@ -346,8 +360,10 @@ class WeatherAnimator {
                 this.targetCounts.cloud = Math.max(2, Math.round(w / 320));
                 break;
             case 'weather-cloudy':
+                // heavy overcast: many large soft clouds and a subtle dim overlay
                 this.wind = 12;
-                this.targetCounts.cloud = Math.max(6, Math.round(w / 160));
+                this.targetCounts.cloud = Math.max(10, Math.round(w / 90));
+                this.targetCounts.fog = Math.max(1, Math.round(w / 600));
                 break;
             default:
                 this.wind = 6;
@@ -527,27 +543,42 @@ class WeatherAnimator {
                 ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
                 ctx.fill();
             } else if (p.type === 'cloud') {
-                // soft cloud using multiple circles
-                ctx.fillStyle = `rgba(255,255,255,${p.alpha})`;
+                // soft cloud using multiple circles; apply blur per layer
+                ctx.save();
+                const blurPx = Math.max(0, p.layer * 4);
+                ctx.filter = `blur(${blurPx}px)`;
+
+                // darker clouds for cloudy/rain/thunder
+                let baseColor = `rgba(255,255,255,${p.alpha})`;
+                if (this.targetMode === 'weather-cloudy' || this.targetMode === 'weather-rain' || this.targetMode === 'weather-thunder') {
+                    const a = Math.min(0.9, 0.18 + p.alpha * 0.6);
+                    baseColor = `rgba(70,80,95,${a})`;
+                }
+
+                ctx.fillStyle = baseColor;
                 ctx.beginPath();
                 ctx.ellipse(p.x, p.y, p.w * 0.6, p.h * 0.5, 0, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.beginPath();
                 ctx.ellipse(p.x + p.w * 0.35, p.y - p.h * 0.15, p.w * 0.45, p.h * 0.45, 0, 0, Math.PI * 2);
                 ctx.fill();
+                ctx.restore();
             }
         }
     }
 
     _addCloud() {
+        // create softer, layered clouds by varying size, alpha and blur layer
+        const layer = 1 + Math.floor(Math.random() * 3);
         this.particles.push({
             type: 'cloud',
             x: Math.random() * this.width,
-            y: 30 + Math.random() * (this.height * 0.35),
-            w: 60 + Math.random() * 220,
-            h: 20 + Math.random() * 60,
-            alpha: 0.08 + Math.random() * 0.18,
-            speed: 5 + Math.random() * 20
+            y: 20 + Math.random() * (this.height * 0.5),
+            w: 120 + Math.random() * 480,
+            h: 40 + Math.random() * 140,
+            alpha: 0.10 + Math.random() * 0.28,
+            speed: 4 + Math.random() * 18,
+            layer: layer
         });
     }
 }
