@@ -250,6 +250,226 @@ function updateWeatherAnimation(code) {
         "Aktive Wetterklasse:",
         currentWeatherClass
     );
+
+    // Ensure canvas animator exists and set its mode
+    try {
+        const animator = ensureWeatherAnimator();
+        if (animator) animator.setMode(currentWeatherClass);
+    } catch (e) {
+        console.warn('Weather animator fehlt oder konnte nicht gesetzt werden', e);
+    }
+}
+
+
+/* =========================================
+   CANVAS WEATHER ANIMATOR
+   Einfaches, performantes Teilchensystem
+========================================= */
+
+class WeatherAnimator {
+    constructor(canvasId = 'weather-canvas') {
+        this.canvas = document.getElementById(canvasId);
+        if (!this.canvas) return;
+
+        this.ctx = this.canvas.getContext('2d');
+        this.dpr = Math.max(1, window.devicePixelRatio || 1);
+        this.particles = [];
+        this.mode = 'weather-default';
+        this.running = false;
+        this._boundTick = this._tick.bind(this);
+
+        this._onResize = this._onResize.bind(this);
+        window.addEventListener('resize', this._onResize);
+        this._onResize();
+        this.start();
+    }
+
+    _onResize() {
+        const rect = this.canvas.getBoundingClientRect();
+        this.width = Math.max(1, Math.floor(rect.width));
+        this.height = Math.max(1, Math.floor(rect.height));
+        this.canvas.width = Math.floor(this.width * this.dpr);
+        this.canvas.height = Math.floor(this.height * this.dpr);
+        this.canvas.style.width = this.width + 'px';
+        this.canvas.style.height = this.height + 'px';
+        if (this.ctx) this.ctx.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    }
+
+    start() {
+        if (this.running) return;
+        this.running = true;
+        requestAnimationFrame(this._boundTick);
+    }
+
+    stop() {
+        this.running = false;
+    }
+
+    setMode(mode) {
+        if (!this.canvas) return;
+        this.mode = mode || 'weather-default';
+        this.particles.length = 0;
+
+        const countBase = Math.round((this.width * this.height) / 6000);
+
+        if (this.mode === 'weather-rain') {
+            for (let i = 0; i < countBase * 3; i++) this._addRain();
+        } else if (this.mode === 'weather-snow') {
+            for (let i = 0; i < countBase * 1.5; i++) this._addSnow();
+        } else if (this.mode === 'weather-fog') {
+            for (let i = 0; i < Math.max(6, Math.round(this.width / 120)); i++) this._addFog();
+        } else if (this.mode === 'weather-thunder') {
+            for (let i = 0; i < countBase * 2; i++) this._addRain();
+        } else if (this.mode === 'weather-sunny') {
+            for (let i = 0; i < Math.max(8, Math.round(this.width / 80)); i++) this._addSpark();
+        }
+    }
+
+    _addRain() {
+        this.particles.push({
+            type: 'rain',
+            x: Math.random() * this.width,
+            y: Math.random() * this.height,
+            len: 8 + Math.random() * 12,
+            speed: 300 + Math.random() * 400,
+            alpha: 0.35 + Math.random() * 0.5
+        });
+    }
+
+    _addSnow() {
+        this.particles.push({
+            type: 'snow',
+            x: Math.random() * this.width,
+            y: Math.random() * this.height,
+            r: 1 + Math.random() * 3.5,
+            speed: 20 + Math.random() * 40,
+            drift: (Math.random() - 0.5) * 0.6,
+            alpha: 0.6 + Math.random() * 0.4
+        });
+    }
+
+    _addFog() {
+        this.particles.push({
+            type: 'fog',
+            x: Math.random() * this.width,
+            y: Math.random() * this.height,
+            w: 0.25 * this.width + Math.random() * 0.5 * this.width,
+            alpha: 0.04 + Math.random() * 0.06,
+            speed: 5 + Math.random() * 20
+        });
+    }
+
+    _addSpark() {
+        this.particles.push({
+            type: 'spark',
+            x: Math.random() * this.width,
+            y: Math.random() * this.height * 0.6,
+            r: 0.6 + Math.random() * 2.4,
+            life: 1 + Math.random() * 2,
+            vx: (Math.random() - 0.5) * 10,
+            vy: -10 - Math.random() * 20,
+            alpha: 0.6 + Math.random() * 0.4
+        });
+    }
+
+    _tick(ts) {
+        if (!this.running) return;
+        if (!this._lastTs) this._lastTs = ts;
+        const dt = Math.min(60, ts - this._lastTs) / 1000; // in seconds
+        this._lastTs = ts;
+
+        this._update(dt);
+        this._draw();
+
+        requestAnimationFrame(this._boundTick);
+    }
+
+    _update(dt) {
+        const w = this.width;
+        const h = this.height;
+
+        for (let i = this.particles.length - 1; i >= 0; i--) {
+            const p = this.particles[i];
+            if (p.type === 'rain') {
+                p.y += p.speed * dt;
+                p.x += 40 * dt; // light wind
+                if (p.y > h + p.len) {
+                    p.y = -10;
+                    p.x = Math.random() * w;
+                }
+            } else if (p.type === 'snow') {
+                p.y += p.speed * dt;
+                p.x += p.drift * 20 * dt;
+                if (p.y > h + 10) {
+                    p.y = -10;
+                    p.x = Math.random() * w;
+                }
+            } else if (p.type === 'fog') {
+                p.x += p.speed * 0.1 * dt;
+                if (p.x - p.w > w) p.x = -p.w;
+            } else if (p.type === 'spark') {
+                p.life -= dt;
+                p.x += p.vx * dt;
+                p.y += p.vy * dt;
+                p.alpha = Math.max(0, p.life / 2);
+                if (p.life <= 0 || p.y < -50) {
+                    // recycle
+                    p.x = Math.random() * w;
+                    p.y = Math.random() * h * 0.6;
+                    p.life = 1 + Math.random() * 2;
+                }
+            }
+        }
+    }
+
+    _draw() {
+        const ctx = this.ctx;
+        if (!ctx) return;
+        ctx.clearRect(0, 0, this.width, this.height);
+
+        // subtle background dim for thunder flashes
+        if (this.mode === 'weather-thunder' && Math.random() < 0.008) {
+            ctx.fillStyle = 'rgba(255,255,255,0.25)';
+            ctx.fillRect(0, 0, this.width, this.height);
+        }
+
+        for (const p of this.particles) {
+            if (p.type === 'rain') {
+                ctx.strokeStyle = `rgba(200,220,255,${p.alpha})`;
+                ctx.lineWidth = 1.2;
+                ctx.beginPath();
+                ctx.moveTo(p.x, p.y);
+                ctx.lineTo(p.x - 6, p.y - p.len);
+                ctx.stroke();
+            } else if (p.type === 'snow') {
+                ctx.fillStyle = `rgba(255,255,255,${p.alpha})`;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                ctx.fill();
+            } else if (p.type === 'fog') {
+                const grad = ctx.createLinearGradient(p.x, p.y, p.x + p.w, p.y);
+                grad.addColorStop(0, `rgba(255,255,255,0)`);
+                grad.addColorStop(0.5, `rgba(255,255,255,${p.alpha})`);
+                grad.addColorStop(1, `rgba(255,255,255,0)`);
+                ctx.fillStyle = grad;
+                ctx.fillRect(p.x, p.y - 20, p.w, 60);
+            } else if (p.type === 'spark') {
+                ctx.fillStyle = `rgba(255,250,200,${p.alpha})`;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+    }
+}
+
+// instantiate animator lazily when DOM is ready
+let weatherAnimator = null;
+function ensureWeatherAnimator() {
+    if (!weatherAnimator) {
+        weatherAnimator = new WeatherAnimator('weather-canvas');
+    }
+    return weatherAnimator;
 }
 
 
