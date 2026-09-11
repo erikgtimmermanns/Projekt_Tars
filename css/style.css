@@ -911,6 +911,51 @@ body {
     font-size: 28px;
 }
 
+/* Icon animations: subtle float for all icons */
+.weather-detail-icon {
+    display: inline-block;
+    transform-origin: center center;
+    will-change: transform, opacity;
+    animation: iconFloat 6s ease-in-out infinite;
+}
+
+@keyframes iconFloat {
+    0% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-6px) scale(1.02); }
+    100% { transform: translateY(0) scale(1); }
+}
+
+/* Humidity: gentle pulsing scaled by --hum (0..1) */
+.weather-detail-icon.icon-humidity {
+    animation: iconHumPulse 3s ease-in-out infinite;
+}
+
+@keyframes iconHumPulse {
+    0% { transform: translateY(0) scale(calc(1 + var(--hum, 0) * 0)); }
+    50% { transform: translateY(-4px) scale(calc(1 + var(--hum, 0) * 0.12)); }
+    100% { transform: translateY(0) scale(calc(1 + var(--hum, 0) * 0)); }
+}
+
+/* Wind: horizontal sway whose amplitude increases with --wind */
+.weather-detail-icon.icon-wind {
+    animation: iconWindSway 2.6s ease-in-out infinite;
+}
+
+@keyframes iconWindSway {
+    0% { transform: translateX(calc(-1px * var(--wind, 0))) rotate(0deg); }
+    50% { transform: translateX(calc(1px * var(--wind, 0))) rotate(calc(var(--wind, 0) * 0.02deg)); }
+    100% { transform: translateX(calc(-1px * var(--wind, 0))) rotate(0deg); }
+}
+
+/* Slight pop on hover */
+.weather-detail-icon:hover { transform: scale(1.12); transition: transform 160ms ease; }
+
+/* Main weather emoji (big) gentle bob */
+.weather-icon {
+    display: inline-block;
+    animation: iconFloat 5s ease-in-out infinite;
+}
+
 .weather-detail-label {
 
     display: block;

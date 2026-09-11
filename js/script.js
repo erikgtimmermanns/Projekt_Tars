@@ -779,6 +779,28 @@ async function loadWeather() {
                 " km/h";
         }
 
+        // Icon dynamics: mark icons and set CSS variables for animations
+        try {
+            const humidityIcon = document.querySelector('#humidity')?.closest('.weather-detail')?.querySelector('.weather-detail-icon');
+            const windIcon = document.querySelector('#wind')?.closest('.weather-detail')?.querySelector('.weather-detail-icon');
+
+            if (humidityIcon) {
+                humidityIcon.classList.add('icon-humidity');
+                // set --hum in range 0..1
+                const humVal = Math.max(0, Math.min(100, roundedHumidity)) / 100;
+                humidityIcon.style.setProperty('--hum', String(humVal));
+            }
+
+            if (windIcon) {
+                windIcon.classList.add('icon-wind');
+                // set --wind amplitude (clamp): small value around 1..8
+                const windAmp = Math.min(12, Math.max(0, roundedWind / 3));
+                windIcon.style.setProperty('--wind', String(windAmp));
+            }
+        } catch (e) {
+            // ignore if structure differs
+        }
+
         updateWeatherAnimation(
             weatherCode
         );
