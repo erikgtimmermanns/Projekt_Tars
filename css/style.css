@@ -515,7 +515,7 @@ body.time-night .screen::before {
 
 .footer {
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     justify-content: space-between;
     gap: 12px;
     margin-top: 10px;
@@ -527,6 +527,50 @@ body.time-night .screen::before {
 
 .footer strong {
     color: var(--cc-dark);
+}
+
+.footer-left {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+}
+
+.status-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+}
+
+.reception-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: none;
+    white-space: nowrap;
+    color: var(--cc-dark);
+}
+
+.reception-status::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+    box-shadow: 0 0 0 5px rgba(128, 142, 156, 0.12);
+}
+
+.reception-status.open {
+    color: #1d8b5d;
+}
+
+.reception-status.closed {
+    color: #b64a4a;
 }
 
 .status {
