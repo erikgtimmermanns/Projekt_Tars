@@ -273,6 +273,26 @@ function updateWeatherAnimation(code) {
     } catch (e) {
         console.warn('Weather animator fehlt oder konnte nicht gesetzt werden', e);
     }
+
+    // Explicitly show/hide the HTML layers to avoid leftover visuals
+    try {
+        const rainEl = animRoot.querySelector('.rain-layer');
+        const snowEl = animRoot.querySelector('.snow-layer');
+        const fogEl = animRoot.querySelector('.fog-layer');
+        const lightningEl = animRoot.querySelector('.lightning');
+        const cloudEls = animRoot.querySelectorAll('.weather-cloud, .cloud-two');
+
+        if (rainEl) rainEl.style.opacity = (currentWeatherClass === 'weather-rain') ? '0.9' : '0';
+        if (snowEl) snowEl.style.opacity = (currentWeatherClass === 'weather-snow') ? '0.9' : '0';
+        if (fogEl) fogEl.style.opacity = (currentWeatherClass === 'weather-fog') ? '0.85' : '0';
+        if (lightningEl) lightningEl.style.opacity = (currentWeatherClass === 'weather-thunder') ? '1' : '0';
+
+        // clouds: for cloudy and sunny we allow cloud DOM elements, otherwise hide
+        const showCloud = (currentWeatherClass === 'weather-cloudy' || currentWeatherClass === 'weather-sunny');
+        cloudEls.forEach(c => c.style.opacity = showCloud ? '' : '0');
+    } catch (e) {
+        // ignore if animRoot missing
+    }
 }
 
 
