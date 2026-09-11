@@ -30,6 +30,65 @@ body {
     background: var(--background);
     color: var(--cc-dark);
     font-family: "Albert Sans", Arial, sans-serif;
+    transition: background 0.6s ease, color 0.6s ease;
+}
+
+body.time-morning {
+    --background: #f8f2e8;
+    --cc-blue: #0d5ca8;
+    --cc-dark: #1c2f45;
+    --cc-cyan: #5abfe3;
+    --text-soft: #586c7b;
+    --line: #e4d7b7;
+    --white: #fffdf9;
+}
+
+body.time-day {
+    --background: #f3f8fd;
+    --cc-blue: #0067b9;
+    --cc-dark: #17324d;
+    --cc-cyan: #38c6e8;
+    --text-soft: #5c6b78;
+    --line: #dce5ec;
+    --white: #ffffff;
+}
+
+body.time-evening {
+    --background: #fff3eb;
+    --cc-blue: #b95b2d;
+    --cc-dark: #32283c;
+    --cc-cyan: #eb9c52;
+    --text-soft: #6c5d6f;
+    --line: #efd4c3;
+    --white: #fffaf7;
+}
+
+body.time-night {
+    --background: #090f1b;
+    --cc-blue: #8bc7ff;
+    --cc-dark: #edf3ff;
+    --cc-cyan: #69d4ff;
+    --text-soft: #b7c6d9;
+    --line: rgba(157, 182, 210, 0.25);
+    --white: #111e2d;
+}
+
+body.time-night .brand-logo,
+body.time-night .visitor-logo,
+body.time-night .weather-detail-icon,
+body.time-night .weather-icon {
+    filter: brightness(1.08);
+}
+
+body.time-night .visitor-box,
+body.time-night .room-plan,
+body.time-night .weather,
+body.time-night .fp-info {
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.28);
+}
+
+body.time-night .screen::before {
+    background: linear-gradient(90deg, #6aaef7 0 70%, #8de0ff 70% 100%);
 }
 
 .screen {

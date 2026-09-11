@@ -812,6 +812,24 @@ window.loadWeather =
    DASHBOARD STARTEN
 ========================================= */
 
+function updateTimeOfDayTheme() {
+    const hour = new Date().getHours();
+    let mode = 'day';
+
+    if (hour >= 5 && hour < 11) {
+        mode = 'morning';
+    } else if (hour >= 11 && hour < 17) {
+        mode = 'day';
+    } else if (hour >= 17 && hour < 21) {
+        mode = 'evening';
+    } else {
+        mode = 'night';
+    }
+
+    document.body.classList.remove('time-morning', 'time-day', 'time-evening', 'time-night');
+    document.body.classList.add('time-' + mode);
+}
+
 function startDashboard() {
     console.log(
         "Dashboard wird gestartet"
@@ -821,12 +839,18 @@ function startDashboard() {
     try { ensureWeatherAnimator(); } catch (e) { /* ignore */ }
 
     updateDateTime();
+    updateTimeOfDayTheme();
     updateVisitorPanel();
     loadWeather();
 
     window.setInterval(
         updateDateTime,
         1000
+    );
+
+    window.setInterval(
+        updateTimeOfDayTheme,
+        60000
     );
 
     window.setInterval(
