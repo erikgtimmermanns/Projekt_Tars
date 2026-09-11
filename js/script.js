@@ -76,27 +76,149 @@ function updateVisitorPanel() {
             "___";
 
         panel.hidden = true;
-            if (rainLayer) {
-                if (cls === 'weather-rain') { rainLayer.style.display = 'block'; rainLayer.style.opacity = '0.9'; }
-                else { rainLayer.style.opacity = '0'; rainLayer.style.display = 'none'; }
-            }
-            if (snowLayer) {
-                if (cls === 'weather-snow') { snowLayer.style.display = 'block'; snowLayer.style.opacity = '0.9'; }
-                else { snowLayer.style.opacity = '0'; snowLayer.style.display = 'none'; }
-            }
-            if (fogLayer) {
-                if (cls === 'weather-fog') { fogLayer.style.display = 'block'; fogLayer.style.opacity = '0.85'; }
-                else { fogLayer.style.opacity = '0'; fogLayer.style.display = 'none'; }
-            }
-            if (lightning) {
-                if (cls === 'weather-thunder') { lightning.style.display = 'block'; lightning.style.opacity = '1'; }
-                else { lightning.style.opacity = '0'; lightning.style.display = 'none'; }
+    }
+}
+
+
 /* =========================================
    WETTERBESCHREIBUNGEN
 ========================================= */
-// Wetter-Logik wurde ausgelagert nach `js/weather-logic.js`.
-// Diese Datei ruft weiterhin `loadWeather()` und `testWeather()` auf, die global bereitgestellt werden.
 
+function getWeatherClass(weatherCode) {
+    const code = Number(weatherCode);
+
+    if ([0, 1, 2].includes(code)) {
+        return 'weather-sunny';
+    }
+
+    if ([3, 45, 48].includes(code)) {
+        return 'weather-cloudy';
+    }
+
+    if ([51, 53, 55, 56, 57, 61, 63, 65, 80, 81, 82].includes(code)) {
+        return 'weather-rain';
+    }
+
+    if ([71, 73, 75, 77, 85, 86].includes(code)) {
+        return 'weather-snow';
+    }
+
+    if ([41, 42, 43, 46].includes(code)) {
+        return 'weather-fog';
+    }
+
+    if ([95, 96, 99].includes(code)) {
+        return 'weather-thunder';
+    }
+
+    return 'weather-default';
+}
+
+function getWeatherDescription(code) {
+    const weatherCode = Number(code);
+
+    switch (weatherCode) {
+        case 0:
+            return ['☀️', 'Klarer Himmel'];
+        case 1:
+            return ['🌤️', 'Meistens klar'];
+        case 2:
+            return ['⛅', 'Teilweise bewölkt'];
+        case 3:
+            return ['☁️', 'Bewölkt'];
+        case 45:
+        case 48:
+            return ['🌫️', 'Nebel'];
+        case 51:
+        case 53:
+        case 55:
+            return ['🌦️', 'Nieselregen'];
+        case 56:
+        case 57:
+            return ['❄️', 'Gefrierender Nieselregen'];
+        case 61:
+        case 63:
+        case 65:
+            return ['🌧️', 'Regen'];
+        case 66:
+        case 67:
+            return ['🌧️', 'Starker Regen'];
+        case 71:
+        case 73:
+        case 75:
+        case 77:
+            return ['❄️', 'Schnee'];
+        case 80:
+        case 81:
+        case 82:
+            return ['🌧️', 'Regenschauer'];
+        case 85:
+        case 86:
+            return ['🌨️', 'Schneeschauer'];
+        case 95:
+            return ['⛈️', 'Gewitter'];
+        case 96:
+        case 99:
+            return ['⛈️', 'Gewitter mit Hagel'];
+        default:
+            return ['🌤️', 'Wetter wird geladen'];
+    }
+}
+
+function updateWeatherAnimation(code) {
+    const card = document.getElementById('weather-card');
+    const weatherCode = Number(code);
+    const cls = getWeatherClass(weatherCode);
+    const validClasses = [
+        'weather-default',
+        'weather-sunny',
+        'weather-cloudy',
+        'weather-fog',
+        'weather-rain',
+        'weather-snow',
+        'weather-thunder'
+    ];
+
+    if (card) {
+        card.classList.remove(...validClasses);
+        card.classList.add(cls);
+    }
+
+    const rainLayer = document.querySelector('.rain-layer');
+    const snowLayer = document.querySelector('.snow-layer');
+    const fogLayer = document.querySelector('.fog-layer');
+    const lightning = document.querySelector('.lightning');
+
+    if (rainLayer) {
+        const isVisible = cls === 'weather-rain' || cls === 'weather-thunder';
+        rainLayer.style.display = isVisible ? 'block' : 'none';
+        rainLayer.style.opacity = isVisible ? '0.9' : '0';
+    }
+
+    if (snowLayer) {
+        const isVisible = cls === 'weather-snow';
+        snowLayer.style.display = isVisible ? 'block' : 'none';
+        snowLayer.style.opacity = isVisible ? '0.9' : '0';
+    }
+
+    if (fogLayer) {
+        const isVisible = cls === 'weather-fog' || cls === 'weather-cloudy';
+        fogLayer.style.display = isVisible ? 'block' : 'none';
+        fogLayer.style.opacity = isVisible ? '0.85' : '0';
+    }
+
+    if (lightning) {
+        const isVisible = cls === 'weather-thunder';
+        lightning.style.display = isVisible ? 'block' : 'none';
+        lightning.style.opacity = isVisible ? '1' : '0';
+    }
+
+    try {
+        ensureWeatherAnimator().setMode(cls);
+    } catch (error) {
+        console.warn('Weather animator konnte nicht gestartet werden:', error);
+    }
+}
 
 
 /* =========================================
