@@ -220,6 +220,43 @@ function updateWeatherAnimation(code) {
     }
 }
 
+function renderForecast(data) {
+    const forecastHost = document.getElementById('weather-forecast');
+    if (!forecastHost || !data || !data.daily || !Array.isArray(data.daily.time)) {
+        return;
+    }
+
+    const times = data.daily.time || [];
+    const codes = data.daily.weather_code || [];
+    const maxTemps = data.daily.temperature_2m_max || [];
+    const minTemps = data.daily.temperature_2m_min || [];
+    const precip = data.daily.precipitation_probability_max || [];
+
+    if (!times.length) {
+        return;
+    }
+
+    const forecastDays = times.slice(0, 3).map((dateString, index) => {
+        const code = Number(codes[index] ?? 0);
+        const maxTemp = Number(maxTemps[index] ?? 0);
+        const minTemp = Number(minTemps[index] ?? 0);
+        const rainChance = Number(precip[index] ?? 0);
+        const dayName = new Date(dateString + 'T12:00:00').toLocaleDateString('de-DE', { weekday: 'short' });
+        const icon = getWeatherDescription(code)[0];
+
+        return `
+            <div class="forecast-day">
+                <div class="forecast-day-name">${dayName}</div>
+                <div class="forecast-day-icon">${icon}</div>
+                <div class="forecast-day-temp">${Math.round(maxTemp)}° / ${Math.round(minTemp)}°</div>
+                <div class="forecast-day-prob">${Math.round(rainChance)}% Regen</div>
+            </div>
+        `;
+    }).join('');
+
+    forecastHost.innerHTML = forecastDays;
+}
+
 
 /* =========================================
    CANVAS WEATHER ANIMATOR
@@ -597,6 +634,7 @@ async function loadWeather() {
             "&longitude=6.7735" +
             "&current_weather=true" +
             "&hourly=relativehumidity_2m" +
+            "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max" +
             "&timezone=Europe%2FBerlin";
 
         console.log("Wetterdaten werden geladen ...", apiUrl);
@@ -669,6 +707,8 @@ async function loadWeather() {
         } catch (e) {
             // ignore if structure differs
         }
+
+        renderForecast(data);
 
         updateWeatherAnimation(
             weatherCode
