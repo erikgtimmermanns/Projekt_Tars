@@ -282,10 +282,22 @@ function updateWeatherAnimation(code) {
         const lightningEl = animRoot.querySelector('.lightning');
         const cloudEls = animRoot.querySelectorAll('.weather-cloud, .cloud-two');
 
-        if (rainEl) rainEl.style.opacity = (currentWeatherClass === 'weather-rain') ? '0.9' : '0';
-        if (snowEl) snowEl.style.opacity = (currentWeatherClass === 'weather-snow') ? '0.9' : '0';
-        if (fogEl) fogEl.style.opacity = (currentWeatherClass === 'weather-fog') ? '0.85' : '0';
-        if (lightningEl) lightningEl.style.opacity = (currentWeatherClass === 'weather-thunder') ? '1' : '0';
+        if (rainEl) {
+            if (currentWeatherClass === 'weather-rain') { rainEl.style.display = ''; rainEl.style.opacity = '0.9'; }
+            else { rainEl.style.opacity = '0'; rainEl.style.display = 'none'; }
+        }
+        if (snowEl) {
+            if (currentWeatherClass === 'weather-snow') { snowEl.style.display = ''; snowEl.style.opacity = '0.9'; }
+            else { snowEl.style.opacity = '0'; snowEl.style.display = 'none'; }
+        }
+        if (fogEl) {
+            if (currentWeatherClass === 'weather-fog') { fogEl.style.display = ''; fogEl.style.opacity = '0.85'; }
+            else { fogEl.style.opacity = '0'; fogEl.style.display = 'none'; }
+        }
+        if (lightningEl) {
+            if (currentWeatherClass === 'weather-thunder') { lightningEl.style.display = ''; lightningEl.style.opacity = '1'; }
+            else { lightningEl.style.opacity = '0'; lightningEl.style.display = 'none'; }
+        }
 
         // clouds: for cloudy and sunny we allow cloud DOM elements, otherwise hide
         const showCloud = (currentWeatherClass === 'weather-cloudy' || currentWeatherClass === 'weather-sunny');
