@@ -393,6 +393,10 @@ class WeatherAnimator {
         }
 
         // do not immediately clear particles; we'll smoothly spawn/decay
+        // If switching to a non-precipitating mode like cloudy, remove rain particles immediately
+        if (this.targetMode === 'weather-cloudy' || this.targetMode === 'weather-default' || this.targetMode === 'weather-sunny') {
+            this.particles = this.particles.filter(p => p.type !== 'rain');
+        }
     }
 
     _addRain() {
