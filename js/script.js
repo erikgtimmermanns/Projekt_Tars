@@ -275,6 +275,9 @@ class WeatherAnimator {
         this.dpr = Math.max(1, window.devicePixelRatio || 1);
         this.particles = [];
         this.mode = 'weather-default';
+        this.targetMode = 'weather-default';
+        this.targetCounts = { rain: 0, snow: 0, fog: 0, spark: 0, cloud: 0 };
+        this.wind = 0; // positive -> wind to the right
         this.running = false;
         this._boundTick = this._tick.bind(this);
 
@@ -307,22 +310,51 @@ class WeatherAnimator {
 
     setMode(mode) {
         if (!this.canvas) return;
-        this.mode = mode || 'weather-default';
-        this.particles.length = 0;
+        this.targetMode = mode || 'weather-default';
 
-        const countBase = Math.round((this.width * this.height) / 6000);
+        // determine wind and target particle counts based on mode
+        const base = Math.max(1, Math.round((this.width * this.height) / 6000));
+        const w = this.width;
 
-        if (this.mode === 'weather-rain') {
-            for (let i = 0; i < countBase * 3; i++) this._addRain();
-        } else if (this.mode === 'weather-snow') {
-            for (let i = 0; i < countBase * 1.5; i++) this._addSnow();
-        } else if (this.mode === 'weather-fog') {
-            for (let i = 0; i < Math.max(6, Math.round(this.width / 120)); i++) this._addFog();
-        } else if (this.mode === 'weather-thunder') {
-            for (let i = 0; i < countBase * 2; i++) this._addRain();
-        } else if (this.mode === 'weather-sunny') {
-            for (let i = 0; i < Math.max(8, Math.round(this.width / 80)); i++) this._addSpark();
+        // reset target counts
+        this.targetCounts = { rain: 0, snow: 0, fog: 0, spark: 0, cloud: 0 };
+
+        switch (this.targetMode) {
+            case 'weather-rain':
+                this.wind = 40;
+                this.targetCounts.rain = base * 3;
+                this.targetCounts.cloud = Math.max(6, Math.round(w / 180));
+                break;
+            case 'weather-snow':
+                this.wind = 8;
+                this.targetCounts.snow = Math.round(base * 1.6);
+                this.targetCounts.cloud = Math.max(4, Math.round(w / 220));
+                break;
+            case 'weather-fog':
+                this.wind = 6;
+                this.targetCounts.fog = Math.max(6, Math.round(w / 120));
+                this.targetCounts.cloud = Math.max(3, Math.round(w / 300));
+                break;
+            case 'weather-thunder':
+                this.wind = 60;
+                this.targetCounts.rain = base * 2.5;
+                this.targetCounts.cloud = Math.max(8, Math.round(w / 140));
+                break;
+            case 'weather-sunny':
+                this.wind = 6;
+                this.targetCounts.spark = Math.max(8, Math.round(w / 80));
+                this.targetCounts.cloud = Math.max(2, Math.round(w / 320));
+                break;
+            case 'weather-cloudy':
+                this.wind = 12;
+                this.targetCounts.cloud = Math.max(6, Math.round(w / 160));
+                break;
+            default:
+                this.wind = 6;
+                this.targetCounts.cloud = Math.max(2, Math.round(w / 400));
         }
+
+        // do not immediately clear particles; we'll smoothly spawn/decay
     }
 
     _addRain() {
@@ -388,24 +420,41 @@ class WeatherAnimator {
         const w = this.width;
         const h = this.height;
 
+        // spawn towards targets gradually
+        const totals = { rain: 0, snow: 0, fog: 0, spark: 0, cloud: 0 };
+        for (const p of this.particles) totals[p.type] = (totals[p.type] || 0) + 1;
+
+        // spawn a few particles per tick to smooth transitions
+        const spawnBudget = Math.max(1, Math.round(60 * dt));
+        for (let s = 0; s < spawnBudget; s++) {
+            if (totals.rain < this.targetCounts.rain) { this._addRain(); totals.rain++; continue; }
+            if (totals.snow < this.targetCounts.snow) { this._addSnow(); totals.snow++; continue; }
+            if (totals.fog < this.targetCounts.fog) { this._addFog(); totals.fog++; continue; }
+            if (totals.spark < this.targetCounts.spark) { this._addSpark(); totals.spark++; continue; }
+            if (totals.cloud < this.targetCounts.cloud) { this._addCloud(); totals.cloud++; continue; }
+            break;
+        }
+
+        // update existing particles
         for (let i = this.particles.length - 1; i >= 0; i--) {
             const p = this.particles[i];
             if (p.type === 'rain') {
                 p.y += p.speed * dt;
-                p.x += 40 * dt; // light wind
+                p.x += this.wind * dt * (0.6 + Math.random() * 0.8);
                 if (p.y > h + p.len) {
-                    p.y = -10;
+                    // recycle to top
+                    p.y = -10 - Math.random() * 40;
                     p.x = Math.random() * w;
                 }
             } else if (p.type === 'snow') {
                 p.y += p.speed * dt;
-                p.x += p.drift * 20 * dt;
+                p.x += p.drift * 20 * dt + this.wind * 0.02 * dt;
                 if (p.y > h + 10) {
-                    p.y = -10;
+                    p.y = -10 - Math.random() * 20;
                     p.x = Math.random() * w;
                 }
             } else if (p.type === 'fog') {
-                p.x += p.speed * 0.1 * dt;
+                p.x += p.speed * 0.05 * dt + this.wind * 0.02 * dt;
                 if (p.x - p.w > w) p.x = -p.w;
             } else if (p.type === 'spark') {
                 p.life -= dt;
@@ -413,11 +462,18 @@ class WeatherAnimator {
                 p.y += p.vy * dt;
                 p.alpha = Math.max(0, p.life / 2);
                 if (p.life <= 0 || p.y < -50) {
-                    // recycle
                     p.x = Math.random() * w;
                     p.y = Math.random() * h * 0.6;
                     p.life = 1 + Math.random() * 2;
                 }
+            } else if (p.type === 'cloud') {
+                p.x += p.speed * dt * (0.2 + (this.wind / 200));
+                if (p.x - p.w > w) p.x = -p.w;
+            }
+
+            // decay particles that are not needed to keep total count bounded
+            if (this.particles.length > Math.max(200, Math.round((w * h) / 3500))) {
+                this.particles.splice(i, 1);
             }
         }
     }
@@ -426,20 +482,32 @@ class WeatherAnimator {
         const ctx = this.ctx;
         if (!ctx) return;
         ctx.clearRect(0, 0, this.width, this.height);
-
-        // subtle background dim for thunder flashes
-        if (this.mode === 'weather-thunder' && Math.random() < 0.008) {
-            ctx.fillStyle = 'rgba(255,255,255,0.25)';
+        // thunder flash (occasional)
+        if (this.targetMode === 'weather-thunder' && Math.random() < 0.01) {
+            ctx.fillStyle = 'rgba(255,255,255,0.22)';
             ctx.fillRect(0, 0, this.width, this.height);
+            // draw a simple bolt
+            ctx.strokeStyle = 'rgba(255,255,230,0.95)';
+            ctx.lineWidth = 2.2;
+            ctx.beginPath();
+            const sx = Math.random() * this.width * 0.8 + this.width * 0.1;
+            let sy = Math.random() * this.height * 0.4 + 10;
+            ctx.moveTo(sx, sy);
+            for (let i = 0; i < 8; i++) {
+                sx += (Math.random() - 0.5) * 60;
+                sy += 20 + Math.random() * 40;
+                ctx.lineTo(sx, sy);
+            }
+            ctx.stroke();
         }
 
         for (const p of this.particles) {
             if (p.type === 'rain') {
-                ctx.strokeStyle = `rgba(200,220,255,${p.alpha})`;
-                ctx.lineWidth = 1.2;
+                ctx.strokeStyle = `rgba(180,200,230,${p.alpha})`;
+                ctx.lineWidth = 1.4;
                 ctx.beginPath();
                 ctx.moveTo(p.x, p.y);
-                ctx.lineTo(p.x - 6, p.y - p.len);
+                ctx.lineTo(p.x - (this.wind * 0.06), p.y - p.len);
                 ctx.stroke();
             } else if (p.type === 'snow') {
                 ctx.fillStyle = `rgba(255,255,255,${p.alpha})`;
@@ -458,8 +526,29 @@ class WeatherAnimator {
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
                 ctx.fill();
+            } else if (p.type === 'cloud') {
+                // soft cloud using multiple circles
+                ctx.fillStyle = `rgba(255,255,255,${p.alpha})`;
+                ctx.beginPath();
+                ctx.ellipse(p.x, p.y, p.w * 0.6, p.h * 0.5, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.ellipse(p.x + p.w * 0.35, p.y - p.h * 0.15, p.w * 0.45, p.h * 0.45, 0, 0, Math.PI * 2);
+                ctx.fill();
             }
         }
+    }
+
+    _addCloud() {
+        this.particles.push({
+            type: 'cloud',
+            x: Math.random() * this.width,
+            y: 30 + Math.random() * (this.height * 0.35),
+            w: 60 + Math.random() * 220,
+            h: 20 + Math.random() * 60,
+            alpha: 0.08 + Math.random() * 0.18,
+            speed: 5 + Math.random() * 20
+        });
     }
 }
 
@@ -751,6 +840,9 @@ function startDashboard() {
     console.log(
         "Dashboard wird gestartet"
     );
+
+    // ensure canvas animator exists early
+    try { ensureWeatherAnimator(); } catch (e) { /* ignore */ }
 
     updateDateTime();
     updateVisitorPanel();
