@@ -489,6 +489,18 @@ class WeatherAnimator {
                 if (p.x - p.w > w) p.x = -p.w;
             }
 
+            // fade out particle types that are not wanted in the current target mode
+            const desired = (this.targetCounts[p.type] || 0) > 0;
+            if (!desired) {
+                // ensure an alpha property exists
+                if (typeof p.alpha !== 'number') p.alpha = 1;
+                p.alpha -= dt * 1.4; // fade speed (seconds)
+                if (p.alpha <= 0) {
+                    this.particles.splice(i, 1);
+                    continue;
+                }
+            }
+
             // decay particles that are not needed to keep total count bounded
             if (this.particles.length > Math.max(200, Math.round((w * h) / 3500))) {
                 this.particles.splice(i, 1);
