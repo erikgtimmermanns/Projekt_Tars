@@ -16,18 +16,12 @@ const facts = [
 let currentFact = 0;
 
 function rotateFact() {
-
     const factElement =
         document.getElementById(
             "fact-text"
         );
 
     if (!factElement) {
-
-        console.log(
-            "fact-text nicht gefunden"
-        );
-
         return;
     }
 
@@ -51,11 +45,14 @@ function rotateFact() {
 window.addEventListener(
     "load",
     () => {
+        const factElement = document.getElementById("fact-text");
+        if (!factElement) {
+            return;
+        }
 
         setInterval(
             rotateFact,
             5000
         );
-
     }
 );
