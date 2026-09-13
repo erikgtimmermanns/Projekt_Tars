@@ -1,17 +1,11 @@
-const supabaseConfig = window.SUPABASE_CONFIG || {};
-const configIsReady = Boolean(supabaseConfig.url && supabaseConfig.anonKey)
-  && !supabaseConfig.url.includes("YOUR-")
-  && !supabaseConfig.anonKey.includes("YOUR-");
+const defaultSupabaseConfig = {
+  url: "https://lybzifzwgvttyhwqpaig.supabase.co",
+  anonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx5YnppZnp3Z3Z0dHlod3FwYWlnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5NTMwNDcsImV4cCI6MjEwNDUyOTA0N30.LaRdl7zXgNX_GE3jOMfZ085tGcdFNFxpDIuhbLfoqgk",
+  bucketName: "visitor-assets",
+  tableName: "visitor_profiles"
+};
 
-window.supabaseClient = configIsReady && window.supabase
-  ? window.supabase.createClient(supabaseConfig.url, supabaseConfig.anonKey)
-  : null;
-
-const kioskConfig = window.SUPABASE_CONFIG || {};
-const kioskSupabaseUrl = kioskConfig.url || "";
-const kioskSupabaseKey = kioskConfig.anonKey || "";
-const kioskBucketName = kioskConfig.bucketName || "visitor-assets";
-const kioskTableName = kioskConfig.tableName || "visitor_profiles";
-const kioskSupabase = kioskSupabaseUrl && kioskSupabaseKey && !kioskSupabaseUrl.includes("YOUR-") && !kioskSupabaseKey.includes("YOUR-")
-    ? window.supabase.createClient(kioskSupabaseUrl, kioskSupabaseKey)
-    : null;
+export const supabaseConfig = {
+  ...defaultSupabaseConfig,
+  ...(window.SUPABASE_CONFIG || {})
+};

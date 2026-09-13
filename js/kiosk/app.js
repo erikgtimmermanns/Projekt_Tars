@@ -8,12 +8,12 @@ import { rotateFloorplan } from "./floorplan.js";
 document.addEventListener("DOMContentLoaded", async function () {
     console.log("HTML wurde vollständig geladen");
 
+    await loadVisitorProfile();
     updateDateTime();
     rotateWelcome();
     rotateFloorplan();
 //    rotateFact();
     loadWeather();
-    await loadVisitorProfile();
 
     setInterval(updateDateTime, 1000);
     setInterval(loadWeather, 600000);
