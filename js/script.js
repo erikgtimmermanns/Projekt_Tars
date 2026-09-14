@@ -328,9 +328,10 @@ function renderForecast(data) {
         const rainChance = Number(precip[index] ?? 0);
         const dayName = new Date(dateString + 'T12:00:00').toLocaleDateString('de-DE', { weekday: 'short' });
         const icon = getWeatherDescription(code)[0];
+        const dayClass = getWeatherClass(code);
 
         return `
-            <div class="forecast-day">
+            <div class="forecast-day ${dayClass}">
                 <div class="forecast-day-name">${dayName}</div>
                 <div class="forecast-day-icon">${icon}</div>
                 <div class="forecast-day-temp">${Math.round(maxTemp)}° / ${Math.round(minTemp)}°</div>
