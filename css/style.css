@@ -31,6 +31,27 @@ body {
     color: var(--cc-dark);
     font-family: "Albert Sans", Arial, sans-serif;
     transition: background 0.6s ease, color 0.6s ease;
+    animation: pageLoadFade 0.8s ease-out both;
+}
+
+@keyframes pageLoadFade {
+    from {
+        opacity: 0.96;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes floatInUp {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 body.time-morning {
@@ -196,6 +217,20 @@ body.time-night .screen::before {
     margin-top: 12px;
 }
 
+.topbar,
+.visitor-panel,
+.room-plan,
+.weather,
+.footer {
+    animation: floatInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.topbar { animation-delay: 0.05s; }
+.visitor-panel { animation-delay: 0.1s; }
+.room-plan { animation-delay: 0.15s; }
+.weather { animation-delay: 0.2s; }
+.footer { animation-delay: 0.25s; }
+
 .visitor-box {
     display: grid;
     grid-template-columns: 120px minmax(0, 1fr);
@@ -299,6 +334,16 @@ body.time-night .screen::before {
     transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
     pointer-events: auto;
     cursor: pointer;
+    animation: fpMarkerPulse 2.8s ease-in-out infinite;
+}
+
+@keyframes fpMarkerPulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(0, 103, 185, 0.18), 0 6px 14px rgba(18,38,63,0.12);
+    }
+    50% {
+        box-shadow: 0 0 0 10px rgba(0, 103, 185, 0.08), 0 10px 20px rgba(18,38,63,0.18);
+    }
 }
 
 .fp-marker:hover {
@@ -549,6 +594,13 @@ body.time-night .screen::before {
     text-transform: none;
     white-space: nowrap;
     color: var(--cc-dark);
+    transition: transform 180ms ease, filter 180ms ease;
+}
+
+.reception-status:hover,
+.status:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.03);
 }
 
 .reception-status::before {
@@ -573,6 +625,7 @@ body.time-night .screen::before {
     align-items: center;
     gap: 8px;
     white-space: nowrap;
+    transition: transform 180ms ease, filter 180ms ease;
 }
 
 .status::before {
@@ -1062,6 +1115,13 @@ body.time-night .screen::before {
     border-left: 1px solid rgba(0,0,0,.08);
     border-radius: 12px;
     background: rgba(255,255,255,0.18);
+    transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+}
+
+.weather-detail:hover {
+    transform: translateY(-1px);
+    background: rgba(255,255,255,0.28);
+    box-shadow: 0 8px 18px rgba(18,38,63,0.07);
 }
 
 .weather-detail:first-child {
