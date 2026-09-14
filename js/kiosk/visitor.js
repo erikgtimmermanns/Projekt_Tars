@@ -1,3 +1,5 @@
+import { supabase as kioskSupabase, tableName as kioskTableName } from "../shared/supabase.js";
+
 function updateVisitorPanel() {
     const panel = document.getElementById("visitor-panel");
     const nameTarget = document.getElementById("visitor-name-placeholder");
