@@ -657,6 +657,8 @@ body.time-night .screen::before {
             #ffffff,
             #f3f8fc
         );
+    background-size: 180% 180%;
+    background-position: 50% 50%;
 
     box-shadow:
         0 12px 28px rgba(18,38,63,.08),
@@ -670,6 +672,7 @@ body.time-night .screen::before {
     backdrop-filter: blur(2px);
 
     --weather-gif: none;
+    animation: weatherCardDrift 18s ease-in-out infinite alternate;
 }
 
 .weather:hover {
@@ -991,13 +994,44 @@ body.time-night .screen::before {
 }
 
 /* Sichtbarkeit pro Wetterklasse */
-.weather-sunny .weather-sun { opacity: 1; transform: translateY(0) scale(1); }
-.weather-sunny .weather-cloud, .weather-sunny .cloud-two { opacity: 0.12; transform: translateX(0); }
-.weather-cloudy .weather-cloud, .weather-cloudy .cloud-two { opacity: 1; animation: cloudDrift 18s ease-in-out infinite; }
-.weather-rain  .rain-layer { opacity: 0.9; }
-.weather-snow  .snow-layer { opacity: 0.9; }
-.weather-fog   .fog-layer  { opacity: 0.85; }
-.weather-thunder .lightning { opacity: 1; animation: lightningFlash 4s linear infinite; }
+.weather-sunny .weather-sun {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    animation: sunPulse 5s ease-in-out infinite, weatherFloat 3s ease-in-out infinite;
+}
+
+.weather-sunny .weather-cloud, .weather-sunny .cloud-two {
+    opacity: 0.14;
+    transform: translateX(0);
+    filter: blur(0.2px);
+}
+
+.weather-cloudy .weather-cloud, .weather-cloudy .cloud-two {
+    opacity: 1;
+    animation: cloudDrift 18s ease-in-out infinite;
+}
+
+.weather-rain  .rain-layer {
+    opacity: 0.96;
+    filter: blur(0.2px) saturate(1.25);
+    transform: translateY(-2px) scaleY(1.03);
+}
+
+.weather-snow  .snow-layer {
+    opacity: 0.95;
+    transform: scale(1.04);
+}
+
+.weather-fog   .fog-layer  {
+    opacity: 0.9;
+    transform: translateY(0) scaleX(1.04);
+}
+
+.weather-thunder .lightning {
+    opacity: 1;
+    animation: lightningFlash 4s linear infinite;
+    filter: drop-shadow(0 0 18px rgba(255,255,255,0.75));
+}
 
 
 /* Rechte Bereiche */
@@ -1279,7 +1313,8 @@ body.time-night .screen::before {
         linear-gradient(
             135deg,
             #fffef0,
-            #fff1aa
+            #fff1aa 45%,
+            #f8d96d 100%
         );
 }
 
@@ -1301,15 +1336,26 @@ body.time-night .screen::before {
 
     background:
         radial-gradient(
-            rgba(255,215,0,.5),
+            rgba(255,215,0,.78),
+            rgba(255,209,76,.33) 32%,
             transparent 70%
         );
+
+    box-shadow: 0 0 30px rgba(255, 194, 69, 0.42), 0 0 70px rgba(255, 198, 60, 0.22);
 
     animation:
         sunPulse
         6s
         ease-in-out
         infinite;
+}
+
+.weather-sunny::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg, rgba(255,255,255,0.18), transparent 30%, rgba(255,244,178,0.16));
+    animation: softShimmer 11s ease-in-out infinite alternate;
 }
 
 /* =========================================
@@ -1322,7 +1368,8 @@ body.time-night .screen::before {
         linear-gradient(
             135deg,
             #eef5fb,
-            #ccddec
+            #d4e4f5 45%,
+            #b9cfe1 100%
         );
 }
 
@@ -1342,12 +1389,21 @@ body.time-night .screen::before {
             rgba(0,103,185,.18) 20px,
             transparent 22px
         );
+    background-size: 120% 120%;
 
     animation:
         rainMove
         1s
         linear
         infinite;
+}
+
+.weather-rain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(118,150,182,0.14));
+    animation: softShimmer 8s ease-in-out infinite alternate;
 }
 
 /* =========================================
@@ -1359,8 +1415,9 @@ body.time-night .screen::before {
     background:
         linear-gradient(
             135deg,
-            #ffffff,
-            #ddeaf5
+            #fefefe,
+            #ebf4fb 52%,
+            #dfeaf5 100%
         );
 }
 
@@ -1374,18 +1431,27 @@ body.time-night .screen::before {
 
     background-image:
         radial-gradient(
-            white 2px,
+            rgba(255,255,255,0.9) 2px,
             transparent 3px
         );
 
     background-size:
         60px 60px;
+    background-position: 0 0, 10px 20px;
 
     animation:
         snowFall
         10s
         linear
         infinite;
+}
+
+.weather-snow::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.18), rgba(136,170,198,0.12));
+    animation: softShimmer 10s ease-in-out infinite alternate;
 }
 
 /* =========================================
@@ -1398,7 +1464,8 @@ body.time-night .screen::before {
         linear-gradient(
             135deg,
             #c9d5dd,
-            #9caebb
+            #a3b6c3 48%,
+            #7f8ea2 100%
         );
 }
 
@@ -1422,6 +1489,15 @@ body.time-night .screen::before {
         infinite;
 }
 
+.weather-thunder::before {
+    content: "";
+    position: absolute;
+    inset: -10% -5% 0;
+    background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,0.14) 45%, transparent 70%);
+    transform: translateX(-18%);
+    animation: softShimmer 7s ease-in-out infinite alternate;
+}
+
 /* =========================================
    NEBEL
 ========================================= */
@@ -1432,7 +1508,8 @@ body.time-night .screen::before {
         linear-gradient(
             135deg,
             #edf2f5,
-            #dce5ea
+            #dce5ea 52%,
+            #c9d4db 100%
         );
 }
 
@@ -1448,15 +1525,24 @@ body.time-night .screen::before {
         repeating-linear-gradient(
             0deg,
             transparent,
-            rgba(255,255,255,.5) 30px,
+            rgba(255,255,255,.54) 30px,
             transparent 60px
         );
+    opacity: 0.9;
 
     animation:
         fogMove
         8s
         ease-in-out
         infinite alternate;
+}
+
+.weather-fog::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.24) 35%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.26) 65%, rgba(255,255,255,0));
+    animation: softShimmer 12s ease-in-out infinite alternate;
 }
 
 /* =========================================
