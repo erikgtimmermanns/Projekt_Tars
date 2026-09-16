@@ -1,21 +1,32 @@
-import { updateDateTime } from "./datetime.js";
-import { rotateWelcome } from "./welcome.js";
-import { loadWeather } from "./weather.js";
-import { loadVisitorProfile } from "./visitor.js";
-import { rotateFloorplan } from "./floorplan.js";
-//import { rotateFact } from "./facts.js";
+import { updateDateTime, updateReceptionStatus, updateTimeOfDayTheme } from './datetime.js';
+import { updateVisitorPanel } from './visitor.js';
+import { loadWeather, testWeather, ensureWeatherAnimator } from './weather.js';
 
-document.addEventListener("DOMContentLoaded", async function () {
-    console.log("HTML wurde vollständig geladen");
+console.log('kiosk app.js loaded');
 
-    await loadVisitorProfile();
+function startDashboard() {
+    console.log('Dashboard wird gestartet');
+
+    try { ensureWeatherAnimator(); } catch (e) { /* ignore */ }
+
     updateDateTime();
-    rotateWelcome();
-    rotateFloorplan();
-//    rotateFact();
+    updateReceptionStatus();
+    updateTimeOfDayTheme();
+    updateVisitorPanel();
     loadWeather();
 
-    setInterval(updateDateTime, 1000);
-    setInterval(loadWeather, 600000);
-    setInterval(loadVisitorProfile, 15000);
-});
+    window.setInterval(updateDateTime, 1000);
+    window.setInterval(updateReceptionStatus, 60000);
+    window.setInterval(updateTimeOfDayTheme, 60000);
+    window.setInterval(loadWeather, 600000);
+
+    // expose test helpers in console
+    window.testWeather = testWeather;
+    window.loadWeather = loadWeather;
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', startDashboard);
+} else {
+    startDashboard();
+}
