@@ -15,44 +15,18 @@ const facts = [
 
 let currentFact = 0;
 
-function rotateFact() {
-    const factElement =
-        document.getElementById(
-            "fact-text"
-        );
-
-    if (!factElement) {
-        return;
-    }
+export function rotateFact() {
+    const factElement = document.getElementById("fact-text");
+    if (!factElement) return;
 
     currentFact++;
-
-    if (
-        currentFact >= facts.length
-    ) {
-        currentFact = 0;
-    }
-
-    factElement.textContent =
-        facts[currentFact];
-
-    console.log(
-        "Neuer Fakt:",
-        facts[currentFact]
-    );
+    if (currentFact >= facts.length) currentFact = 0;
+    factElement.textContent = facts[currentFact];
+    console.log("Neuer Fakt:", facts[currentFact]);
 }
 
-window.addEventListener(
-    "load",
-    () => {
-        const factElement = document.getElementById("fact-text");
-        if (!factElement) {
-            return;
-        }
-
-        setInterval(
-            rotateFact,
-            5000
-        );
-    }
-);
+export function initFacts(intervalMs = 5000) {
+    // render immediately if element exists
+    rotateFact();
+    return setInterval(rotateFact, intervalMs);
+}

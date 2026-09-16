@@ -675,7 +675,7 @@ class WeatherAnimator {
 
 // instantiate animator lazily when DOM is ready
 let weatherAnimator = null;
-function ensureWeatherAnimator() {
+export function ensureWeatherAnimator() {
     if (!weatherAnimator) {
         weatherAnimator = new WeatherAnimator('weather-canvas');
     }
@@ -687,7 +687,7 @@ function ensureWeatherAnimator() {
    WETTERDATEN VON OPEN-METEO LADEN
 ========================================= */
 
-async function loadWeather() {
+export async function loadWeather() {
     const weatherIcon =
         document.getElementById(
             "weather-icon"
@@ -879,123 +879,28 @@ async function loadWeather() {
  * testWeather(95); Gewitter
  */
 
-function testWeather(code) {
-    const weatherIcon =
-        document.getElementById(
-            "weather-icon"
-        );
+export function testWeather(code) {
+    const weatherIcon = document.getElementById("weather-icon");
+    const weatherDescription = document.getElementById("weather-description");
 
-    const weatherDescription =
-        document.getElementById(
-            "weather-description"
-        );
+    const weather = getWeatherDescription(Number(code));
 
-    const weather =
-        getWeatherDescription(
-            Number(code)
-        );
+    if (weatherIcon) weatherIcon.textContent = weather[0];
+    if (weatherDescription) weatherDescription.textContent = weather[1] + " · Testmodus";
 
-    if (weatherIcon) {
-        weatherIcon.textContent =
-            weather[0];
+    updateWeatherAnimation(Number(code));
+
+    console.log("Wetter-Test gestartet:", {
+        code: Number(code),
+        class: getWeatherClass(Number(code)),
+        description: weather[1]
+    });
+}
+
+// Expose to console as convenience when script is loaded standalone
+try {
+    if (typeof window !== 'undefined') {
+        window.testWeather = testWeather;
+        window.loadWeather = loadWeather;
     }
-
-    if (weatherDescription) {
-        weatherDescription.textContent =
-            weather[1] +
-            " · Testmodus";
-    }
-
-    updateWeatherAnimation(
-        Number(code)
-    );
-
-    console.log(
-        "Wetter-Test gestartet:",
-        {
-            code: Number(code),
-            class:
-                getWeatherClass(
-                    Number(code)
-                ),
-            description:
-                weather[1]
-        }
-    );
-}
-
-
-/* Für Tests über die Browser-Konsole */
-
-window.testWeather =
-    testWeather;
-
-window.loadWeather =
-    loadWeather;
-
-
-/* =========================================
-   DASHBOARD STARTEN
-========================================= */
-
-function updateTimeOfDayTheme() {
-    const hour = new Date().getHours();
-    let mode = 'day';
-
-    if (hour >= 5 && hour < 11) {
-        mode = 'morning';
-    } else if (hour >= 11 && hour < 17) {
-        mode = 'day';
-    } else if (hour >= 17 && hour < 21) {
-        mode = 'evening';
-    } else {
-        mode = 'night';
-    }
-
-    document.body.classList.remove('time-morning', 'time-day', 'time-evening', 'time-night');
-    document.body.classList.add('time-' + mode);
-}
-
-function startDashboard() {
-    console.log(
-        "Dashboard wird gestartet"
-    );
-
-    // ensure canvas animator exists early
-    try { ensureWeatherAnimator(); } catch (e) { /* ignore */ }
-
-    updateDateTime();
-    updateReceptionStatus();
-    updateTimeOfDayTheme();
-    updateVisitorPanel();
-    loadWeather();
-
-    window.setInterval(
-        updateDateTime,
-        1000
-    );
-
-    window.setInterval(
-        updateReceptionStatus,
-        60000
-    );
-
-    window.setInterval(
-        updateTimeOfDayTheme,
-        60000
-    );
-
-    window.setInterval(
-        loadWeather,
-        600000
-    );
-}
-
-if (document.readyState === "loading") {
-    document.addEventListener(
-        "DOMContentLoaded",
-        startDashboard
-    );
-} else {
-    startDashboard();
-}
+} catch (e) { /* ignore */ }

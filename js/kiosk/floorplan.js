@@ -482,8 +482,8 @@ function downloadHotspotsPatch() {
     URL.revokeObjectURL(url);
 }
 
-// Initial render
-document.addEventListener('DOMContentLoaded', () => {
+// Initial render helper to be called by the app
+export function initFloorplan() {
     const image = document.getElementById('floorplan-image');
     const overlay = document.getElementById('floorplan-overlay');
     const toggle = document.getElementById('toggle-highlights');
@@ -505,7 +505,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (window.ResizeObserver) {
             const ro = new ResizeObserver(safeRender);
             ro.observe(image);
-            // also observe parent in case layout shifts
             const parent = image.parentElement;
             if (parent) ro.observe(parent);
         } else {
@@ -531,9 +530,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-
-    // download patch button removed per request
-
     // close info panel when clicking outside
     document.addEventListener('click', (ev) => {
         const info = document.getElementById('fp-info');
@@ -545,6 +541,17 @@ document.addEventListener('DOMContentLoaded', () => {
             info.style.display = 'none';
             info.setAttribute('aria-hidden', 'true');
         }
-        
     });
-});
+}
+
+// Ensure function exists. Previously this was defined in the monolithic script;
+// provide a conservative implementation here to avoid runtime ReferenceErrors.
+function ensureAllHotspotTypes(fp) {
+    // If no hotspots array, create one.
+    if (!fp) return;
+    if (!Array.isArray(fp.hotspots)) fp.hotspots = [];
+
+    // Do not add visible placeholder markers by default to avoid cluttering UI.
+    // This function is a no-op guard to keep compatibility with callers.
+    return;
+}

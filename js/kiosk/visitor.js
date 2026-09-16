@@ -1,6 +1,6 @@
 import { supabase as kioskSupabase, tableName as kioskTableName } from "../shared/supabase.js";
 
-function updateVisitorPanel() {
+export function updateVisitorPanel() {
     const panel = document.getElementById("visitor-panel");
     const nameTarget = document.getElementById("visitor-name-placeholder");
     const logoBox = document.querySelector(".visitor-logo");
@@ -67,5 +67,10 @@ export async function loadVisitorProfile() {
         window.visitorImageUrl = "";
     }
 
+    updateVisitorPanel();
+}
+
+export function setVisitorName(name) {
+    window.visitorName = String(name || '').trim();
     updateVisitorPanel();
 }

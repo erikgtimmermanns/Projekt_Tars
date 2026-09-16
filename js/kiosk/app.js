@@ -1,6 +1,9 @@
 import { updateDateTime, updateReceptionStatus, updateTimeOfDayTheme } from './datetime.js';
-import { updateVisitorPanel } from './visitor.js';
+import { updateVisitorPanel, loadVisitorProfile } from './visitor.js';
 import { loadWeather, testWeather, ensureWeatherAnimator } from './weather.js';
+import { initWelcome } from './welcome.js';
+import { initFacts } from './facts.js';
+import { initFloorplan } from './floorplan.js';
 
 console.log('kiosk app.js loaded');
 
@@ -12,7 +15,8 @@ function startDashboard() {
     updateDateTime();
     updateReceptionStatus();
     updateTimeOfDayTheme();
-    updateVisitorPanel();
+    // load visitor profile (will call updateVisitorPanel when done)
+    try { loadVisitorProfile(); } catch (e) { updateVisitorPanel(); }
     loadWeather();
 
     window.setInterval(updateDateTime, 1000);
@@ -23,6 +27,10 @@ function startDashboard() {
     // expose test helpers in console
     window.testWeather = testWeather;
     window.loadWeather = loadWeather;
+    // initialize optional modules
+    try { initWelcome(); } catch (e) { console.warn('initWelcome failed', e); }
+    try { initFacts(); } catch (e) { console.warn('initFacts failed', e); }
+    try { initFloorplan(); } catch (e) { console.warn('initFloorplan failed', e); }
 }
 
 if (document.readyState === 'loading') {
