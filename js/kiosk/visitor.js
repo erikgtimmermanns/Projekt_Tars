@@ -2,42 +2,63 @@ import { supabase as kioskSupabase, tableName as kioskTableName } from "../share
 
 export function updateVisitorPanel() {
     const panel = document.getElementById("visitor-panel");
-    const nameTarget = document.getElementById("visitor-name-placeholder");
-    const logoBox = document.querySelector(".visitor-logo");
-    const imageUrl = window.visitorImageUrl || "";
-    const nameValue = (window.visitorName || "").trim();
+    const messageTarget = document.getElementById("visitor-message-placeholder");
+    const companyEl = document.getElementById("company-logo");
+    const visitorEl = document.getElementById("visitor-logo");
 
-    if (!panel || !nameTarget) {
+    const visitorMessage = String(window.visitorMessage || "").trim();
+    const imageUrl = window.visitorImageUrl || "";
+    const companyUrl = window.companyLogoUrl || "";
+
+    if (!panel || !messageTarget) {
         return;
     }
 
-    if (nameValue.length > 0) {
-        nameTarget.textContent = nameValue;
+    // Show panel when there is either a message or at least one logo/image
+    const shouldShow = visitorMessage.length > 0 || imageUrl || companyUrl;
+    if (shouldShow) {
+        messageTarget.textContent = visitorMessage.length > 0 ? visitorMessage : "___";
         panel.hidden = false;
     } else {
-        nameTarget.textContent = "___";
+        messageTarget.textContent = "___";
         panel.hidden = true;
     }
 
-    if (logoBox) {
-        if (imageUrl) {
-            logoBox.style.backgroundImage = `url("${imageUrl}")`;
-            logoBox.style.backgroundSize = "cover";
-            logoBox.style.backgroundPosition = "center";
-            logoBox.style.color = "transparent";
-            logoBox.textContent = "";
+    if (companyEl) {
+        if (companyUrl) {
+            companyEl.style.backgroundImage = `url("${companyUrl}")`;
+            companyEl.style.backgroundSize = "contain";
+            companyEl.style.backgroundPosition = "center";
+            companyEl.style.backgroundRepeat = "no-repeat";
+            companyEl.textContent = "";
         } else {
-            logoBox.style.backgroundImage = "none";
-            logoBox.style.color = "#0067b9";
-            logoBox.textContent = "Logo";
+            companyEl.style.backgroundImage = "none";
+            companyEl.textContent = "Firma";
+        }
+    }
+
+    if (visitorEl) {
+        if (imageUrl) {
+            visitorEl.style.backgroundImage = `url("${imageUrl}")`;
+            visitorEl.style.backgroundSize = "contain";
+            visitorEl.style.backgroundPosition = "center";
+            visitorEl.style.backgroundRepeat = "no-repeat";
+            visitorEl.style.color = "transparent";
+            visitorEl.textContent = "";
+        } else {
+            visitorEl.style.backgroundImage = "none";
+            visitorEl.style.color = "#0067b9";
+            visitorEl.textContent = "Logo";
         }
     }
 }
 
 export async function loadVisitorProfile() {
     if (!kioskSupabase) {
-        window.visitorName = "Max Mustermann";
+        // fallback for local testing
+        window.visitorMessage = "Max Mustermann";
         window.visitorImageUrl = "";
+        window.companyLogoUrl = "";
         updateVisitorPanel();
         return;
     }
@@ -45,7 +66,7 @@ export async function loadVisitorProfile() {
     try {
         const { data, error } = await kioskSupabase
             .from(kioskTableName)
-            .select("visitor_name, image_url")
+            .select("visitor_message, image_url")
             .order("updated_at", { ascending: false })
             .limit(1)
             .maybeSingle();
@@ -54,23 +75,33 @@ export async function loadVisitorProfile() {
             throw error;
         }
 
-        if (data && data.visitor_name) {
-            window.visitorName = data.visitor_name;
+        if (data) {
+            // Prefer new `visitor_message`
+            window.visitorMessage = data.visitor_message || "";
             window.visitorImageUrl = data.image_url || "";
+            // companyLogoUrl is optional and not stored in this table by default
+            window.companyLogoUrl = window.companyLogoUrl || "";
         } else {
-            window.visitorName = "";
+            window.visitorMessage = "";
             window.visitorImageUrl = "";
+            window.companyLogoUrl = "";
         }
     } catch (error) {
         console.warn("Visitor profile load failed:", error.message || error);
-        window.visitorName = "";
+        window.visitorMessage = "";
         window.visitorImageUrl = "";
+        window.companyLogoUrl = "";
     }
 
     updateVisitorPanel();
 }
 
-export function setVisitorName(name) {
-    window.visitorName = String(name || '').trim();
+export function setVisitorMessage(text) {
+    window.visitorMessage = String(text || '').trim();
     updateVisitorPanel();
+}
+
+// backward compatibility
+export function setVisitorName(name) {
+    setVisitorMessage(name);
 }

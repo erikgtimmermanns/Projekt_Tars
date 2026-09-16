@@ -18,7 +18,13 @@ const uploadMessage = document.getElementById("uploadMessage");
 const previewButton = document.getElementById("previewButton");
 const visitorForm = document.getElementById("visitorForm");
 const previewBox = document.getElementById("previewBox");
-const visitorNameInput = document.getElementById("visitorName");
+const visitorMessageInput = document.getElementById("visitorMessage");
+const visitorNameInput = document.getElementById("visitorName"); // fallback for older admin markup
+
+function getVisitorMessageValue() {
+  const el = visitorMessageInput || visitorNameInput || document.getElementById("visitorMessage") || document.getElementById("visitorName");
+  return (el && typeof el.value === 'string') ? el.value.trim() : '';
+}
 
 let authMode = "login";
 let selectedFile = null;
@@ -112,14 +118,37 @@ function validateFile(file) {
 }
 
 function renderPreview(url, fileName) {
-  if (!url) {
+  const message = getVisitorMessageValue() || "Willkommen";
+
+  if (!url && !message) {
     previewBox.classList.add("empty");
     previewBox.innerHTML = "Noch keine Vorschau vorhanden";
     return;
   }
 
   previewBox.classList.remove("empty");
-  previewBox.innerHTML = `<img src="${url}" alt="${fileName || "Visitor Preview"}">`;
+
+  const visitorImageStyle = url ? `background-image: url('${url}');` : '';
+
+  previewBox.innerHTML = `
+    <div class="visitor-box" style="max-width:420px; margin:auto;">
+      <div class="logo-column">
+        <div class="company-logo" id="company-logo-preview">Firma</div>
+        <div class="visitor-logo" id="visitor-logo-preview" style="${visitorImageStyle}">Logo</div>
+      </div>
+      <p class="visitor-message"><span id="visitor-message-placeholder-preview">${escapeHtml(message)}</span></p>
+    </div>
+  `;
+}
+
+// simple HTML escaper to avoid injection from admin input
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 async function handleAuthSubmit(event) {
@@ -201,9 +230,9 @@ async function handleVisitorSave(event) {
     return;
   }
 
-  const visitorName = visitorNameInput.value.trim();
-  if (!visitorName) {
-    showNotice(uploadMessage, "error", "Bitte geben Sie einen Namen ein.");
+  const visitorMessage = getVisitorMessageValue();
+  if (!visitorMessage) {
+    showNotice(uploadMessage, "error", "Bitte geben Sie einen Begrüßungstext ein.");
     return;
   }
 
@@ -222,7 +251,7 @@ async function handleVisitorSave(event) {
     showNotice(uploadMessage, "success", "Datei wird nach Supabase hochgeladen...");
 
     const fileExt = selectedFile.name.split(".").pop();
-    const safeFileName = `${Date.now()}-${visitorName.replace(/[^a-zA-Z0-9-_]/g, "-")}.${fileExt}`;
+    const safeFileName = `${Date.now()}-${visitorMessage.replace(/[^a-zA-Z0-9-_]/g, "-")}.${fileExt}`;
 
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from(bucketName)
@@ -240,7 +269,7 @@ async function handleVisitorSave(event) {
     const { error: dbError } = await supabase.from(tableName).upsert([
       {
         id: 1,
-        visitor_name: visitorName,
+        visitor_message: visitorMessage,
         image_url: uploadedPublicUrl,
         updated_at: new Date().toISOString()
       }
@@ -249,7 +278,7 @@ async function handleVisitorSave(event) {
     if (dbError) throw dbError;
 
     showNotice(uploadMessage, "success", "Besucher und Bild wurden erfolgreich gespeichert.");
-    window.visitorName = visitorName;
+    window.visitorMessage = visitorMessage;
     window.visitorImageUrl = uploadedPublicUrl;
     renderPreview(uploadedPublicUrl, selectedFile.name);
   } catch (error) {
@@ -297,14 +326,14 @@ uploadDropZone.addEventListener("drop", (event) => {
 });
 
 previewButton.addEventListener("click", () => {
-  const name = visitorNameInput.value.trim();
+  const name = getVisitorMessageValue();
   if (!selectedFile) {
     showNotice(uploadMessage, "error", "Bitte wählen Sie zuerst eine Datei aus.");
     return;
   }
 
   if (!name) {
-    showNotice(uploadMessage, "error", "Bitte geben Sie zuerst den Namen des Besuchers ein.");
+    showNotice(uploadMessage, "error", "Bitte geben Sie zuerst den Begrüßungstext ein.");
     return;
   }
 
