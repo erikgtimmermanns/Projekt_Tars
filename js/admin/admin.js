@@ -21,7 +21,7 @@ const previewBox = document.getElementById("previewBox");
 const visitorMessageInput = document.getElementById("visitorMessage");
 const visitorNameInput = document.getElementById("visitorName"); // fallback for older admin markup
 
-function getVisitorMessageValue() {
+function getVisitorTextValue() {
   const el = visitorMessageInput || visitorNameInput || document.getElementById("visitorMessage") || document.getElementById("visitorName");
   return (el && typeof el.value === 'string') ? el.value.trim() : '';
 }
@@ -117,8 +117,17 @@ function validateFile(file) {
   return { valid: true, message: "Datei gültig." };
 }
 
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function renderPreview(url, fileName) {
-  const message = getVisitorMessageValue() || "Willkommen";
+  const message = getVisitorTextValue() || "Willkommen";
 
   if (!url && !message) {
     previewBox.classList.add("empty");
@@ -128,27 +137,15 @@ function renderPreview(url, fileName) {
 
   previewBox.classList.remove("empty");
 
-  const visitorImageStyle = url ? `background-image: url('${url}');` : '';
+  const logoStyle = url ? `background-image: url('${url}'); background-size: contain; background-position: center; background-repeat: no-repeat;` : '';
 
   previewBox.innerHTML = `
     <div class="visitor-box" style="max-width:420px; margin:auto;">
       <div class="logo-column">
-        <div class="company-logo" id="company-logo-preview">Firma</div>
-        <div class="visitor-logo" id="visitor-logo-preview" style="${visitorImageStyle}">Logo</div>
+        <div class="company-logo" id="company-logo-preview" style="${logoStyle}">Firma</div>
       </div>
-      <p class="visitor-message"><span id="visitor-message-placeholder-preview">${escapeHtml(message)}</span></p>
     </div>
   `;
-}
-
-// simple HTML escaper to avoid injection from admin input
-function escapeHtml(str) {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
 }
 
 async function handleAuthSubmit(event) {
@@ -230,8 +227,8 @@ async function handleVisitorSave(event) {
     return;
   }
 
-  const visitorMessage = getVisitorMessageValue();
-  if (!visitorMessage) {
+  const visitorName = getVisitorTextValue();
+  if (!visitorName) {
     showNotice(uploadMessage, "error", "Bitte geben Sie einen Begrüßungstext ein.");
     return;
   }
@@ -251,7 +248,7 @@ async function handleVisitorSave(event) {
     showNotice(uploadMessage, "success", "Datei wird nach Supabase hochgeladen...");
 
     const fileExt = selectedFile.name.split(".").pop();
-    const safeFileName = `${Date.now()}-${visitorMessage.replace(/[^a-zA-Z0-9-_]/g, "-")}.${fileExt}`;
+    const safeFileName = `${Date.now()}-${visitorName.replace(/[^a-zA-Z0-9-_]/g, "-")}.${fileExt}`;
 
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from(bucketName)
@@ -269,8 +266,8 @@ async function handleVisitorSave(event) {
     const { error: dbError } = await supabase.from(tableName).upsert([
       {
         id: 1,
-        visitor_message: visitorMessage,
-        image_url: uploadedPublicUrl,
+        visitor_name: visitorName,
+        company_logo_url: uploadedPublicUrl,
         updated_at: new Date().toISOString()
       }
     ]);
@@ -278,8 +275,8 @@ async function handleVisitorSave(event) {
     if (dbError) throw dbError;
 
     showNotice(uploadMessage, "success", "Besucher und Bild wurden erfolgreich gespeichert.");
-    window.visitorMessage = visitorMessage;
-    window.visitorImageUrl = uploadedPublicUrl;
+    window.visitorName = visitorName;
+    window.companyLogoUrl = uploadedPublicUrl;
     renderPreview(uploadedPublicUrl, selectedFile.name);
   } catch (error) {
     showNotice(uploadMessage, "error", error.message || "Upload fehlgeschlagen.");
@@ -326,7 +323,7 @@ uploadDropZone.addEventListener("drop", (event) => {
 });
 
 previewButton.addEventListener("click", () => {
-  const name = getVisitorMessageValue();
+  const name = getVisitorTextValue();
   if (!selectedFile) {
     showNotice(uploadMessage, "error", "Bitte wählen Sie zuerst eine Datei aus.");
     return;

@@ -3,10 +3,11 @@ import { supabase as kioskSupabase, tableName as kioskTableName } from "../share
 export function updateVisitorPanel() {
     const panel = document.getElementById("visitor-panel");
     const messageTarget = document.getElementById("visitor-message-placeholder");
-    const companyEl = document.getElementById("company-logo");
     const visitorEl = document.getElementById("visitor-logo");
 
-    const visitorMessage = String(window.visitorMessage || "").trim();
+    const visitorName = String(window.visitorName || "").trim();
+    const welcomeMessage = visitorName ? `Wir freuen uns heute, ${visitorName} in unserer Geschäftsstelle Düsseldorf begrüßen zu dürfen.` : "";
+    
     const imageUrl = window.visitorImageUrl || "";
     const companyUrl = window.companyLogoUrl || "";
 
@@ -15,27 +16,15 @@ export function updateVisitorPanel() {
     }
 
     // Show panel when there is either a message or at least one logo/image
-    const shouldShow = visitorMessage.length > 0 || imageUrl || companyUrl;
+    const shouldShow = visitorName.length > 0 || imageUrl;
     if (shouldShow) {
-        messageTarget.textContent = visitorMessage.length > 0 ? visitorMessage : "___";
+        messageTarget.textContent = visitorName.length > 0 ? welcomeMessage : "___";
         panel.hidden = false;
     } else {
         messageTarget.textContent = "___";
         panel.hidden = true;
     }
 
-    if (companyEl) {
-        if (companyUrl) {
-            companyEl.style.backgroundImage = `url("${companyUrl}")`;
-            companyEl.style.backgroundSize = "contain";
-            companyEl.style.backgroundPosition = "center";
-            companyEl.style.backgroundRepeat = "no-repeat";
-            companyEl.textContent = "";
-        } else {
-            companyEl.style.backgroundImage = "none";
-            companyEl.textContent = "Firma";
-        }
-    }
 
     if (visitorEl) {
         if (imageUrl) {
@@ -44,10 +33,10 @@ export function updateVisitorPanel() {
             visitorEl.style.backgroundPosition = "center";
             visitorEl.style.backgroundRepeat = "no-repeat";
             visitorEl.style.color = "transparent";
-            visitorEl.textContent = "";
+            visitorEl.textContent = "+";
         } else {
             visitorEl.style.backgroundImage = "none";
-            visitorEl.style.color = "#0067b9";
+            visitorEl.style.color = "#0a0a0a";
             visitorEl.textContent = "Logo";
         }
     }
@@ -56,7 +45,7 @@ export function updateVisitorPanel() {
 export async function loadVisitorProfile() {
     if (!kioskSupabase) {
         // fallback for local testing
-        window.visitorMessage = "Max Mustermann";
+        window.visitorName = "";
         window.visitorImageUrl = "";
         window.companyLogoUrl = "";
         updateVisitorPanel();
@@ -64,9 +53,9 @@ export async function loadVisitorProfile() {
     }
 
     try {
-        const { data, error } = await kioskSupabase
-            .from(kioskTableName)
-            .select("visitor_message, image_url")
+            const { data, error } = await kioskSupabase
+                .from(kioskTableName)
+                .select("visitor_name, company_logo_url")
             .order("updated_at", { ascending: false })
             .limit(1)
             .maybeSingle();
@@ -76,19 +65,16 @@ export async function loadVisitorProfile() {
         }
 
         if (data) {
-            // Prefer new `visitor_message`
-            window.visitorMessage = data.visitor_message || "";
-            window.visitorImageUrl = data.image_url || "";
-            // companyLogoUrl is optional and not stored in this table by default
-            window.companyLogoUrl = window.companyLogoUrl || "";
+            // Load visitor_name (single source of truth)
+                window.visitorName = data.visitor_name || "";
+                window.companyLogoUrl = data.company_logo_url || window.companyLogoUrl || "";
         } else {
-            window.visitorMessage = "";
-            window.visitorImageUrl = "";
+            window.visitorName = "";
             window.companyLogoUrl = "";
         }
     } catch (error) {
         console.warn("Visitor profile load failed:", error.message || error);
-        window.visitorMessage = "";
+        window.visitorName = "";
         window.visitorImageUrl = "";
         window.companyLogoUrl = "";
     }
@@ -96,12 +82,12 @@ export async function loadVisitorProfile() {
     updateVisitorPanel();
 }
 
-export function setVisitorMessage(text) {
-    window.visitorMessage = String(text || '').trim();
+export function setvisitorName(text) {
+    window.visitorName = String(text || '').trim();
     updateVisitorPanel();
 }
 
 // backward compatibility
 export function setVisitorName(name) {
-    setVisitorMessage(name);
+    setvisitorName(name);
 }
