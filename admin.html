@@ -83,6 +83,15 @@
                 <input id="visitorName" type="text" placeholder="z. B. Max Mustermann" required>
               </div>
 
+              <label for="visitor_welcome">Wählen Sie eine Willkommensnachricht aus:</label>
+                <select name="template" id="visitor_welcome" required>
+                  <option value="">-- Bitte wählen --</option>
+                  <option value="Willkommen, {{name}}!">Willkommen, {{Besuchername}}!</option>
+                  <option value="Hallo {{name}}, schön dich zu sehen!">Hallo {{Besuchername}}, schön dich zu sehen!</option>
+                  <option value="Herzlich willkommen, {{name}}!">Herzlich willkommen, {{Besuchername}}!</option>
+                  <option value="Guten Tag, {{name}}!">Guten Tag, {{Besuchername}}!</option>
+                </select>
+
               <div class="field">
                 <label for="visitorImageFile">Bild hochladen</label>
                 <div id="uploadDropZone" class="upload-drop" tabindex="0" role="button" aria-label="Bild hochladen">
