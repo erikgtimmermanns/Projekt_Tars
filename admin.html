@@ -5,6 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Visitor Admin</title>
   <link rel="stylesheet" href="./css/admin/style.css">
+  <link rel="stylesheet" href="./css/shared/visitor-panel.css">
+
+  <!-- Google Font: Albert Sans (wie im Kiosk, sonst weicht der Zeilenumbruch der Vorschau ab) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script type="module" src="./js/admin/admin.js"></script>
@@ -86,7 +92,7 @@
 
             <form id="visitorForm" class="visitor-form">
               <label for="visitorNameSelect">Benutzer auswählen</label>
-                <select name="template" id="visitorNameSelect" required>
+                <select name="template" id="visitorNameSelect">
                   <option value="">Neuen Benutzer</option>
                 </select>
 
@@ -96,7 +102,7 @@
               </div>
 
               <label for="template_id">Wählen Sie eine Willkommensnachricht aus:</label>
-                <select name="template" id="template_id" required>
+                <select name="template" id="template_id">
                   <option value="">-- Bitte wählen --</option>
                   <option value="Willkommen, {{name}}!">Willkommen, {{Besuchername}}!</option>
                   <option value="Hallo {{name}}, schön dich zu sehen!">Hallo {{Besuchername}}, schön dich zu sehen!</option>
@@ -130,8 +136,10 @@
           <!-- Das ist das Feld, in dem die Vorschau angezeigt wird-->
           <div class="card preview-card">
             <h3>Vorschau auf dem Kiosk</h3>
-            <div id="previewBox" class="preview-box empty">
-              Noch keine Vorschau vorhanden
+            <div id="previewBox" class="preview-box">
+              <div id="previewStage" class="preview-stage time-day">
+                <section class="visitor-panel" id="visitor-panel"></section>
+              </div>
             </div>
           </div>
         </div>

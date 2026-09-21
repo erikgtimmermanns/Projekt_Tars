@@ -1,3 +1,4 @@
+import { renderVisitorPanel } from "../shared/visitor-panel.js";
 import { bucketName, configIsReady as configIsSet, supabase, tableName } from "../shared/supabase.js";
 console.log("Admin script loaded. Supabase config ready:", configIsSet, "Supabase object:", supabase, "Bucket:", bucketName, "Table:", tableName);
 
@@ -19,6 +20,8 @@ const uploadMessage = document.getElementById("uploadMessage");
 const previewButton = document.getElementById("previewButton");
 const visitorForm = document.getElementById("visitorForm");
 const previewBox = document.getElementById("previewBox");
+const previewStage = document.getElementById("previewStage");
+const previewPanel = document.getElementById("visitor-panel");
 const visitorNameInput = document.getElementById("visitorNameInput"); // fallback for older admin markup
 const visitorSelect = document.getElementById("visitorNameSelect");
 
@@ -29,6 +32,7 @@ function getVisitorTextValue() {
 
 let authMode = "login";
 let selectedFile = null;
+let selectedFilePreviewUrl = ""; // blob-URL der lokal gewählten Datei
 let uploadedPublicUrl = "";
 let selectedVisitorId = null; // null = "neuer Besucher"-Modus
 let visitorsCache = [];
@@ -122,35 +126,31 @@ function validateFile(file) {
   return { valid: true, message: "Datei gültig." };
 }
 
-function escapeHtml(str) {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+const PREVIEW_STAGE_WIDTH = 1080; // Kiosk-Display (Hochformat)
+
+function clearSelectedFile() {
+  if (selectedFilePreviewUrl) URL.revokeObjectURL(selectedFilePreviewUrl);
+  selectedFile = null;
+  selectedFilePreviewUrl = "";
+  fileInput.value = "";
 }
 
-function renderPreview(url, fileName) {
-  const message = getVisitorTextValue() || "Willkommen";
+// Zeigt das Panel mit dem aktuellen Formularstand: neu gewählte Datei, sonst das gespeicherte Bild
+function renderPreview() {
+  renderVisitorPanel(previewPanel, {
+    name: getVisitorTextValue(),
+    imageUrl: selectedFilePreviewUrl || uploadedPublicUrl,
+    alwaysVisible: true
+  });
+}
 
-  if (!url && !message) {
-    previewBox.classList.add("empty");
-    previewBox.innerHTML = "Noch keine Vorschau vorhanden";
-    return;
-  }
-
-  previewBox.classList.remove("empty");
-
-  const logoStyle = url ? `background-image: url('${url}'); background-size: contain; background-position: center; background-repeat: no-repeat;` : '';
-
-  previewBox.innerHTML = `
-    <div class="visitor-box" style="max-width:420px; margin:auto;">
-      <div class="logo-column">
-        <div class="company-logo" id="company-logo-preview" style="${logoStyle}">Firma</div>
-      </div>
-    </div>
-  `;
+// Skaliert die 1080-px-Bühne auf die Kartenbreite; alle Proportionen bleiben identisch
+function fitPreviewStage() {
+  const width = previewBox.clientWidth;
+  if (!width) return;
+  const scale = width / PREVIEW_STAGE_WIDTH;
+  previewStage.style.transform = `scale(${scale})`;
+  previewBox.style.height = `${previewStage.offsetHeight * scale}px`;
 }
 
 async function populateVisitorDropdown() {
@@ -198,10 +198,10 @@ async function populateVisitorDropdown() {
 function loadVisitorIntoForm(id) {
   if (!id) {
     selectedVisitorId = null;
-    selectedFile = null;
+    clearSelectedFile();
     uploadedPublicUrl = "";
     if (visitorNameInput) visitorNameInput.value = "";
-    renderPreview("", "");
+    renderPreview();
     return;
   }
 
@@ -212,11 +212,12 @@ function loadVisitorIntoForm(id) {
   }
 
   selectedVisitorId = record.id;
-  selectedFile = null;
+  clearSelectedFile();
+  uploadedPublicUrl = record.image_url || "";
   selectedName = record.visitor_name;
   selectedTemplateId = record.template_id || null;
   if (visitorNameInput) visitorNameInput.value = record.visitor_name || "";
-  renderPreview(uploadedPublicUrl, record.visitor_name);
+  renderPreview();
 }
 
 async function handleAuthSubmit(event) {
@@ -358,8 +359,9 @@ async function handleVisitorSave(event) {
 
     showNotice(uploadMessage, "success", "Besucher und Bild wurden erfolgreich gespeichert.");
     window.visitorName = visitorName;
-    window.companyLogoUrl = uploadedPublicUrl;
-    renderPreview(uploadedPublicUrl, visitorName);
+    window.visitorImageUrl = uploadedPublicUrl;
+    clearSelectedFile();
+    renderPreview();
     await populateVisitorDropdown();
   } catch (error) {
     showNotice(uploadMessage, "error", error.message || "Upload fehlgeschlagen.");
@@ -373,11 +375,11 @@ function onFileSelected(file) {
     return;
   }
 
+  if (selectedFilePreviewUrl) URL.revokeObjectURL(selectedFilePreviewUrl);
   selectedFile = file;
+  selectedFilePreviewUrl = URL.createObjectURL(file);
   showNotice(uploadMessage, "success", "Datei akzeptiert: " + file.name);
-
-  const previewUrl = URL.createObjectURL(file);
-  renderPreview(previewUrl, file.name);
+  renderPreview();
 }
 
 uploadDropZone.addEventListener("click", () => fileInput.click());
@@ -412,20 +414,15 @@ if (visitorSelect) {
 }
 
 previewButton.addEventListener("click", () => {
-  const name = getVisitorTextValue();
-  if (!selectedFile) {
-    showNotice(uploadMessage, "error", "Bitte wählen Sie zuerst eine Datei aus.");
-    return;
-  }
-
-  if (!name) {
-    showNotice(uploadMessage, "error", "Bitte geben Sie zuerst den Begrüßungstext ein.");
-    return;
-  }
-
-  renderPreview(URL.createObjectURL(selectedFile), selectedFile.name);
+  renderPreview();
   showNotice(uploadMessage, "success", "Vorschau aktualisiert.");
 });
+
+if (visitorNameInput) visitorNameInput.addEventListener("input", renderPreview);
+
+new ResizeObserver(fitPreviewStage).observe(previewBox); // Kartenbreite
+new ResizeObserver(fitPreviewStage).observe(previewStage); // Bühnenhöhe (Textumbruch)
+renderPreview();
 
 authTabs.forEach(tab => {
   tab.addEventListener("click", () => setAuthMode(tab.dataset.mode));
