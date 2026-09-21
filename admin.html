@@ -71,20 +71,32 @@
           </div>
         </div>
       </section>
+      </div>
 
       <section id="adminScreen" class="admin-screen">
+        <div class="admin-select">
+          <button class="primary-btn" id="konfigUserbtn">Besucher konfigurieren</button>
+          <button class="primary-btn" id="konfigScreenbtn">Bildschirm konfigurieren</button>
+        </div>
         <div class="admin-grid">
+
+          <!-- Das ist das Feld, in dem der Benutzer konfiguriert wird -->
           <div class="card">
             <h3>Besucher konfigurieren</h3>
 
             <form id="visitorForm" class="visitor-form">
+              <label for="visitor_name">Benutzer auswählen</label>
+                <select name="template" id="visitor_name" required>
+                  <option value="">Neuen Benutzer</option>
+                </select>
+
               <div class="field">
                 <label for="visitorName">Besuchername</label>
                 <input id="visitorName" type="text" placeholder="z. B. Max Mustermann" required>
               </div>
 
-              <label for="visitor_welcome">Wählen Sie eine Willkommensnachricht aus:</label>
-                <select name="template" id="visitor_welcome" required>
+              <label for="template_id">Wählen Sie eine Willkommensnachricht aus:</label>
+                <select name="template" id="template_id" required>
                   <option value="">-- Bitte wählen --</option>
                   <option value="Willkommen, {{name}}!">Willkommen, {{Besuchername}}!</option>
                   <option value="Hallo {{name}}, schön dich zu sehen!">Hallo {{Besuchername}}, schön dich zu sehen!</option>
@@ -113,6 +125,9 @@
             </form>
           </div>
 
+
+
+          <!-- Das ist das Feld, in dem die Vorschau angezeigt wird-->
           <div class="card preview-card">
             <h3>Vorschau auf dem Kiosk</h3>
             <div id="previewBox" class="preview-box empty">

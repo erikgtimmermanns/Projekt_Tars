@@ -25,24 +25,26 @@ body {
     min-height: 100vh;
     display: grid;
     place-items: center;
-    padding: 32px;
+    padding: 16px;
+    
 }
 
 .admin-card {
-    width: min(960px, 100%);
+    width: min(1600px, 100%);
     background: var(--panel);
     border: 1px solid var(--line);
     border-radius: 18px;
     box-shadow: 0 18px 40px rgba(23, 50, 77, 0.08);
     overflow: hidden;
-}
 
+}
+.admin-select,
 .panel-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 16px;
-    padding: 22px 28px;
+    padding: 0px 0px;
     border-bottom: 1px solid var(--line);
     background: linear-gradient(90deg, rgba(0,103,185,0.06), rgba(56,198,232,0.05));
 }
@@ -79,6 +81,7 @@ body {
     background: var(--success);
 }
 
+.visitor
 .logout-btn,
 .primary-btn,
 .secondary-btn,
@@ -283,8 +286,9 @@ a {
 
 .admin-grid {
     display: grid;
-    grid-template-columns: 1.1fr 0.9fr;
-    gap: 24px;
+    grid-template-columns: 1fr 2fr;
+    gap: 32px;
+    min-width: auto;
 }
 
 .card {
@@ -309,7 +313,7 @@ a {
     border: 2px dashed rgba(0,103,185,0.35);
     border-radius: 14px;
     background: rgba(0,103,185,0.03);
-    min-height: 170px;
+    min-height: 320px;
     display: grid;
     place-items: center;
     text-align: center;
@@ -355,7 +359,7 @@ a {
     border-radius: 14px;
     background: linear-gradient(180deg, #ffffff 0%, #f7fafe 100%);
     padding: 18px;
-    min-height: 240px;
+    min-height: 100%;
     display: grid;
     place-items: center;
     text-align: center;

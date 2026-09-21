@@ -20,6 +20,7 @@ const visitorForm = document.getElementById("visitorForm");
 const previewBox = document.getElementById("previewBox");
 const visitorMessageInput = document.getElementById("visitorMessage");
 const visitorNameInput = document.getElementById("visitorName"); // fallback for older admin markup
+const visitorSelect = document.getElementById("visitor_welcome");
 
 function getVisitorTextValue() {
   const el = visitorMessageInput || visitorNameInput || document.getElementById("visitorMessage") || document.getElementById("visitorName");
@@ -29,6 +30,8 @@ function getVisitorTextValue() {
 let authMode = "login";
 let selectedFile = null;
 let uploadedPublicUrl = "";
+let selectedVisitorId = null; // null = "neuer Besucher"-Modus
+let visitorsCache = [];
 
 function showMessage(el, type, text) {
   el.className = `inline-message ${type}`;
@@ -148,6 +151,69 @@ function renderPreview(url, fileName) {
   `;
 }
 
+async function populateVisitorDropdown() {
+  if (!configIsSet || !supabase || !visitorSelect) {
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from(tableName)
+    .select("id, visitor_name, company_logo_url, updated_at")
+    .order("updated_at", { ascending: false });
+  console.log("Fetched visitors:", data, "Error:", error);
+  if (error) {
+    showNotice(uploadMessage, "error", error.message || "Besucherliste konnte nicht geladen werden.");
+    return;
+  }
+
+  visitorsCache = data || [];
+
+  const placeholderOption = visitorSelect.querySelector('option[value=""]');
+  visitorSelect.innerHTML = "";
+  if (placeholderOption) {
+    visitorSelect.appendChild(placeholderOption);
+  } else {
+    const opt = document.createElement("option");
+    opt.value = "";
+    opt.textContent = "Neuen Benutzer";
+    visitorSelect.appendChild(opt);
+  }
+
+  visitorsCache.forEach(visitor => {
+    const option = document.createElement("option");
+    option.value = String(visitor.id);
+    option.textContent = visitor.visitor_name;
+    visitorSelect.appendChild(option);
+  });
+
+  if (selectedVisitorId && visitorsCache.some(v => String(v.id) === String(selectedVisitorId))) {
+    visitorSelect.value = String(selectedVisitorId);
+  }
+}
+
+function loadVisitorIntoForm(id) {
+  if (!id) {
+    selectedVisitorId = null;
+    selectedFile = null;
+    uploadedPublicUrl = "";
+    if (visitorNameInput) visitorNameInput.value = "";
+    renderPreview("", "");
+    return;
+  }
+
+  const record = visitorsCache.find(v => String(v.id) === String(id));
+  if (!record) {
+    showNotice(uploadMessage, "error", "Besucher nicht gefunden.");
+    return;
+  }
+
+  selectedVisitorId = record.id;
+  selectedFile = null;
+  uploadedPublicUrl = record.company_logo_url || "";
+  if (visitorNameInput) visitorNameInput.value = record.visitor_name || "";
+  renderPreview(uploadedPublicUrl, record.visitor_name);
+}
+
 async function handleAuthSubmit(event) {
   event.preventDefault();
   authMessage.className = "inline-message";
@@ -183,6 +249,7 @@ async function handleAuthSubmit(event) {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
       showAdminScreen();
+      await populateVisitorDropdown();
       showMessage(authMessage, "success", "Erfolgreich angemeldet.");
     }
   } catch (error) {
@@ -233,51 +300,62 @@ async function handleVisitorSave(event) {
     return;
   }
 
-  if (!selectedFile) {
+  if (!selectedVisitorId && !selectedFile) {
     showNotice(uploadMessage, "error", "Bitte wählen Sie eine Bilddatei aus.");
     return;
   }
 
-  const fileCheck = validateFile(selectedFile);
-  if (!fileCheck.valid) {
-    showNotice(uploadMessage, "error", fileCheck.message);
-    return;
+  if (selectedFile) {
+    const fileCheck = validateFile(selectedFile);
+    if (!fileCheck.valid) {
+      showNotice(uploadMessage, "error", fileCheck.message);
+      return;
+    }
   }
 
   try {
-    showNotice(uploadMessage, "success", "Datei wird nach Supabase hochgeladen...");
+    if (selectedFile) {
+      showNotice(uploadMessage, "success", "Datei wird nach Supabase hochgeladen...");
 
-    const fileExt = selectedFile.name.split(".").pop();
-    const safeFileName = `${Date.now()}-${visitorName.replace(/[^a-zA-Z0-9-_]/g, "-")}.${fileExt}`;
+      const fileExt = selectedFile.name.split(".").pop();
+      const safeFileName = `${Date.now()}-${visitorName.replace(/[^a-zA-Z0-9-_]/g, "-")}.${fileExt}`;
 
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from(bucketName)
-      .upload(safeFileName, selectedFile, {
-        cacheControl: "3600",
-        upsert: false,
-        contentType: selectedFile.type || "image/png"
-      });
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from(bucketName)
+        .upload(safeFileName, selectedFile, {
+          cacheControl: "3600",
+          upsert: false,
+          contentType: selectedFile.type || "image/png"
+        });
 
-    if (uploadError) throw uploadError;
+      if (uploadError) throw uploadError;
 
-    const { data: publicData } = supabase.storage.from(bucketName).getPublicUrl(uploadData.path);
-    uploadedPublicUrl = publicData.publicUrl;
+      const { data: publicData } = supabase.storage.from(bucketName).getPublicUrl(uploadData.path);
+      uploadedPublicUrl = publicData.publicUrl;
+    }
 
-    const { error: dbError } = await supabase.from(tableName).upsert([
-      {
-        id: 1,
-        visitor_name: visitorName,
-        company_logo_url: uploadedPublicUrl,
-        updated_at: new Date().toISOString()
-      }
-    ]);
+    const payload = {
+      visitor_name: visitorName,
+      company_logo_url: uploadedPublicUrl,
+      updated_at: new Date().toISOString()
+    };
+
+    let dbError;
+    if (selectedVisitorId) {
+      ({ error: dbError } = await supabase.from(tableName).update(payload).eq("id", selectedVisitorId));
+    } else {
+      const { data: inserted, error } = await supabase.from(tableName).insert([payload]).select("id").single();
+      dbError = error;
+      if (!error && inserted) selectedVisitorId = inserted.id;
+    }
 
     if (dbError) throw dbError;
 
     showNotice(uploadMessage, "success", "Besucher und Bild wurden erfolgreich gespeichert.");
     window.visitorName = visitorName;
     window.companyLogoUrl = uploadedPublicUrl;
-    renderPreview(uploadedPublicUrl, selectedFile.name);
+    renderPreview(uploadedPublicUrl, visitorName);
+    await populateVisitorDropdown();
   } catch (error) {
     showNotice(uploadMessage, "error", error.message || "Upload fehlgeschlagen.");
   }
@@ -321,6 +399,12 @@ uploadDropZone.addEventListener("drop", (event) => {
   const data = event.dataTransfer?.files?.[0];
   if (data) onFileSelected(data);
 });
+
+if (visitorSelect) {
+  visitorSelect.addEventListener("change", (event) => {
+    loadVisitorIntoForm(event.target.value || null);
+  });
+}
 
 previewButton.addEventListener("click", () => {
   const name = getVisitorTextValue();
@@ -368,6 +452,7 @@ async function restoreSession() {
   const { data, error } = await supabase.auth.getSession();
   if (!error && data.session) {
     showAdminScreen();
+    await populateVisitorDropdown();
   }
 }
 
