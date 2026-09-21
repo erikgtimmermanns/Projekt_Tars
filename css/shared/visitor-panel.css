@@ -102,9 +102,9 @@
     font-weight: 600;
 }
 
-#visitor-name-placeholder,
-#visitor-message-placeholder {
+.visitor-name {
     color: var(--cc-blue);
+    font-weight: 700;
 }
 
 @container (max-width: 900px) {

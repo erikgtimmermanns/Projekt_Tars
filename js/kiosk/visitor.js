@@ -5,7 +5,8 @@ import { getTodayIso } from "../shared/visit-dates.js";
 export function updateVisitorPanel() {
     renderVisitorPanel(document.getElementById("visitor-panel"), {
         name: window.visitorName,
-        imageUrl: window.visitorImageUrl
+        imageUrl: window.visitorImageUrl,
+        template: window.visitorTemplate
     });
 }
 
@@ -14,6 +15,7 @@ export async function loadVisitorProfile() {
         // fallback for local testing
         window.visitorName = "";
         window.visitorImageUrl = "";
+        window.visitorTemplate = "";
         updateVisitorPanel();
         return;
     }
@@ -21,7 +23,7 @@ export async function loadVisitorProfile() {
     try {
             const { data, error } = await kioskSupabase
                 .from(kioskTableName)
-                .select("visitor_name, image_url")
+                .select("visitor_name, image_url, visitor_templates(message)")
             .contains("visit_date", [getTodayIso()]) // nur Besucher, die heute zu Besuch sind
             .order("updated_at", { ascending: false })
             .limit(1)
@@ -35,9 +37,11 @@ export async function loadVisitorProfile() {
             // Load visitor_name (single source of truth)
                 window.visitorName = data.visitor_name || "";
                 window.visitorImageUrl = data.image_url || "";
+                window.visitorTemplate = data.visitor_templates?.message || "";
         } else {
             window.visitorName = "";
             window.visitorImageUrl = "";
+            window.visitorTemplate = "";
         }
     } catch (error) {
         // Anzeige bleibt bei einem Netzwerkfehler unverändert, sonst verschwindet der Besucher bis zum nächsten Abruf

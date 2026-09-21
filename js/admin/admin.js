@@ -25,6 +25,7 @@ const previewStage = document.getElementById("previewStage");
 const previewPanel = document.getElementById("visitor-panel");
 const visitorNameInput = document.getElementById("visitorNameInput"); // fallback for older admin markup
 const visitorSelect = document.getElementById("visitorNameSelect");
+const templateSelect = document.getElementById("template_id");
 const visitDatePicker = createDatePicker(document.getElementById("visitDatePicker"));
 
 function getVisitorTextValue() {
@@ -39,7 +40,7 @@ let uploadedPublicUrl = "";
 let selectedVisitorId = null; // null = "neuer Besucher"-Modus
 let visitorsCache = [];
 let selectedName = "";
-let selectedTemplateId = null;
+let templatesById = new Map(); // id -> Vorlagentext
 
 function showMessage(el, type, text) {
   el.className = `inline-message ${type}`;
@@ -142,6 +143,7 @@ function renderPreview() {
   renderVisitorPanel(previewPanel, {
     name: getVisitorTextValue(),
     imageUrl: selectedFilePreviewUrl || uploadedPublicUrl,
+    template: templatesById.get(templateSelect.value) || "",
     alwaysVisible: true
   });
 }
@@ -153,6 +155,32 @@ function fitPreviewStage() {
   const scale = width / PREVIEW_STAGE_WIDTH;
   previewStage.style.transform = `scale(${scale})`;
   previewBox.style.height = `${previewStage.offsetHeight * scale}px`;
+}
+
+async function populateTemplateDropdown() {
+  if (!configIsSet || !supabase || !templateSelect) return;
+
+  const { data, error } = await supabase
+    .from("visitor_templates")
+    .select("id, message")
+    .order("sort_order", { ascending: true });
+  if (error) {
+    showNotice(uploadMessage, "error", error.message || "Vorlagen konnten nicht geladen werden.");
+    return;
+  }
+
+  templatesById = new Map((data || []).map(t => [String(t.id), t.message]));
+
+  const defaultOption = templateSelect.querySelector('option[value=""]');
+  templateSelect.innerHTML = "";
+  templateSelect.appendChild(defaultOption);
+  (data || []).forEach(template => {
+    const option = document.createElement("option");
+    option.value = String(template.id);
+    option.textContent = template.message;
+    templateSelect.appendChild(option);
+  });
+  renderPreview();
 }
 
 async function populateVisitorDropdown() {
@@ -203,6 +231,7 @@ function loadVisitorIntoForm(id) {
     clearSelectedFile();
     uploadedPublicUrl = "";
     visitDatePicker.setDates([]);
+    templateSelect.value = "";
     if (visitorNameInput) visitorNameInput.value = "";
     renderPreview();
     return;
@@ -218,7 +247,7 @@ function loadVisitorIntoForm(id) {
   clearSelectedFile();
   uploadedPublicUrl = record.image_url || "";
   selectedName = record.visitor_name;
-  selectedTemplateId = record.template_id || null;
+  templateSelect.value = record.template_id != null ? String(record.template_id) : "";
   visitDatePicker.setDates(record.visit_date);
   if (visitorNameInput) visitorNameInput.value = record.visitor_name || "";
   renderPreview();
@@ -259,6 +288,7 @@ async function handleAuthSubmit(event) {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
       showAdminScreen();
+      await populateTemplateDropdown();
       await populateVisitorDropdown();
       showMessage(authMessage, "success", "Erfolgreich angemeldet.");
     }
@@ -348,7 +378,7 @@ async function handleVisitorSave(event) {
     const payload = {
       visitor_name: visitorName, 
       image_url: uploadedPublicUrl,
-      template_id: null,
+      template_id: templateSelect.value ? Number(templateSelect.value) : null,
       visit_date: visitDates.length ? visitDates : null, // null = Besucher wird nie angezeigt
       updated_at: new Date().toISOString(),
     };
@@ -426,6 +456,7 @@ previewButton.addEventListener("click", () => {
 });
 
 if (visitorNameInput) visitorNameInput.addEventListener("input", renderPreview);
+templateSelect.addEventListener("change", renderPreview);
 
 new ResizeObserver(fitPreviewStage).observe(previewBox); // Kartenbreite
 new ResizeObserver(fitPreviewStage).observe(previewStage); // Bühnenhöhe (Textumbruch)
@@ -461,6 +492,7 @@ async function restoreSession() {
   const { data, error } = await supabase.auth.getSession();
   if (!error && data.session) {
     showAdminScreen();
+    await populateTemplateDropdown();
     await populateVisitorDropdown();
   }
 }
