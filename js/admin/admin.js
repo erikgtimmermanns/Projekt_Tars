@@ -1,4 +1,5 @@
 import { bucketName, configIsReady as configIsSet, supabase, tableName } from "../shared/supabase.js";
+console.log("Admin script loaded. Supabase config ready:", configIsSet, "Supabase object:", supabase, "Bucket:", bucketName, "Table:", tableName);
 
 const authScreen = document.getElementById("authScreen");
 const adminScreen = document.getElementById("adminScreen");
@@ -20,7 +21,7 @@ const visitorForm = document.getElementById("visitorForm");
 const previewBox = document.getElementById("previewBox");
 const visitorMessageInput = document.getElementById("visitorMessage");
 const visitorNameInput = document.getElementById("visitorName"); // fallback for older admin markup
-const visitorSelect = document.getElementById("visitor_welcome");
+const visitorSelect = document.getElementById("visitor_name");
 
 function getVisitorTextValue() {
   const el = visitorMessageInput || visitorNameInput || document.getElementById("visitorMessage") || document.getElementById("visitorName");
@@ -152,13 +153,14 @@ function renderPreview(url, fileName) {
 }
 
 async function populateVisitorDropdown() {
+  console.log("Populating visitor dropdown...");
   if (!configIsSet || !supabase || !visitorSelect) {
     return;
   }
 
   const { data, error } = await supabase
     .from(tableName)
-    .select("id, visitor_name, company_logo_url, updated_at")
+    .select("id, visitor_name, image_url, updated_at, template_id, visit_date")
     .order("updated_at", { ascending: false });
   console.log("Fetched visitors:", data, "Error:", error);
   if (error) {
