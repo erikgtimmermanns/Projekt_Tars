@@ -85,14 +85,14 @@
             <h3>Besucher konfigurieren</h3>
 
             <form id="visitorForm" class="visitor-form">
-              <label for="visitor_name">Benutzer auswählen</label>
-                <select name="template" id="visitor_name" required>
+              <label for="visitorNameSelect">Benutzer auswählen</label>
+                <select name="template" id="visitorNameSelect" required>
                   <option value="">Neuen Benutzer</option>
                 </select>
 
               <div class="field">
-                <label for="visitorName">Besuchername</label>
-                <input id="visitorName" type="text" placeholder="z. B. Max Mustermann" required>
+                <label for="visitorNameInput">Besuchername</label>
+                <input id="visitorNameInput" type="text" placeholder="Unternehmen GmbH" required>
               </div>
 
               <label for="template_id">Wählen Sie eine Willkommensnachricht aus:</label>
@@ -119,7 +119,7 @@
               <div id="uploadMessage" class="notice-box"></div>
 
               <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                <button class="primary-btn" type="submit">Besucher speichern</button>
+                <button class="primary-btn" type="submit" id="saveVisitorBtn">Besucher speichern</button>
                 <button class="secondary-btn" type="button" id="previewButton">Vorschau</button>
               </div>
             </form>

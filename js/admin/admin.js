@@ -19,12 +19,11 @@ const uploadMessage = document.getElementById("uploadMessage");
 const previewButton = document.getElementById("previewButton");
 const visitorForm = document.getElementById("visitorForm");
 const previewBox = document.getElementById("previewBox");
-const visitorMessageInput = document.getElementById("visitorMessage");
-const visitorNameInput = document.getElementById("visitorName"); // fallback for older admin markup
-const visitorSelect = document.getElementById("visitor_name");
+const visitorNameInput = document.getElementById("visitorNameInput"); // fallback for older admin markup
+const visitorSelect = document.getElementById("visitorNameSelect");
 
 function getVisitorTextValue() {
-  const el = visitorMessageInput || visitorNameInput || document.getElementById("visitorMessage") || document.getElementById("visitorName");
+  const el = visitorNameInput || document.getElementById("visitorNameInput");
   return (el && typeof el.value === 'string') ? el.value.trim() : '';
 }
 
@@ -33,6 +32,8 @@ let selectedFile = null;
 let uploadedPublicUrl = "";
 let selectedVisitorId = null; // null = "neuer Besucher"-Modus
 let visitorsCache = [];
+let selectedName = "";
+let selectedTemplateId = null;
 
 function showMessage(el, type, text) {
   el.className = `inline-message ${type}`;
@@ -154,14 +155,15 @@ function renderPreview(url, fileName) {
 
 async function populateVisitorDropdown() {
   console.log("Populating visitor dropdown...");
-  if (!configIsSet || !supabase || !visitorSelect) {
-    return;
+  if (!configIsSet || !supabase || !visitorSelect) { 
+    console.log("Supabase not configured or visitorSelect not found.");
+    return; 
   }
-
-  const { data, error } = await supabase
+  const { data, error } = await supabase  
     .from(tableName)
     .select("id, visitor_name, image_url, updated_at, template_id, visit_date")
-    .order("updated_at", { ascending: false });
+    .order("updated_at", { ascending: false })
+  ;
   console.log("Fetched visitors:", data, "Error:", error);
   if (error) {
     showNotice(uploadMessage, "error", error.message || "Besucherliste konnte nicht geladen werden.");
@@ -211,7 +213,8 @@ function loadVisitorIntoForm(id) {
 
   selectedVisitorId = record.id;
   selectedFile = null;
-  uploadedPublicUrl = record.company_logo_url || "";
+  selectedName = record.visitor_name;
+  selectedTemplateId = record.template_id || null;
   if (visitorNameInput) visitorNameInput.value = record.visitor_name || "";
   renderPreview(uploadedPublicUrl, record.visitor_name);
 }
@@ -337,9 +340,9 @@ async function handleVisitorSave(event) {
     }
 
     const payload = {
-      visitor_name: visitorName,
-      company_logo_url: uploadedPublicUrl,
-      updated_at: new Date().toISOString()
+      visitor_name: visitorName, 
+      image_url: uploadedPublicUrl,
+      template_id: null,
     };
 
     let dbError;
