@@ -1,5 +1,6 @@
 import { supabase as kioskSupabase, tableName as kioskTableName } from "../shared/supabase.js";
 import { renderVisitorPanel } from "../shared/visitor-panel.js";
+import { getTodayIso } from "../shared/visit-dates.js";
 
 export function updateVisitorPanel() {
     renderVisitorPanel(document.getElementById("visitor-panel"), {
@@ -21,6 +22,7 @@ export async function loadVisitorProfile() {
             const { data, error } = await kioskSupabase
                 .from(kioskTableName)
                 .select("visitor_name, image_url")
+            .contains("visit_date", [getTodayIso()]) // nur Besucher, die heute zu Besuch sind
             .order("updated_at", { ascending: false })
             .limit(1)
             .maybeSingle();
@@ -38,9 +40,9 @@ export async function loadVisitorProfile() {
             window.visitorImageUrl = "";
         }
     } catch (error) {
+        // Anzeige bleibt bei einem Netzwerkfehler unverändert, sonst verschwindet der Besucher bis zum nächsten Abruf
         console.warn("Visitor profile load failed:", error.message || error);
-        window.visitorName = "";
-        window.visitorImageUrl = "";
+        return;
     }
 
     updateVisitorPanel();

@@ -1,4 +1,5 @@
 import { renderVisitorPanel } from "../shared/visitor-panel.js";
+import { createDatePicker } from "./date-picker.js";
 import { bucketName, configIsReady as configIsSet, supabase, tableName } from "../shared/supabase.js";
 console.log("Admin script loaded. Supabase config ready:", configIsSet, "Supabase object:", supabase, "Bucket:", bucketName, "Table:", tableName);
 
@@ -24,6 +25,7 @@ const previewStage = document.getElementById("previewStage");
 const previewPanel = document.getElementById("visitor-panel");
 const visitorNameInput = document.getElementById("visitorNameInput"); // fallback for older admin markup
 const visitorSelect = document.getElementById("visitorNameSelect");
+const visitDatePicker = createDatePicker(document.getElementById("visitDatePicker"));
 
 function getVisitorTextValue() {
   const el = visitorNameInput || document.getElementById("visitorNameInput");
@@ -200,6 +202,7 @@ function loadVisitorIntoForm(id) {
     selectedVisitorId = null;
     clearSelectedFile();
     uploadedPublicUrl = "";
+    visitDatePicker.setDates([]);
     if (visitorNameInput) visitorNameInput.value = "";
     renderPreview();
     return;
@@ -216,6 +219,7 @@ function loadVisitorIntoForm(id) {
   uploadedPublicUrl = record.image_url || "";
   selectedName = record.visitor_name;
   selectedTemplateId = record.template_id || null;
+  visitDatePicker.setDates(record.visit_date);
   if (visitorNameInput) visitorNameInput.value = record.visitor_name || "";
   renderPreview();
 }
@@ -340,10 +344,13 @@ async function handleVisitorSave(event) {
       uploadedPublicUrl = publicData.publicUrl;
     }
 
+    const visitDates = visitDatePicker.getDates();
     const payload = {
       visitor_name: visitorName, 
       image_url: uploadedPublicUrl,
       template_id: null,
+      visit_date: visitDates.length ? visitDates : null, // null = Besucher wird nie angezeigt
+      updated_at: new Date().toISOString(),
     };
 
     let dbError;

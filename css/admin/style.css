@@ -354,6 +354,97 @@ a {
     align-content: start;
 }
 
+.date-picker {
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 12px;
+    background: #fff;
+}
+
+.date-picker-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.date-picker-nav {
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--primary);
+    font-size: 1.3rem;
+    line-height: 1;
+    padding: 4px 12px;
+    cursor: pointer;
+}
+
+.date-picker-nav:hover {
+    background: rgba(0,103,185,0.08);
+}
+
+.date-picker-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+}
+
+.date-picker-weekday {
+    padding: 4px 0;
+    color: var(--muted);
+    font-size: 0.75rem;
+    text-align: center;
+}
+
+.date-picker-day {
+    aspect-ratio: 1;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    cursor: pointer;
+}
+
+.date-picker-day:hover {
+    background: rgba(0,103,185,0.08);
+}
+
+.date-picker-day.today {
+    border-color: var(--primary);
+}
+
+.date-picker-day.selected {
+    background: var(--primary);
+    color: #fff;
+}
+
+.date-picker-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 10px;
+    color: var(--muted);
+    font-size: 0.85rem;
+}
+
+.date-picker-clear {
+    flex-shrink: 0;
+    border: 0;
+    background: transparent;
+    color: var(--primary);
+    font: inherit;
+    cursor: pointer;
+}
+
+.date-picker-clear:disabled {
+    color: var(--muted);
+    cursor: default;
+    opacity: 0.5;
+}
+
 /* Die Bühne ist so breit wie das Kiosk-Display (1080 px) und wird per JS auf die Kartenbreite skaliert */
 .preview-box {
     position: relative;
