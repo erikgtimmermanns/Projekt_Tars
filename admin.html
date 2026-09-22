@@ -77,68 +77,98 @@
           </div>
         </div>
       </section>
-      </div>
 
       <section id="adminScreen" class="admin-screen">
         <div class="admin-select">
-          <button class="primary-btn" id="konfigUserbtn">Besucher konfigurieren</button>
-          <button class="primary-btn" id="konfigScreenbtn">Bildschirm konfigurieren</button>
+          <button class="secondary-btn" id="konfigUserbtn" type="button">Besucher konfigurieren</button>
+          <button class="primary-btn" id="konfigScreenbtn" type="button">Bildschirm konfigurieren</button>
         </div>
         <div class="admin-grid">
+          <div class="config-column">
 
-          <!-- Das ist das Feld, in dem der Benutzer konfiguriert wird -->
-          <div class="card">
-            <h3>Besucher konfigurieren</h3>
+            <!-- Ansicht: Besucher konfigurieren -->
+            <div class="card" id="visitorConfigView">
+              <h3>Besucher konfigurieren</h3>
 
-            <form id="visitorForm" class="visitor-form">
-              <label for="visitorNameSelect">Benutzer auswählen</label>
-                <select name="template" id="visitorNameSelect">
-                  <option value="">Neuen Benutzer</option>
-                </select>
+              <form id="visitorForm" class="visitor-form">
+                <label for="visitorNameSelect">Benutzer auswählen</label>
+                  <select name="visitor" id="visitorNameSelect">
+                    <option value="">Neuen Benutzer</option>
+                  </select>
 
-              <div class="field">
-                <label for="visitorNameInput">Besuchername</label>
-                <input id="visitorNameInput" type="text" placeholder="Unternehmen GmbH" required>
-              </div>
-
-              <label for="template_id">Wählen Sie eine Willkommensnachricht aus:</label>
-                <select name="template" id="template_id">
-                  <option value="">-- Bitte wählen --</option>
-                  <option value="Willkommen, {{name}}!">Willkommen, {{Besuchername}}!</option>
-                  <option value="Hallo {{name}}, schön dich zu sehen!">Hallo {{Besuchername}}, schön dich zu sehen!</option>
-                  <option value="Herzlich willkommen, {{name}}!">Herzlich willkommen, {{Besuchername}}!</option>
-                  <option value="Guten Tag, {{name}}!">Guten Tag, {{Besuchername}}!</option>
-                </select>
-
-              <div class="field">
-                <label>Besuchstage</label>
-                <div id="visitDatePicker" class="date-picker"></div>
-              </div>
-
-              <div class="field">
-                <label for="visitorImageFile">Bild hochladen</label>
-                <div id="uploadDropZone" class="upload-drop" tabindex="0" role="button" aria-label="Bild hochladen">
-                  <div>
-                    <div style="font-size: 2rem; margin-bottom: 8px;">🖼️</div>
-                    <div><strong>Bild hier ablegen</strong></div>
-                    <div class="file-meta">Erlaubt: PNG, JPG, JPEG, WEBP, SVG</div>
-                  </div>
+                <div class="field">
+                  <label for="visitorNameInput">Besuchername</label>
+                  <input id="visitorNameInput" type="text" placeholder="Unternehmen GmbH" required>
                 </div>
-                <input id="visitorImageFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden>
+
+                <label for="template_id">Wählen Sie eine Willkommensnachricht aus:</label>
+                  <select name="template" id="template_id">
+                    <option value="">Standardtext</option>
+                  </select>
+
+                <div class="field">
+                  <label>Besuchstage</label>
+                  <div id="visitDatePicker" class="date-picker"></div>
+                </div>
+
+                <div class="field">
+                  <label for="visitorImageFile">Bild hochladen</label>
+                  <div id="uploadDropZone" class="upload-drop" tabindex="0" role="button" aria-label="Bild hochladen">
+                    <div>
+                      <div style="font-size: 2rem; margin-bottom: 8px;">🖼️</div>
+                      <div><strong>Bild hier ablegen</strong></div>
+                      <div class="file-meta">Erlaubt: PNG, JPG, JPEG, WEBP, SVG</div>
+                    </div>
+                  </div>
+                  <input id="visitorImageFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden>
+                </div>
+
+                <div id="uploadMessage" class="notice-box"></div>
+
+                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                  <button class="primary-btn" type="submit" id="saveVisitorBtn">Besucher speichern</button>
+                  <button class="secondary-btn" type="button" id="previewButton">Vorschau</button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Ansicht: globale Bildschirm-Einstellung, unabhängig vom angemeldeten Konto -->
+            <div class="card" id="screenConfigView" hidden>
+              <h3>Anzeige auf dem Kiosk</h3>
+              <p class="field-hint">Gilt sofort für den Kiosk-Bildschirm, sobald mehr als ein Besucher heute zu Besuch ist. Die Vorschau rechts zeigt nur die Besucher von heute.</p>
+
+              <div class="mode-options">
+                <label class="mode-option">
+                  <input type="radio" name="displayMode" value="rotate" id="modeRotate">
+                  <div>
+                    <strong>Besucher rotieren</strong>
+                    <p>Eine Box zeigt die Besucher nacheinander, daneben eine Logo-Leiste aller Besucher.</p>
+                  </div>
+                </label>
+                <label class="mode-option">
+                  <input type="radio" name="displayMode" value="stack" id="modeStack">
+                  <div>
+                    <strong>Boxen stapeln</strong>
+                    <p>Jeder Besucher bekommt eine eigene Box, untereinander. Die Reihenfolge wechselt alle 10 Sekunden.</p>
+                  </div>
+                </label>
               </div>
 
-              <div id="uploadMessage" class="notice-box"></div>
+              <div class="field">
+                <label for="rotateIntervalInput">Rotationsintervall (Sekunden)</label>
+                <input type="number" id="rotateIntervalInput" min="2" max="60" step="1" value="7">
+                <p class="field-hint">Nur für "Besucher rotieren" relevant, 2–60 Sekunden.</p>
+              </div>
+
+              <div id="screenConfigMessage" class="notice-box"></div>
 
               <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                <button class="primary-btn" type="submit" id="saveVisitorBtn">Besucher speichern</button>
-                <button class="secondary-btn" type="button" id="previewButton">Vorschau</button>
+                <button class="primary-btn" type="button" id="saveScreenBtn">Bildschirm speichern</button>
               </div>
-            </form>
+            </div>
           </div>
 
-
-
-          <!-- Das ist das Feld, in dem die Vorschau angezeigt wird-->
+          <!-- Vorschau: bleibt bei beiden Ansichten sichtbar -->
           <div class="card preview-card">
             <h3>Vorschau auf dem Kiosk</h3>
             <div id="previewBox" class="preview-box">

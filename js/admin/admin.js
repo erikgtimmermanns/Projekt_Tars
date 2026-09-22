@@ -1,4 +1,7 @@
 import { renderVisitorPanel } from "../shared/visitor-panel.js";
+import { createVisitorDisplay } from "../shared/visitor-display.js";
+import { fetchKioskSettings, DEFAULT_DISPLAY_MODE, DEFAULT_ROTATE_INTERVAL_MS } from "../shared/kiosk-settings.js";
+import { getTodayIso } from "../shared/visit-dates.js";
 import { createDatePicker } from "./date-picker.js";
 import { bucketName, configIsReady as configIsSet, supabase, tableName } from "../shared/supabase.js";
 console.log("Admin script loaded. Supabase config ready:", configIsSet, "Supabase object:", supabase, "Bucket:", bucketName, "Table:", tableName);
@@ -25,7 +28,16 @@ const previewStage = document.getElementById("previewStage");
 const previewPanel = document.getElementById("visitor-panel");
 const visitorNameInput = document.getElementById("visitorNameInput"); // fallback for older admin markup
 const visitorSelect = document.getElementById("visitorNameSelect");
+const templateSelect = document.getElementById("template_id");
 const visitDatePicker = createDatePicker(document.getElementById("visitDatePicker"));
+const konfigUserbtn = document.getElementById("konfigUserbtn");
+const konfigScreenbtn = document.getElementById("konfigScreenbtn");
+const visitorConfigView = document.getElementById("visitorConfigView");
+const screenConfigView = document.getElementById("screenConfigView");
+const modeRadios = document.querySelectorAll('input[name="displayMode"]');
+const screenConfigMessage = document.getElementById("screenConfigMessage");
+const saveScreenBtn = document.getElementById("saveScreenBtn");
+const rotateIntervalInput = document.getElementById("rotateIntervalInput");
 
 function getVisitorTextValue() {
   const el = visitorNameInput || document.getElementById("visitorNameInput");
@@ -39,7 +51,15 @@ let uploadedPublicUrl = "";
 let selectedVisitorId = null; // null = "neuer Besucher"-Modus
 let visitorsCache = [];
 let selectedName = "";
-let selectedTemplateId = null;
+let templatesById = new Map(); // id -> Vorlagentext
+let pendingDisplayMode = DEFAULT_DISPLAY_MODE; // Auswahl in "Bildschirm konfigurieren", erst mit Klick auf "Bildschirm speichern" übernommen
+let pendingRotateIntervalS = DEFAULT_ROTATE_INTERVAL_MS / 1000;
+
+function clampRotateSeconds(value) {
+  const seconds = Math.round(Number(value));
+  if (!Number.isFinite(seconds)) return pendingRotateIntervalS;
+  return Math.min(60, Math.max(2, seconds));
+}
 
 function showMessage(el, type, text) {
   el.className = `inline-message ${type}`;
@@ -137,13 +157,38 @@ function clearSelectedFile() {
   fileInput.value = "";
 }
 
-// Zeigt das Panel mit dem aktuellen Formularstand: neu gewählte Datei, sonst das gespeicherte Bild
-function renderPreview() {
+const previewDisplay = createVisitorDisplay(previewPanel); // dieselbe Rotations-/Stapel-Logik wie der Kiosk
+
+// Besucher-Ansicht: eine Box mit dem aktuellen Formularstand (neu gewählte Datei, sonst gespeichertes Bild)
+function renderVisitorFormPreview() {
   renderVisitorPanel(previewPanel, {
     name: getVisitorTextValue(),
     imageUrl: selectedFilePreviewUrl || uploadedPublicUrl,
+    template: templatesById.get(templateSelect.value) || "",
     alwaysVisible: true
   });
+}
+
+// Bildschirm-Ansicht: nur die Besucher, die heute auch im Kiosk erscheinen würden (visit_date enthält heute)
+function renderScreenPreview() {
+  const today = getTodayIso();
+  const visitors = visitorsCache
+    .filter(v => Array.isArray(v.visit_date) && v.visit_date.includes(today))
+    .map(v => ({
+      id: v.id,
+      name: v.visitor_name || "",
+      imageUrl: v.image_url || "",
+      template: templatesById.get(String(v.template_id)) || ""
+    }));
+  previewDisplay.update(visitors, pendingDisplayMode, pendingRotateIntervalS * 1000);
+}
+
+function renderPreview() {
+  if (screenConfigView.hidden) {
+    renderVisitorFormPreview();
+  } else {
+    renderScreenPreview();
+  }
 }
 
 // Skaliert die 1080-px-Bühne auf die Kartenbreite; alle Proportionen bleiben identisch
@@ -153,6 +198,102 @@ function fitPreviewStage() {
   const scale = width / PREVIEW_STAGE_WIDTH;
   previewStage.style.transform = `scale(${scale})`;
   previewBox.style.height = `${previewStage.offsetHeight * scale}px`;
+}
+
+// Bildschirm-Ansicht: globale Einstellung, unabhängig vom angemeldeten Konto (Tabelle kiosk_settings, eine Zeile, id = 1)
+// Styling gespiegelt: der Button der GERADE NICHT aktiven Ansicht ist auffälliger (primary),
+// der Button der aktiven Ansicht ist unauffälliger (secondary) — lädt zum Wechseln ein.
+function showVisitorConfig() {
+  visitorConfigView.hidden = false;
+  screenConfigView.hidden = true;
+  konfigUserbtn.className = "secondary-btn";
+  konfigScreenbtn.className = "primary-btn";
+  previewDisplay.update([], null); // laufenden Rotations-/Stapel-Timer der Bildschirm-Vorschau beenden
+  renderPreview();
+}
+
+function showScreenConfig() {
+  visitorConfigView.hidden = true;
+  screenConfigView.hidden = false;
+  konfigScreenbtn.className = "secondary-btn";
+  konfigUserbtn.className = "primary-btn";
+  loadScreenSettings(); // lädt die gespeicherte Einstellung und rendert danach die Vorschau
+}
+
+// Lädt die in der Datenbank gespeicherte Einstellung (nicht den evtl. noch ungespeicherten Formularstand)
+async function loadScreenSettings() {
+  if (configIsSet && supabase) {
+    const settings = await fetchKioskSettings(supabase);
+    pendingDisplayMode = settings.mode;
+    pendingRotateIntervalS = Math.round(settings.rotateIntervalMs / 1000);
+  }
+  modeRadios.forEach(radio => { radio.checked = radio.value === pendingDisplayMode; });
+  rotateIntervalInput.value = pendingRotateIntervalS;
+  renderPreview();
+}
+
+konfigUserbtn.addEventListener("click", showVisitorConfig);
+konfigScreenbtn.addEventListener("click", showScreenConfig);
+
+// Nur die Vorschau ändert sich sofort; die Datenbank wird erst über "Bildschirm speichern" aktualisiert
+modeRadios.forEach(radio => {
+  radio.addEventListener("change", () => {
+    if (!radio.checked) return;
+    pendingDisplayMode = radio.value;
+    renderPreview();
+  });
+});
+
+rotateIntervalInput.addEventListener("input", () => {
+  pendingRotateIntervalS = clampRotateSeconds(rotateIntervalInput.value);
+  renderPreview();
+});
+rotateIntervalInput.addEventListener("blur", () => {
+  rotateIntervalInput.value = pendingRotateIntervalS; // normalisiert die Anzeige (z. B. nach leerem Feld)
+});
+
+saveScreenBtn.addEventListener("click", async () => {
+  if (!configIsSet || !supabase) {
+    showNotice(screenConfigMessage, "error", "Supabase ist noch nicht konfiguriert.");
+    return;
+  }
+  const { error } = await supabase
+    .from("kiosk_settings")
+    .update({ display_mode: pendingDisplayMode, rotate_interval_seconds: pendingRotateIntervalS })
+    .eq("id", 1);
+  if (error) {
+    showNotice(screenConfigMessage, "error", error.message || "Einstellung konnte nicht gespeichert werden.");
+    return;
+  }
+  showNotice(screenConfigMessage, "success", "Anzeige gespeichert – wirkt jetzt auf dem Kiosk.");
+});
+
+showVisitorConfig();
+
+async function populateTemplateDropdown() {
+  if (!configIsSet || !supabase || !templateSelect) return;
+
+  const { data, error } = await supabase
+    .from("visitor_templates")
+    .select("id, message")
+    .order("sort_order", { ascending: true });
+  if (error) {
+    showNotice(uploadMessage, "error", error.message || "Vorlagen konnten nicht geladen werden.");
+    return;
+  }
+
+  templatesById = new Map((data || []).map(t => [String(t.id), t.message]));
+
+  const defaultOption = templateSelect.querySelector('option[value=""]');
+  templateSelect.innerHTML = "";
+  templateSelect.appendChild(defaultOption);
+  (data || []).forEach(template => {
+    const option = document.createElement("option");
+    option.value = String(template.id);
+    option.textContent = template.message;
+    templateSelect.appendChild(option);
+  });
+  renderPreview();
 }
 
 async function populateVisitorDropdown() {
@@ -203,6 +344,7 @@ function loadVisitorIntoForm(id) {
     clearSelectedFile();
     uploadedPublicUrl = "";
     visitDatePicker.setDates([]);
+    templateSelect.value = "";
     if (visitorNameInput) visitorNameInput.value = "";
     renderPreview();
     return;
@@ -218,7 +360,7 @@ function loadVisitorIntoForm(id) {
   clearSelectedFile();
   uploadedPublicUrl = record.image_url || "";
   selectedName = record.visitor_name;
-  selectedTemplateId = record.template_id || null;
+  templateSelect.value = record.template_id != null ? String(record.template_id) : "";
   visitDatePicker.setDates(record.visit_date);
   if (visitorNameInput) visitorNameInput.value = record.visitor_name || "";
   renderPreview();
@@ -259,6 +401,7 @@ async function handleAuthSubmit(event) {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
       showAdminScreen();
+      await populateTemplateDropdown();
       await populateVisitorDropdown();
       showMessage(authMessage, "success", "Erfolgreich angemeldet.");
     }
@@ -348,7 +491,7 @@ async function handleVisitorSave(event) {
     const payload = {
       visitor_name: visitorName, 
       image_url: uploadedPublicUrl,
-      template_id: null,
+      template_id: templateSelect.value ? Number(templateSelect.value) : null,
       visit_date: visitDates.length ? visitDates : null, // null = Besucher wird nie angezeigt
       updated_at: new Date().toISOString(),
     };
@@ -426,6 +569,7 @@ previewButton.addEventListener("click", () => {
 });
 
 if (visitorNameInput) visitorNameInput.addEventListener("input", renderPreview);
+templateSelect.addEventListener("change", renderPreview);
 
 new ResizeObserver(fitPreviewStage).observe(previewBox); // Kartenbreite
 new ResizeObserver(fitPreviewStage).observe(previewStage); // Bühnenhöhe (Textumbruch)
@@ -461,6 +605,7 @@ async function restoreSession() {
   const { data, error } = await supabase.auth.getSession();
   if (!error && data.session) {
     showAdminScreen();
+    await populateTemplateDropdown();
     await populateVisitorDropdown();
   }
 }
