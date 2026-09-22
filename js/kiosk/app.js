@@ -1,5 +1,5 @@
 import { updateDateTime, updateReceptionStatus, updateTimeOfDayTheme } from './datetime.js';
-import { updateVisitorPanel, loadVisitorProfile } from './visitor.js';
+import { updateVisitorPanel, loadVisitorProfile, initVisitorRealtime } from './visitor.js';
 import { loadWeather, testWeather, ensureWeatherAnimator } from './weather.js';
 import { initWelcome } from './welcome.js';
 import { initFacts } from './facts.js';
@@ -17,6 +17,7 @@ function startDashboard() {
     updateTimeOfDayTheme();
     // load visitor profile (will call updateVisitorPanel when done)
     try { loadVisitorProfile(); } catch (e) { updateVisitorPanel(); }
+    try { initVisitorRealtime(); } catch (e) { console.warn('initVisitorRealtime failed', e); } // sofortige Wirkung bei Änderung der Bildschirm-Einstellung
     loadWeather();
 
     window.setInterval(updateDateTime, 1000);

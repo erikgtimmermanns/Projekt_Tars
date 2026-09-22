@@ -24,9 +24,9 @@ body {
 .admin-shell {
     min-height: 100vh;
     display: grid;
-    place-items: center;
+    justify-items: center; /* horizontal weiterhin mittig */
+    align-items: start; /* oben verankert, damit die Karte nicht springt, wenn sich die Höhe des Inhalts ändert */
     padding: 16px;
-    
 }
 
 .admin-card {
@@ -41,6 +41,7 @@ body {
 .admin-select,
 .panel-header {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
     gap: 16px;
@@ -81,7 +82,6 @@ body {
     background: var(--success);
 }
 
-.visitor
 .logout-btn,
 .primary-btn,
 .secondary-btn,
@@ -464,6 +464,42 @@ a {
     background: var(--background);
     color: var(--cc-dark);
     font-family: "Albert Sans", Arial, sans-serif;
+}
+
+.field-hint {
+    color: var(--muted);
+    margin: -8px 0 4px;
+}
+
+.mode-options {
+    display: grid;
+    gap: 12px;
+}
+
+.mode-option {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.mode-option:has(input:checked) {
+    border-color: var(--primary);
+    background: rgba(0, 103, 185, 0.04);
+}
+
+.mode-option input {
+    margin-top: 4px;
+}
+
+.mode-option p {
+    margin: 4px 0 0;
+    color: var(--muted);
+    font-size: 0.9rem;
 }
 
 @media (max-width: 820px) {

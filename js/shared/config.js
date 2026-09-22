@@ -12,8 +12,12 @@ export const RECEPTION = {
 
 export const WEATHER_REFRESH_MS = 600000; // 10 minutes
 
+// Fallback, falls kiosk_settings (noch) nicht erreichbar ist; die tatsächliche Einstellung kommt aus der Datenbank
+export const VISITOR_ROTATE_DEFAULT_S = 7;
+
 export default {
     OPEN_METEO,
     RECEPTION,
-    WEATHER_REFRESH_MS
+    WEATHER_REFRESH_MS,
+    VISITOR_ROTATE_DEFAULT_S
 };
