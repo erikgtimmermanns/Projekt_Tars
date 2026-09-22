@@ -25,24 +25,26 @@ body {
     min-height: 100vh;
     display: grid;
     place-items: center;
-    padding: 32px;
+    padding: 16px;
+    
 }
 
 .admin-card {
-    width: min(960px, 100%);
+    width: min(1600px, 100%);
     background: var(--panel);
     border: 1px solid var(--line);
     border-radius: 18px;
     box-shadow: 0 18px 40px rgba(23, 50, 77, 0.08);
     overflow: hidden;
-}
 
+}
+.admin-select,
 .panel-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 16px;
-    padding: 22px 28px;
+    padding: 0px 0px;
     border-bottom: 1px solid var(--line);
     background: linear-gradient(90deg, rgba(0,103,185,0.06), rgba(56,198,232,0.05));
 }
@@ -79,6 +81,7 @@ body {
     background: var(--success);
 }
 
+.visitor
 .logout-btn,
 .primary-btn,
 .secondary-btn,
@@ -283,8 +286,9 @@ a {
 
 .admin-grid {
     display: grid;
-    grid-template-columns: 1.1fr 0.9fr;
-    gap: 24px;
+    grid-template-columns: 1fr 2fr;
+    gap: 32px;
+    min-width: auto;
 }
 
 .card {
@@ -309,7 +313,7 @@ a {
     border: 2px dashed rgba(0,103,185,0.35);
     border-radius: 14px;
     background: rgba(0,103,185,0.03);
-    min-height: 170px;
+    min-height: 320px;
     display: grid;
     place-items: center;
     text-align: center;
@@ -350,28 +354,116 @@ a {
     align-content: start;
 }
 
-.preview-box {
+.date-picker {
     border: 1px solid var(--line);
     border-radius: 14px;
-    background: linear-gradient(180deg, #ffffff 0%, #f7fafe 100%);
-    padding: 18px;
-    min-height: 240px;
+    padding: 12px;
+    background: #fff;
+}
+
+.date-picker-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.date-picker-nav {
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--primary);
+    font-size: 1.3rem;
+    line-height: 1;
+    padding: 4px 12px;
+    cursor: pointer;
+}
+
+.date-picker-nav:hover {
+    background: rgba(0,103,185,0.08);
+}
+
+.date-picker-grid {
     display: grid;
-    place-items: center;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+}
+
+.date-picker-weekday {
+    padding: 4px 0;
+    color: var(--muted);
+    font-size: 0.75rem;
     text-align: center;
 }
 
-.preview-box img {
-    max-width: 100%;
-    max-height: 180px;
-    object-fit: contain;
-    border-radius: 12px;
+.date-picker-day {
+    aspect-ratio: 1;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text);
+    font: inherit;
+    cursor: pointer;
 }
 
-.preview-box.empty {
+.date-picker-day:hover {
+    background: rgba(0,103,185,0.08);
+}
+
+.date-picker-day.today {
+    border-color: var(--primary);
+}
+
+.date-picker-day.selected {
+    background: var(--primary);
+    color: #fff;
+}
+
+.date-picker-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 10px;
     color: var(--muted);
-    border-style: dashed;
-    background: rgba(0,103,185,0.02);
+    font-size: 0.85rem;
+}
+
+.date-picker-clear {
+    flex-shrink: 0;
+    border: 0;
+    background: transparent;
+    color: var(--primary);
+    font: inherit;
+    cursor: pointer;
+}
+
+.date-picker-clear:disabled {
+    color: var(--muted);
+    cursor: default;
+    opacity: 0.5;
+}
+
+/* Die Bühne ist so breit wie das Kiosk-Display (1080 px) und wird per JS auf die Kartenbreite skaliert */
+.preview-box {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+}
+
+.preview-stage {
+    --visitor-message-size: 34px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1080px;
+    padding: 0 22px 12px;
+    transform-origin: top left;
+    background: var(--background);
+    color: var(--cc-dark);
+    font-family: "Albert Sans", Arial, sans-serif;
 }
 
 @media (max-width: 820px) {

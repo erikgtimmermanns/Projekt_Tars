@@ -1,4 +1,7 @@
+import { renderVisitorPanel } from "../shared/visitor-panel.js";
+import { createDatePicker } from "./date-picker.js";
 import { bucketName, configIsReady as configIsSet, supabase, tableName } from "../shared/supabase.js";
+console.log("Admin script loaded. Supabase config ready:", configIsSet, "Supabase object:", supabase, "Bucket:", bucketName, "Table:", tableName);
 
 const authScreen = document.getElementById("authScreen");
 const adminScreen = document.getElementById("adminScreen");
@@ -18,11 +21,25 @@ const uploadMessage = document.getElementById("uploadMessage");
 const previewButton = document.getElementById("previewButton");
 const visitorForm = document.getElementById("visitorForm");
 const previewBox = document.getElementById("previewBox");
-const visitorNameInput = document.getElementById("visitorName");
+const previewStage = document.getElementById("previewStage");
+const previewPanel = document.getElementById("visitor-panel");
+const visitorNameInput = document.getElementById("visitorNameInput"); // fallback for older admin markup
+const visitorSelect = document.getElementById("visitorNameSelect");
+const visitDatePicker = createDatePicker(document.getElementById("visitDatePicker"));
+
+function getVisitorTextValue() {
+  const el = visitorNameInput || document.getElementById("visitorNameInput");
+  return (el && typeof el.value === 'string') ? el.value.trim() : '';
+}
 
 let authMode = "login";
 let selectedFile = null;
+let selectedFilePreviewUrl = ""; // blob-URL der lokal gewählten Datei
 let uploadedPublicUrl = "";
+let selectedVisitorId = null; // null = "neuer Besucher"-Modus
+let visitorsCache = [];
+let selectedName = "";
+let selectedTemplateId = null;
 
 function showMessage(el, type, text) {
   el.className = `inline-message ${type}`;
@@ -111,15 +128,100 @@ function validateFile(file) {
   return { valid: true, message: "Datei gültig." };
 }
 
-function renderPreview(url, fileName) {
-  if (!url) {
-    previewBox.classList.add("empty");
-    previewBox.innerHTML = "Noch keine Vorschau vorhanden";
+const PREVIEW_STAGE_WIDTH = 1080; // Kiosk-Display (Hochformat)
+
+function clearSelectedFile() {
+  if (selectedFilePreviewUrl) URL.revokeObjectURL(selectedFilePreviewUrl);
+  selectedFile = null;
+  selectedFilePreviewUrl = "";
+  fileInput.value = "";
+}
+
+// Zeigt das Panel mit dem aktuellen Formularstand: neu gewählte Datei, sonst das gespeicherte Bild
+function renderPreview() {
+  renderVisitorPanel(previewPanel, {
+    name: getVisitorTextValue(),
+    imageUrl: selectedFilePreviewUrl || uploadedPublicUrl,
+    alwaysVisible: true
+  });
+}
+
+// Skaliert die 1080-px-Bühne auf die Kartenbreite; alle Proportionen bleiben identisch
+function fitPreviewStage() {
+  const width = previewBox.clientWidth;
+  if (!width) return;
+  const scale = width / PREVIEW_STAGE_WIDTH;
+  previewStage.style.transform = `scale(${scale})`;
+  previewBox.style.height = `${previewStage.offsetHeight * scale}px`;
+}
+
+async function populateVisitorDropdown() {
+  console.log("Populating visitor dropdown...");
+  if (!configIsSet || !supabase || !visitorSelect) { 
+    console.log("Supabase not configured or visitorSelect not found.");
+    return; 
+  }
+  const { data, error } = await supabase  
+    .from(tableName)
+    .select("id, visitor_name, image_url, updated_at, template_id, visit_date")
+    .order("updated_at", { ascending: false })
+  ;
+  console.log("Fetched visitors:", data, "Error:", error);
+  if (error) {
+    showNotice(uploadMessage, "error", error.message || "Besucherliste konnte nicht geladen werden.");
     return;
   }
 
-  previewBox.classList.remove("empty");
-  previewBox.innerHTML = `<img src="${url}" alt="${fileName || "Visitor Preview"}">`;
+  visitorsCache = data || [];
+
+  const placeholderOption = visitorSelect.querySelector('option[value=""]');
+  visitorSelect.innerHTML = "";
+  if (placeholderOption) {
+    visitorSelect.appendChild(placeholderOption);
+  } else {
+    const opt = document.createElement("option");
+    opt.value = "";
+    opt.textContent = "Neuen Benutzer";
+    visitorSelect.appendChild(opt);
+  }
+
+  visitorsCache.forEach(visitor => {
+    const option = document.createElement("option");
+    option.value = String(visitor.id);
+    option.textContent = visitor.visitor_name;
+    visitorSelect.appendChild(option);
+  });
+
+  if (selectedVisitorId && visitorsCache.some(v => String(v.id) === String(selectedVisitorId))) {
+    visitorSelect.value = String(selectedVisitorId);
+  }
+}
+
+function loadVisitorIntoForm(id) {
+  if (!id) {
+    selectedVisitorId = null;
+    clearSelectedFile();
+    uploadedPublicUrl = "";
+    visitDatePicker.setDates([]);
+    if (visitorNameInput) visitorNameInput.value = "";
+    renderPreview();
+    return;
+  }
+
+  const record = visitorsCache.find(v => String(v.id) === String(id));
+  if (!record) {
+    showNotice(uploadMessage, "error", "Besucher nicht gefunden.");
+    return;
+  }
+
+  selectedVisitorId = record.id;
+  clearSelectedFile();
+  uploadedPublicUrl = record.image_url || "";
+  selectedName = record.visitor_name;
+  selectedTemplateId = record.template_id || null;
+  visitDatePicker.setDates(record.visit_date);
+  if (visitorNameInput) visitorNameInput.value = record.visitor_name || "";
+  renderPreview();
 }
 
 async function handleAuthSubmit(event) {
@@ -157,6 +259,7 @@ async function handleAuthSubmit(event) {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
       showAdminScreen();
+      await populateVisitorDropdown();
       showMessage(authMessage, "success", "Erfolgreich angemeldet.");
     }
   } catch (error) {
@@ -201,57 +304,72 @@ async function handleVisitorSave(event) {
     return;
   }
 
-  const visitorName = visitorNameInput.value.trim();
+  const visitorName = getVisitorTextValue();
   if (!visitorName) {
-    showNotice(uploadMessage, "error", "Bitte geben Sie einen Namen ein.");
+    showNotice(uploadMessage, "error", "Bitte geben Sie einen Begrüßungstext ein.");
     return;
   }
 
-  if (!selectedFile) {
+  if (!selectedVisitorId && !selectedFile) {
     showNotice(uploadMessage, "error", "Bitte wählen Sie eine Bilddatei aus.");
     return;
   }
 
-  const fileCheck = validateFile(selectedFile);
-  if (!fileCheck.valid) {
-    showNotice(uploadMessage, "error", fileCheck.message);
-    return;
+  if (selectedFile) {
+    const fileCheck = validateFile(selectedFile);
+    if (!fileCheck.valid) {
+      showNotice(uploadMessage, "error", fileCheck.message);
+      return;
+    }
   }
 
   try {
-    showNotice(uploadMessage, "success", "Datei wird nach Supabase hochgeladen...");
+    if (selectedFile) {
+      showNotice(uploadMessage, "success", "Datei wird nach Supabase hochgeladen...");
 
-    const fileExt = selectedFile.name.split(".").pop();
-    const safeFileName = `${Date.now()}-${visitorName.replace(/[^a-zA-Z0-9-_]/g, "-")}.${fileExt}`;
+      const fileExt = selectedFile.name.split(".").pop();
+      const safeFileName = `${Date.now()}-${visitorName.replace(/[^a-zA-Z0-9-_]/g, "-")}.${fileExt}`;
 
-    const { data: uploadData, error: uploadError } = await supabase.storage
-      .from(bucketName)
-      .upload(safeFileName, selectedFile, {
-        cacheControl: "3600",
-        upsert: false,
-        contentType: selectedFile.type || "image/png"
-      });
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from(bucketName)
+        .upload(safeFileName, selectedFile, {
+          cacheControl: "3600",
+          upsert: false,
+          contentType: selectedFile.type || "image/png"
+        });
 
-    if (uploadError) throw uploadError;
+      if (uploadError) throw uploadError;
 
-    const { data: publicData } = supabase.storage.from(bucketName).getPublicUrl(uploadData.path);
-    uploadedPublicUrl = publicData.publicUrl;
+      const { data: publicData } = supabase.storage.from(bucketName).getPublicUrl(uploadData.path);
+      uploadedPublicUrl = publicData.publicUrl;
+    }
 
-    const { error: dbError } = await supabase.from(tableName).upsert([
-      {
-        id: 1,
-        visitor_name: visitorName,
-        image_url: uploadedPublicUrl,
-        updated_at: new Date().toISOString()
-      }
-    ]);
+    const visitDates = visitDatePicker.getDates();
+    const payload = {
+      visitor_name: visitorName, 
+      image_url: uploadedPublicUrl,
+      template_id: null,
+      visit_date: visitDates.length ? visitDates : null, // null = Besucher wird nie angezeigt
+      updated_at: new Date().toISOString(),
+    };
+
+    let dbError;
+    if (selectedVisitorId) {
+      ({ error: dbError } = await supabase.from(tableName).update(payload).eq("id", selectedVisitorId));
+    } else {
+      const { data: inserted, error } = await supabase.from(tableName).insert([payload]).select("id").single();
+      dbError = error;
+      if (!error && inserted) selectedVisitorId = inserted.id;
+    }
 
     if (dbError) throw dbError;
 
     showNotice(uploadMessage, "success", "Besucher und Bild wurden erfolgreich gespeichert.");
     window.visitorName = visitorName;
     window.visitorImageUrl = uploadedPublicUrl;
-    renderPreview(uploadedPublicUrl, selectedFile.name);
+    clearSelectedFile();
+    renderPreview();
+    await populateVisitorDropdown();
   } catch (error) {
     showNotice(uploadMessage, "error", error.message || "Upload fehlgeschlagen.");
   }
@@ -264,11 +382,11 @@ function onFileSelected(file) {
     return;
   }
 
+  if (selectedFilePreviewUrl) URL.revokeObjectURL(selectedFilePreviewUrl);
   selectedFile = file;
+  selectedFilePreviewUrl = URL.createObjectURL(file);
   showNotice(uploadMessage, "success", "Datei akzeptiert: " + file.name);
-
-  const previewUrl = URL.createObjectURL(file);
-  renderPreview(previewUrl, file.name);
+  renderPreview();
 }
 
 uploadDropZone.addEventListener("click", () => fileInput.click());
@@ -296,21 +414,22 @@ uploadDropZone.addEventListener("drop", (event) => {
   if (data) onFileSelected(data);
 });
 
+if (visitorSelect) {
+  visitorSelect.addEventListener("change", (event) => {
+    loadVisitorIntoForm(event.target.value || null);
+  });
+}
+
 previewButton.addEventListener("click", () => {
-  const name = visitorNameInput.value.trim();
-  if (!selectedFile) {
-    showNotice(uploadMessage, "error", "Bitte wählen Sie zuerst eine Datei aus.");
-    return;
-  }
-
-  if (!name) {
-    showNotice(uploadMessage, "error", "Bitte geben Sie zuerst den Namen des Besuchers ein.");
-    return;
-  }
-
-  renderPreview(URL.createObjectURL(selectedFile), selectedFile.name);
+  renderPreview();
   showNotice(uploadMessage, "success", "Vorschau aktualisiert.");
 });
+
+if (visitorNameInput) visitorNameInput.addEventListener("input", renderPreview);
+
+new ResizeObserver(fitPreviewStage).observe(previewBox); // Kartenbreite
+new ResizeObserver(fitPreviewStage).observe(previewStage); // Bühnenhöhe (Textumbruch)
+renderPreview();
 
 authTabs.forEach(tab => {
   tab.addEventListener("click", () => setAuthMode(tab.dataset.mode));
@@ -342,6 +461,7 @@ async function restoreSession() {
   const { data, error } = await supabase.auth.getSession();
   if (!error && data.session) {
     showAdminScreen();
+    await populateVisitorDropdown();
   }
 }
 

@@ -23,6 +23,7 @@ function startDashboard() {
     window.setInterval(updateReceptionStatus, 60000);
     window.setInterval(updateTimeOfDayTheme, 60000);
     window.setInterval(loadWeather, 600000);
+    window.setInterval(loadVisitorProfile, 60000); // Besucherwechsel um Mitternacht und Änderungen aus dem Admin
 
     // expose test helpers in console
     window.testWeather = testWeather;

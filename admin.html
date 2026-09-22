@@ -5,6 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Visitor Admin</title>
   <link rel="stylesheet" href="./css/admin/style.css">
+  <link rel="stylesheet" href="./css/shared/visitor-panel.css">
+
+  <!-- Google Font: Albert Sans (wie im Kiosk, sonst weicht der Zeilenumbruch der Vorschau ab) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script type="module" src="./js/admin/admin.js"></script>
@@ -71,16 +77,42 @@
           </div>
         </div>
       </section>
+      </div>
 
       <section id="adminScreen" class="admin-screen">
+        <div class="admin-select">
+          <button class="primary-btn" id="konfigUserbtn">Besucher konfigurieren</button>
+          <button class="primary-btn" id="konfigScreenbtn">Bildschirm konfigurieren</button>
+        </div>
         <div class="admin-grid">
+
+          <!-- Das ist das Feld, in dem der Benutzer konfiguriert wird -->
           <div class="card">
             <h3>Besucher konfigurieren</h3>
 
             <form id="visitorForm" class="visitor-form">
+              <label for="visitorNameSelect">Benutzer auswählen</label>
+                <select name="template" id="visitorNameSelect">
+                  <option value="">Neuen Benutzer</option>
+                </select>
+
               <div class="field">
-                <label for="visitorName">Besuchername</label>
-                <input id="visitorName" type="text" placeholder="z. B. Max Mustermann" required>
+                <label for="visitorNameInput">Besuchername</label>
+                <input id="visitorNameInput" type="text" placeholder="Unternehmen GmbH" required>
+              </div>
+
+              <label for="template_id">Wählen Sie eine Willkommensnachricht aus:</label>
+                <select name="template" id="template_id">
+                  <option value="">-- Bitte wählen --</option>
+                  <option value="Willkommen, {{name}}!">Willkommen, {{Besuchername}}!</option>
+                  <option value="Hallo {{name}}, schön dich zu sehen!">Hallo {{Besuchername}}, schön dich zu sehen!</option>
+                  <option value="Herzlich willkommen, {{name}}!">Herzlich willkommen, {{Besuchername}}!</option>
+                  <option value="Guten Tag, {{name}}!">Guten Tag, {{Besuchername}}!</option>
+                </select>
+
+              <div class="field">
+                <label>Besuchstage</label>
+                <div id="visitDatePicker" class="date-picker"></div>
               </div>
 
               <div class="field">
@@ -98,16 +130,21 @@
               <div id="uploadMessage" class="notice-box"></div>
 
               <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                <button class="primary-btn" type="submit">Besucher speichern</button>
+                <button class="primary-btn" type="submit" id="saveVisitorBtn">Besucher speichern</button>
                 <button class="secondary-btn" type="button" id="previewButton">Vorschau</button>
               </div>
             </form>
           </div>
 
+
+
+          <!-- Das ist das Feld, in dem die Vorschau angezeigt wird-->
           <div class="card preview-card">
             <h3>Vorschau auf dem Kiosk</h3>
-            <div id="previewBox" class="preview-box empty">
-              Noch keine Vorschau vorhanden
+            <div id="previewBox" class="preview-box">
+              <div id="previewStage" class="preview-stage time-day">
+                <section class="visitor-panel" id="visitor-panel"></section>
+              </div>
             </div>
           </div>
         </div>

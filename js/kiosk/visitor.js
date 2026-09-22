@@ -1,51 +1,28 @@
 import { supabase as kioskSupabase, tableName as kioskTableName } from "../shared/supabase.js";
+import { renderVisitorPanel } from "../shared/visitor-panel.js";
+import { getTodayIso } from "../shared/visit-dates.js";
 
 export function updateVisitorPanel() {
-    const panel = document.getElementById("visitor-panel");
-    const nameTarget = document.getElementById("visitor-name-placeholder");
-    const logoBox = document.querySelector(".visitor-logo");
-    const imageUrl = window.visitorImageUrl || "";
-    const nameValue = (window.visitorName || "").trim();
-
-    if (!panel || !nameTarget) {
-        return;
-    }
-
-    if (nameValue.length > 0) {
-        nameTarget.textContent = nameValue;
-        panel.hidden = false;
-    } else {
-        nameTarget.textContent = "___";
-        panel.hidden = true;
-    }
-
-    if (logoBox) {
-        if (imageUrl) {
-            logoBox.style.backgroundImage = `url("${imageUrl}")`;
-            logoBox.style.backgroundSize = "cover";
-            logoBox.style.backgroundPosition = "center";
-            logoBox.style.color = "transparent";
-            logoBox.textContent = "";
-        } else {
-            logoBox.style.backgroundImage = "none";
-            logoBox.style.color = "#0067b9";
-            logoBox.textContent = "Logo";
-        }
-    }
+    renderVisitorPanel(document.getElementById("visitor-panel"), {
+        name: window.visitorName,
+        imageUrl: window.visitorImageUrl
+    });
 }
 
 export async function loadVisitorProfile() {
     if (!kioskSupabase) {
-        window.visitorName = "Max Mustermann";
+        // fallback for local testing
+        window.visitorName = "";
         window.visitorImageUrl = "";
         updateVisitorPanel();
         return;
     }
 
     try {
-        const { data, error } = await kioskSupabase
-            .from(kioskTableName)
-            .select("visitor_name, image_url")
+            const { data, error } = await kioskSupabase
+                .from(kioskTableName)
+                .select("visitor_name, image_url")
+            .contains("visit_date", [getTodayIso()]) // nur Besucher, die heute zu Besuch sind
             .order("updated_at", { ascending: false })
             .limit(1)
             .maybeSingle();
@@ -54,23 +31,29 @@ export async function loadVisitorProfile() {
             throw error;
         }
 
-        if (data && data.visitor_name) {
-            window.visitorName = data.visitor_name;
-            window.visitorImageUrl = data.image_url || "";
+        if (data) {
+            // Load visitor_name (single source of truth)
+                window.visitorName = data.visitor_name || "";
+                window.visitorImageUrl = data.image_url || "";
         } else {
             window.visitorName = "";
             window.visitorImageUrl = "";
         }
     } catch (error) {
+        // Anzeige bleibt bei einem Netzwerkfehler unverändert, sonst verschwindet der Besucher bis zum nächsten Abruf
         console.warn("Visitor profile load failed:", error.message || error);
-        window.visitorName = "";
-        window.visitorImageUrl = "";
+        return;
     }
 
     updateVisitorPanel();
 }
 
-export function setVisitorName(name) {
-    window.visitorName = String(name || '').trim();
+export function setvisitorName(text) {
+    window.visitorName = String(text || '').trim();
     updateVisitorPanel();
+}
+
+// backward compatibility
+export function setVisitorName(name) {
+    setvisitorName(name);
 }
