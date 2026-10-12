@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visitor Admin</title>
+  <link rel="stylesheet" href="./css/admin/style.css">
+  <link rel="stylesheet" href="./css/shared/visitor-panel.css">
+
+  <!-- Google Font: Albert Sans (wie im Kiosk, sonst weicht der Zeilenumbruch der Vorschau ab) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script type="module" src="./js/admin/admin.js"></script>
+</head>
+<body>
+  <div class="admin-shell">
+    <div class="admin-card">
+      <div class="panel-header">
+        <div class="brand">Firma Visitor Admin</div>
+        <div class="header-actions">
+          <span class="status-pill" id="auth-status">Nicht angemeldet</span>
+          <button class="logout-btn danger-btn" id="logoutButton" type="button" style="display: none;">Abmelden</button>
+        </div>
+      </div>
+
+      <section id="authScreen" class="auth-screen active">
+        <div class="auth-layout">
+          <div class="info-panel">
+            <h2>Besucherverwaltung</h2>
+            <p>Verwalten Sie zentrale Besucherinformationen für die Lobbyanzeige und laden Sie optional ein Bild für den Willkommen-Bereich hoch.</p>
+            <ul class="feature-list">
+              <li>Login mit Supabase Auth</li>
+              <li>Passwortschutz für die Adminseite</li>
+              <li>Upload von Bilddateien</li>
+              <li>Nur gültige Dateitypen zulassen</li>
+            </ul>
+          </div>
+
+          <div class="auth-form">
+            <div class="auth-tabs">
+              <button class="auth-tab active" type="button" data-mode="login">Login</button>
+              <button class="auth-tab" type="button" data-mode="signup">Neues Konto</button>
+            </div>
+
+            <form id="authForm" class="form-grid">
+              <div class="field">
+                <label for="email">E-Mail</label>
+                <input id="email" type="email" name="email" placeholder="name@firma.de" required>
+              </div>
+
+              <div class="field">
+                <label for="password">Passwort</label>
+                <input id="password" type="password" name="password" placeholder="Mindestens 6 Zeichen" required>
+              </div>
+
+              <div class="field" id="confirmField" style="display: none;">
+                <label for="confirmPassword">Passwort bestätigen</label>
+                <input id="confirmPassword" type="password" name="confirmPassword" placeholder="Passwort erneut eingeben">
+              </div>
+
+              <div class="helper-row">
+                <span id="formModeText">Sie haben noch kein Konto?</span>
+                <a href="#" id="toggleModeLink">Registrieren</a>
+              </div>
+
+              <div id="authMessage" class="inline-message"></div>
+
+              <button class="primary-btn" id="submitAuthBtn" type="submit">Anmelden</button>
+            </form>
+
+            <div style="margin-top: 18px; text-align: center;">
+              <a href="#" id="resetPasswordLink">Passwort vergessen?</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="adminScreen" class="admin-screen">
+        <div class="admin-select">
+          <button class="secondary-btn" id="konfigUserbtn" type="button">Besucher konfigurieren</button>
+          <button class="primary-btn" id="konfigScreenbtn" type="button">Bildschirm konfigurieren</button>
+        </div>
+        <div class="admin-grid">
+          <div class="config-column">
+
+            <!-- Ansicht: Besucher konfigurieren -->
+            <div class="card" id="visitorConfigView">
+              <h3>Besucher konfigurieren</h3>
+
+              <form id="visitorForm" class="visitor-form">
+                <label for="visitorNameSelect">Benutzer auswählen</label>
+                  <select name="visitor" id="visitorNameSelect">
+                    <option value="">Neuen Benutzer</option>
+                  </select>
+
+                <div class="field">
+                  <label for="visitorNameInput">Besuchername</label>
+                  <input id="visitorNameInput" type="text" placeholder="Unternehmen GmbH" required>
+                </div>
+
+                <label for="template_id">Wählen Sie eine Willkommensnachricht aus:</label>
+                  <select name="template" id="template_id">
+                    <option value="">Standardtext</option>
+                  </select>
+
+                <div class="field">
+                  <label>Besuchstage</label>
+                  <div id="visitDatePicker" class="date-picker"></div>
+                </div>
+
+                <div class="field">
+                  <label for="visitorImageFile">Bild hochladen</label>
+                  <div id="uploadDropZone" class="upload-drop" tabindex="0" role="button" aria-label="Bild hochladen">
+                    <div>
+                      <div style="font-size: 2rem; margin-bottom: 8px;">🖼️</div>
+                      <div><strong>Bild hier ablegen</strong></div>
+                      <div class="file-meta">Erlaubt: PNG, JPG, JPEG, WEBP, SVG</div>
+                    </div>
+                  </div>
+                  <input id="visitorImageFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden>
+                </div>
+
+                <div id="uploadMessage" class="notice-box"></div>
+
+                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                  <button class="primary-btn" type="submit" id="saveVisitorBtn">Besucher speichern</button>
+                  <button class="secondary-btn" type="button" id="previewButton">Vorschau</button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Ansicht: globale Bildschirm-Einstellung, unabhängig vom angemeldeten Konto -->
+            <div class="card" id="screenConfigView" hidden>
+              <h3>Anzeige auf dem Kiosk</h3>
+              <p class="field-hint">Gilt sofort für den Kiosk-Bildschirm, sobald mehr als ein Besucher heute zu Besuch ist. Die Vorschau rechts zeigt nur die Besucher von heute.</p>
+
+              <div class="mode-options">
+                <label class="mode-option">
+                  <input type="radio" name="displayMode" value="rotate" id="modeRotate">
+                  <div>
+                    <strong>Besucher rotieren</strong>
+                    <p>Eine Box zeigt die Besucher nacheinander, daneben eine Logo-Leiste aller Besucher.</p>
+                  </div>
+                </label>
+                <label class="mode-option">
+                  <input type="radio" name="displayMode" value="stack" id="modeStack">
+                  <div>
+                    <strong>Boxen stapeln</strong>
+                    <p>Jeder Besucher bekommt eine eigene Box, untereinander. Die Reihenfolge wechselt alle 10 Sekunden.</p>
+                  </div>
+                </label>
+              </div>
+
+              <div class="field">
+                <label for="rotateIntervalInput">Rotationsintervall (Sekunden)</label>
+                <input type="number" id="rotateIntervalInput" min="2" max="60" step="1" value="7">
+                <p class="field-hint">Nur für "Besucher rotieren" relevant, 2–60 Sekunden.</p>
+              </div>
+
+              <div id="screenConfigMessage" class="notice-box"></div>
+
+              <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <button class="primary-btn" type="button" id="saveScreenBtn">Bildschirm speichern</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Vorschau: bleibt bei beiden Ansichten sichtbar -->
+          <div class="card preview-card">
+            <h3>Vorschau auf dem Kiosk</h3>
+            <div id="previewBox" class="preview-box">
+              <div id="previewStage" class="preview-stage time-day">
+                <section class="visitor-panel" id="visitor-panel"></section>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+</body>
+</html>
