@@ -128,7 +128,10 @@ function updateReceptionStatus() {
 
 
 /* =========================================
-   on getWeatherClass(weatherCode) {
+    WETTERKLASSEN UND ANZEIGE
+========================================= */
+
+function getWeatherClass(weatherCode) {
     const code = Number(weatherCode);
 
     if ([0, 1, 2].includes(code)) {

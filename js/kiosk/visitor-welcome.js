@@ -2,7 +2,7 @@ import { supabase } from "../shared/supabase.js";
 import { subscribeKioskSelection, setKioskSelection } from "../shared/tablet-settings.js";
 import { createVisitorBox, fillVisitorBox } from "../shared/visitor-panel.js";
 
-const WELCOME_TIMEOUT_MS = 3 * 60 * 1000;
+const WELCOME_TIMEOUT_MS = 60 * 1000;
 
 let overlay;
 let card;
