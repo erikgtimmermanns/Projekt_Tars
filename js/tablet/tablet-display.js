@@ -5,6 +5,19 @@ import { setKioskSelection, subscribeKioskSelection } from "../shared/tablet-set
 let display = null;
 let selectionUnsubscribe = null;
 let selectedVisitorId = null;
+let selectionRequest = 0;
+
+function showSelectionStatus(message, isError = false) {
+    const status = document.getElementById("selection-status");
+    if (!status) return;
+    status.textContent = message;
+    status.classList.toggle("error", isError);
+    status.hidden = false;
+    window.clearTimeout(showSelectionStatus.timeout);
+    showSelectionStatus.timeout = window.setTimeout(() => {
+        status.hidden = true;
+    }, isError ? 8000 : 2500);
+}
 
 function updateSelectedButtons(panel) {
     panel.querySelectorAll(".visitor-btn[data-visitor-id]").forEach((button) => {
@@ -21,10 +34,27 @@ export function initTabletSelection() {
         const button = event.target.closest(".visitor-btn[data-visitor-id]");
         if (!button || !panel.contains(button)) return;
         const visitorId = button.dataset.visitorId;
-        void setKioskSelection(supabase, visitorId === selectedVisitorId ? null : visitorId);
+        const previousVisitorId = selectedVisitorId;
+        const nextVisitorId = visitorId === previousVisitorId ? null : visitorId;
+        const request = ++selectionRequest;
+        selectedVisitorId = nextVisitorId;
+        updateSelectedButtons(panel);
+        showSelectionStatus(nextVisitorId ? "Besucher wird angezeigt ..." : "Begrüßung wird geschlossen ...");
+
+        void setKioskSelection(supabase, nextVisitorId).then((success) => {
+            if (request !== selectionRequest) return;
+            if (success) {
+                showSelectionStatus(nextVisitorId ? "Besucher am Empfangsbildschirm aktiviert." : "Begrüßung geschlossen.");
+                return;
+            }
+            selectedVisitorId = previousVisitorId;
+            updateSelectedButtons(panel);
+            showSelectionStatus("Übertragung fehlgeschlagen. Supabase-Migration und Verbindung prüfen.", true);
+        });
     });
 
     selectionUnsubscribe = subscribeKioskSelection(supabase, (selection) => {
+        selectionRequest++;
         selectedVisitorId = selection.visitorId;
         updateSelectedButtons(panel);
     });

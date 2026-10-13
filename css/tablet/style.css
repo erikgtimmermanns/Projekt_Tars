@@ -24,6 +24,7 @@ body {
 }
 
 .screen {
+    position: relative;
     width: 100vw;
     height: 100vh;
     display: flex;
@@ -31,6 +32,29 @@ body {
     justify-content: center;
     padding: 20px;
     background: var(--tablet-panel-bg);
+}
+
+.selection-status {
+    position: fixed;
+    z-index: 5;
+    right: 20px;
+    bottom: 20px;
+    left: 20px;
+    margin: 0;
+    padding: 14px 18px;
+    border: 1px solid var(--tablet-card-border);
+    border-radius: 12px;
+    background: var(--tablet-card-bg);
+    box-shadow: var(--tablet-card-shadow);
+    color: var(--tablet-text);
+    text-align: center;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.selection-status.error {
+    border-color: #b42318;
+    color: #b42318;
 }
 
 #visitor-btn-panel {

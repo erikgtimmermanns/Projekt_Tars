@@ -103,6 +103,7 @@ body.time-night .screen::before {
 }
 
 .topbar {
+    grid-row: 1;
     display: grid;
     grid-template-columns: minmax(160px, 210px) minmax(0, 1fr) minmax(200px, 250px);
     align-items: center;
@@ -185,12 +186,14 @@ body.time-night .screen::before {
 .footer { animation-delay: 0.25s; }
 
 .screen > .visitor-panel {
+    grid-row: 2;
     min-height: 0;
     max-height: min(34vh, 620px);
     overflow: hidden;
 }
 
 .presentation-panel {
+    grid-row: 3;
     position: relative;
     display: grid;
     place-items: center;
@@ -198,7 +201,7 @@ body.time-night .screen::before {
     margin-top: 14px;
     border: 1px solid rgba(0, 103, 185, 0.1);
     border-radius: var(--kiosk-radius);
-    background: #111820;
+    background: transparent;
     box-shadow: var(--kiosk-shadow);
     overflow: hidden;
 }
@@ -224,7 +227,7 @@ body.time-night .screen::before {
     z-index: 5;
     display: grid;
     place-items: center;
-    padding: clamp(16px, 4vh, 64px);
+    padding: clamp(12px, 2vh, 32px);
     background: rgba(9, 19, 29, 0.96);
 }
 
@@ -234,13 +237,14 @@ body.time-night .screen::before {
 
 .visitor-welcome-overlay .visitor-box {
     width: 100%;
-    max-width: 1100px;
-    min-height: clamp(220px, 36vh, 460px);
-    grid-template-columns: minmax(180px, 30%) minmax(0, 1fr);
+    height: 100%;
+    max-width: none;
+    min-height: 0;
+    grid-template-columns: minmax(150px, 22%) minmax(0, 1fr);
 }
 
 .visitor-welcome-overlay .visitor-logo {
-    min-height: 180px;
+    min-height: 0;
 }
 
 .visitor-welcome-overlay .visitor-message {
@@ -249,6 +253,7 @@ body.time-night .screen::before {
 
 /* Weather animation canvas and layering */
 .weather {
+    grid-row: 4;
     position: relative;
 }
 
@@ -329,6 +334,7 @@ body.time-night .screen::before {
 }
 
 .footer {
+    grid-row: 5;
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
