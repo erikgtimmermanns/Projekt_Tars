@@ -2,6 +2,8 @@ export function createVisitorBtn(visitor = {}) {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "visitor-btn";
+    button.dataset.visitorId = String(visitor.id ?? "");
+    button.setAttribute("aria-pressed", "false");
 
     const logo = document.createElement("div");
     logo.className = "visitor-logo";

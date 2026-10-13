@@ -60,9 +60,8 @@ body.time-night .weather-icon {
     filter: brightness(1.08);
 }
 
-body.time-night .room-plan,
-body.time-night .weather,
-body.time-night .fp-info {
+body.time-night .presentation-panel,
+body.time-night .weather {
     box-shadow: 0 14px 28px rgba(0, 0, 0, 0.28);
 }
 
@@ -79,19 +78,6 @@ body.time-night .screen::before {
     overflow: hidden;
     padding: 18px 22px 12px;
     isolation: isolate;
-}
-
-#fullscreen-overlay {
-    position: fixed;
-    inset: 0;
-
-    width: 100vw;
-    height: 100vh;
-
-    background: black;
-    color: white;
-
-    z-index: 9999;
 }
 
 .screen::before {
@@ -186,7 +172,7 @@ body.time-night .screen::before {
 
 .topbar,
 .visitor-panel,
-.room-plan,
+.presentation-panel,
 .weather,
 .footer {
     animation: floatInUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
@@ -194,212 +180,71 @@ body.time-night .screen::before {
 
 .topbar { animation-delay: 0.05s; }
 .visitor-panel { animation-delay: 0.1s; }
-.room-plan { animation-delay: 0.15s; }
+.presentation-panel { animation-delay: 0.15s; }
 .weather { animation-delay: 0.2s; }
 .footer { animation-delay: 0.25s; }
 
-.room-plan {
+.screen > .visitor-panel {
+    min-height: 0;
+    max-height: min(34vh, 620px);
+    overflow: hidden;
+}
+
+.presentation-panel {
+    position: relative;
     display: grid;
-    grid-template-rows: auto minmax(0, 1fr);
+    place-items: center;
     min-height: 0;
     margin-top: 14px;
     border: 1px solid rgba(0, 103, 185, 0.1);
     border-radius: var(--kiosk-radius);
-    background: var(--white);
+    background: #111820;
     box-shadow: var(--kiosk-shadow);
     overflow: hidden;
 }
 
-.plan-header {
-    padding: 10px 16px;
-    border-bottom: 1px solid var(--line);
-    color: var(--cc-blue);
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-}
-
-.plan-stage {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 10px;
-    min-height: 0;
-    padding: 16px;
-}
-
-/* Floorplan overlay and markers */
-.plan-stage {
-    position: relative;
-}
-
-.floorplan-overlay {
-    position: absolute;
-    /* overlay will be sized & positioned by JS to match the image */
-    left: 0;
-    top: 0;
-    width: 0;
-    height: 0;
-    pointer-events: none;
-    z-index: 6;
-}
-
-.fp-marker {
-    position: absolute;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: rgba(0,103,185,0.95);
-    color: white;
-    display: grid;
-    place-items: center;
-    font-size: 18px;
-    transform: translate(-50%, -50%);
-    box-shadow: 0 6px 14px rgba(18,38,63,0.12);
-    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
-    pointer-events: auto;
-    cursor: pointer;
-    animation: fpMarkerPulse 2.8s ease-in-out infinite;
-}
-
-@keyframes fpMarkerPulse {
-    0%, 100% {
-        box-shadow: 0 0 0 0 rgba(0, 103, 185, 0.18), 0 6px 14px rgba(18,38,63,0.12);
-    }
-    50% {
-        box-shadow: 0 0 0 10px rgba(0, 103, 185, 0.08), 0 10px 20px rgba(18,38,63,0.18);
-    }
-}
-
-.fp-marker:hover {
-    transform: translate(-50%, -50%) scale(1.08);
-    box-shadow: 0 10px 20px rgba(18,38,63,0.18);
-}
-
-.fp-label {
-    position: absolute;
-    left: 50%;
-    top: calc(100% + 8px);
-    transform: translateX(-50%);
-    background: rgba(255,255,255,0.96);
-    color: var(--cc-dark);
-    padding: 6px 8px;
-    border-radius: 8px;
-    font-size: 13px;
-    white-space: nowrap;
-    box-shadow: 0 6px 14px rgba(18,38,63,0.06);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.12s ease, transform 0.12s ease;
-}
-
-.fp-marker:hover .fp-label { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-.btn-small {
-    position: absolute;
-    right: 18px;
-    top: 18px;
-    z-index: 8;
-    background: rgba(255,255,255,0.85);
-    border: 1px solid rgba(0,0,0,0.06);
-    padding: 6px 10px;
-    border-radius: 10px;
-    font-weight: 600;
-    cursor: pointer;
-}
-
-.fp-marker { touch-action: none; }
-.fp-marker.dragging { cursor: grabbing; transform: translate(-50%,-50%) scale(1.04); }
-.btn-small + .btn-small { margin-left: 8px; }
-
-/* Legend */
-.fp-legend {
-    position: absolute;
-    left: 18px;
-    top: 18px;
-    z-index: 8;
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    pointer-events: auto;
-}
-
-.fp-legend .legend-item {
-    display: inline-flex;
-    gap: 8px;
-    align-items: center;
-    background: rgba(255,255,255,0.92);
-    padding: 6px 8px;
-    border-radius: 8px;
-    font-size: 13px;
-    color: var(--cc-dark);
-    box-shadow: 0 6px 14px rgba(18,38,63,0.06);
-}
-
-.fp-legend img {
-    width: 26px;
-    height: 26px;
-}
-
-/* Info panel (bottom-right inside plan) */
-.fp-info {
-    position: absolute;
-    right: 18px;
-    bottom: 18px;
-    z-index: 9;
-    min-width: 220px;
-    max-width: 360px;
-    background: rgba(255,255,255,0.97);
-    padding: 12px 14px;
-    border-radius: 12px;
-    box-shadow: 0 12px 30px rgba(18,38,63,0.08);
-    display: none;
-}
-
-.fp-info h4 {
-    margin: 0 0 8px 0;
-    font-size: 15px;
-}
-
-.fp-info p { margin: 0; font-size: 13px; color: var(--text-soft); }
-
-.fp-marker img { width: 100%; height: 100%; object-fit: contain; display:block; }
-
-/* small action buttons */
-.small-action {
-    display: inline-block;
-    margin-left: 8px;
-    padding: 6px 8px;
-    border-radius: 8px;
-    background: rgba(255,255,255,0.95);
-    border: 1px solid rgba(0,0,0,0.06);
-    font-size: 13px;
-}
-
-.fp-pos { font-weight:700; margin-top:8px; }
-.fp-nudge { display:flex; gap:6px; margin-top:8px; }
-.fp-nudge button { padding:6px 8px; border-radius:6px; }
-
-
-#floorplan-image {
+.presentation-panel canvas {
     display: block;
     width: 100%;
     height: 100%;
-    max-height: 610px;
     object-fit: contain;
-    border-radius: 14px;
-    background: #f7faff;
-    transition: opacity 0.5s ease;
 }
 
-.plan-name {
+.presentation-status {
+    position: absolute;
+    margin: 0;
+    padding: 12px 18px;
+    color: #fff;
     text-align: center;
-    color: var(--cc-blue);
-    font-size: clamp(13px, 1.5vh, 18px);
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+}
+
+.visitor-welcome-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    display: grid;
+    place-items: center;
+    padding: clamp(16px, 4vh, 64px);
+    background: rgba(9, 19, 29, 0.96);
+}
+
+.visitor-welcome-overlay[hidden] {
+    display: none;
+}
+
+.visitor-welcome-overlay .visitor-box {
+    width: 100%;
+    max-width: 1100px;
+    min-height: clamp(220px, 36vh, 460px);
+    grid-template-columns: minmax(180px, 30%) minmax(0, 1fr);
+}
+
+.visitor-welcome-overlay .visitor-logo {
+    min-height: 180px;
+}
+
+.visitor-welcome-overlay .visitor-message {
+    font-size: clamp(28px, 4vh, 56px);
 }
 
 /* Weather animation canvas and layering */

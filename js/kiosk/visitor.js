@@ -3,6 +3,7 @@ import { createVisitorDisplay } from "../shared/visitor-display.js";
 import { getTodayIso } from "../shared/visit-dates.js";
 import { fetchKioskSettings, subscribeKioskSettings, DEFAULT_DISPLAY_MODE, DEFAULT_ROTATE_INTERVAL_MS } from "../shared/kiosk-settings.js";
 import { updateVisitorBtnPanel } from "../tablet/tablet-display.js";
+import { setVisitorWelcomeVisitors } from "./visitor-welcome.js";
 
 // ?demo=5 zeigt 5 Testbesucher ohne Datenbank, ?mode=stack erzwingt die gestapelte Ansicht,
 // ?rotateSeconds=3 erzwingt ein Rotationsintervall. Zum Ausprobieren ohne Supabase-Zugriff,
@@ -59,6 +60,7 @@ export async function loadVisitorProfile() {
         if (forcedRotateMs) currentRotateIntervalMs = forcedRotateMs;
         updateVisitorPanel();
         updateVisitorBtnPanel(currentVisitors);
+        setVisitorWelcomeVisitors(currentVisitors);
         return;
     }
 
@@ -67,6 +69,7 @@ export async function loadVisitorProfile() {
         currentVisitors = [];
         updateVisitorPanel();
         updateVisitorBtnPanel(currentVisitors);
+        setVisitorWelcomeVisitors(currentVisitors);
         return;
     }
 
@@ -102,6 +105,7 @@ export async function loadVisitorProfile() {
 
     updateVisitorBtnPanel(currentVisitors);
     updateVisitorPanel();
+    setVisitorWelcomeVisitors(currentVisitors);
 }
 
 // Einmal beim Start aufrufen: reagiert sofort auf eine Änderung der Anzeige-Einstellung im Admin,
@@ -123,6 +127,7 @@ export function setvisitorName(text) {
     currentVisitors = [{ id: "manual", name: String(text || "").trim(), imageUrl: "", template: "" }];
     updateVisitorPanel();
     updateVisitorBtnPanel(currentVisitors);
+    setVisitorWelcomeVisitors(currentVisitors);
 }
 
 // backward compatibility

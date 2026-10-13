@@ -3,7 +3,9 @@ import { updateVisitorPanel, loadVisitorProfile, initVisitorRealtime, subscribeK
 import { loadWeather, testWeather, ensureWeatherAnimator } from './weather.js';
 import { initWelcome } from './welcome.js';
 import { initFacts } from './facts.js';
-import { initFloorplan } from './floorplan.js';
+import { initPresentation } from './presentation.js';
+import { initVisitorWelcome } from './visitor-welcome.js';
+import { initTabletSelection } from '../tablet/tablet-display.js';
 
 console.log('kiosk app.js loaded');
 
@@ -34,7 +36,9 @@ function startDashboard() {
     // initialize optional modules
     try { initWelcome(); } catch (e) { console.warn('initWelcome failed', e); }
     try { initFacts(); } catch (e) { console.warn('initFacts failed', e); }
-    try { initFloorplan(); } catch (e) { console.warn('initFloorplan failed', e); }
+    try { initPresentation(); } catch (e) { console.warn('initPresentation failed', e); }
+    try { initVisitorWelcome(); } catch (e) { console.warn('initVisitorWelcome failed', e); }
+    try { initTabletSelection(); } catch (e) { console.warn('initTabletSelection failed', e); }
 }
 
 if (document.readyState === 'loading') {

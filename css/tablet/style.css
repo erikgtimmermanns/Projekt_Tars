@@ -59,7 +59,13 @@ body {
     box-shadow: var(--tablet-card-shadow);
     text-align: left;
     color: var(--tablet-text);
-    cursor: default;
+    cursor: pointer;
+    transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.visitor-btn[aria-pressed="true"] {
+    border-color: var(--cc-blue, #0067b9);
+    box-shadow: 0 0 0 3px rgba(0, 103, 185, 0.14), var(--tablet-card-shadow);
 }
 
 .visitor-logo {

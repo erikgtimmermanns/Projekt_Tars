@@ -176,6 +176,17 @@
     gap: 12px;
 }
 
+.visitor-stack .visitor-box {
+    flex: 0 0 auto;
+}
+
+.visitor-stack .visitor-message {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+}
+
 .visitor-stack.compact .visitor-box {
     min-height: 120px;
     padding: 14px 18px;

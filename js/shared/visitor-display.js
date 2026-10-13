@@ -1,7 +1,7 @@
 // visitor_panel: Mehrfachanzeige für den Kiosk. Bei genau einem Besucher sehen beide Modi
 // aus wie eine normale Einzel-Box (renderVisitorPanel). Ab zwei Besuchern:
 //  - "rotate": eine Box + Logo-Leiste, Wechsel alle ROTATE_INTERVAL_MS
-//  - "stack":  eine Box pro Besucher, oberste Position wechselt alle STACK_INTERVAL_MS
+//  - "stack":  passende Boxen bleiben sichtbar; nur überzählige rotieren im letzten Platz
 import { createVisitorBox, fillVisitorBox } from "./visitor-panel.js";
 import { DEFAULT_ROTATE_INTERVAL_MS } from "./kiosk-settings.js";
 import { loadVisitorProfile } from "../kiosk/visitor.js";
@@ -126,35 +126,13 @@ export function createVisitorDisplay(panel) {
 
     // --- Stapel -------------------------------------------------------------
 
-    function rotateStackOrder(root) {
-        const children = [...root.children];
-        const startRects = new Map(children.map(el => [el, el.getBoundingClientRect()]));
-
-        const first = children[0];
-        stackOrder.push(stackOrder.shift());
-        root.appendChild(first); // wandert ans Ende, die übrigen rücken optisch nach oben
-
-        root.querySelectorAll(".visitor-box").forEach(el => {
-            const startRect = startRects.get(el);
-            const endRect = el.getBoundingClientRect();
-            const deltaY = startRect.top - endRect.top;
-            if (deltaY && typeof el.animate === "function") {
-                el.animate(
-                    [{ transform: `translateY(${deltaY}px)` }, { transform: "translateY(0)" }],
-                    { duration: 600, easing: "cubic-bezier(.2,.8,.2,1)" }
-                );
-            }
-        });
-    }
-
-    function renderStack(freshStart) {
+    function renderStack() {
         panel.hidden = false;
         let root = panel.children.length === 1 ? panel.firstElementChild : null;
         if (!root || !root.classList.contains("visitor-stack")) {
             root = document.createElement("div");
             root.className = "visitor-stack";
             panel.replaceChildren(root);
-            freshStart = true;
         }
 
         const compact = visitors.length >= 4;
@@ -163,6 +141,7 @@ export function createVisitorDisplay(panel) {
 
         const byId = new Map(visitors.map(v => [String(v.id), v]));
         const existing = new Map([...root.children].map(el => [el.dataset.visitorId, el]));
+        const boxes = new Map();
 
         stackOrder.forEach(id => {
             const visitor = byId.get(id);
@@ -173,22 +152,48 @@ export function createVisitorDisplay(panel) {
                 box.dataset.visitorId = id;
             }
             fillVisitorBox(box, visitor);
-            root.appendChild(box); // in stackOrder-Reihenfolge ans Ende hängen sortiert die Boxen neu
+            root.appendChild(box);
+            boxes.set(id, box);
             existing.delete(id);
         });
-        existing.forEach(box => box.remove()); // Besucher, die heute nicht mehr in der Liste sind
+        existing.forEach(box => box.remove());
 
-        if (visitors.length < 2) {
-            stopTimer();
-            return;
+        const gap = Number.parseFloat(getComputedStyle(root).rowGap) || 0;
+        const availableHeight = panel.clientHeight;
+        let usedHeight = 0;
+        let fittingCount = 0;
+        for (const id of stackOrder) {
+            const boxHeight = boxes.get(id)?.getBoundingClientRect().height || 0;
+            const nextHeight = usedHeight + (fittingCount ? gap : 0) + boxHeight;
+            if (fittingCount && nextHeight > availableHeight) break;
+            usedHeight = nextHeight;
+            fittingCount++;
         }
+        fittingCount = Math.max(1, fittingCount);
 
-        if (!freshStart) {
-            return;
-        }
+        const visibleCount = Math.min(visitors.length, fittingCount);
+        const hasOverflow = visitors.length > visibleCount;
+        const pinnedCount = hasOverflow ? visibleCount - 1 : visibleCount;
+        const pinnedBoxes = stackOrder.slice(0, pinnedCount).map(id => boxes.get(id)).filter(Boolean);
+        const overflowIds = hasOverflow ? stackOrder.slice(pinnedCount) : [];
+        const overflowBoxes = new Map(overflowIds.map(id => [id, boxes.get(id)]));
+        let overflowIndex = 0;
 
         stopTimer();
-        timer = setInterval(() => rotateStackOrder(root), STACK_INTERVAL_MS);
+        if (overflowIds.length) {
+            root.replaceChildren(...pinnedBoxes, overflowBoxes.get(overflowIds[overflowIndex]));
+            if (overflowIds.length > 1) {
+                timer = setInterval(() => {
+                    overflowIndex = (overflowIndex + 1) % overflowIds.length;
+                    const nextId = overflowIds[overflowIndex];
+                    const nextBox = overflowBoxes.get(nextId);
+                    fillVisitorBox(nextBox, byId.get(nextId));
+                    root.replaceChildren(...pinnedBoxes, nextBox);
+                }, STACK_INTERVAL_MS);
+            }
+        } else {
+            root.replaceChildren(...stackOrder.slice(0, visibleCount).map(id => boxes.get(id)).filter(Boolean));
+        }
     }
 
     // --- Öffentliche API ------------------------------------------------------
@@ -232,7 +237,7 @@ export function createVisitorDisplay(panel) {
         }
 
         if (mode === "stack") {
-            renderStack(isFreshStart);
+            renderStack();
         } else {
             renderRotate(isFreshStart);
         }

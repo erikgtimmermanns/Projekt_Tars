@@ -1,45 +1,77 @@
 const STATE_TABLE = "kiosk_state";
 
-function normalize(row) {
-    const state = row?.state === 1 ? 1 : 0;
-    return state;
+const SELECTION_FIELDS = "selected_visitor_id, selected_visitor_at";
+
+function normalizeSelection(row) {
+    return {
+        visitorId: row?.selected_visitor_id == null ? null : String(row.selected_visitor_id),
+        selectedAt: row?.selected_visitor_at || null
+    };
 }
 
-
-export async function fetchKioskState(supabase) {
-    if(!supabase) return normalize(null);
+export async function fetchKioskSelection(supabase) {
+    if (!supabase) return normalizeSelection(null);
     try {
         const { data, error } = await supabase
             .from(STATE_TABLE)
-            .select("state")
+            .select(SELECTION_FIELDS)
             .eq("id", 1)
             .maybeSingle();
-        if (error || !data) return normalize(null);
-        return normalize(data);
+        if (error || !data) return normalizeSelection(null);
+        return normalizeSelection(data);
     } catch (error) {
-        console.warn("Kiosk-State konnte nicht geladen werden:", error.message || error);
-        return normalize(null);
+        console.warn("Kiosk-Besucherauswahl konnte nicht geladen werden:", error.message || error);
+        return normalizeSelection(null);
     }
 }
 
-
-export function subscribeKioskState(supabase, onChange) {
-    fetchKioskState(supabase).then(onChange);
-
+export async function setKioskSelection(supabase, visitorId) {
     if (!supabase) {
+        return false;
+    }
+
+    const selected = visitorId == null ? null : String(visitorId);
+    try {
+        const { error } = await supabase.rpc("set_kiosk_visitor_selection", {
+            p_visitor_id: selected
+        });
+        if (error) throw error;
+        return true;
+    } catch (error) {
+        console.warn("Kiosk-Besucherauswahl konnte nicht gespeichert werden:", error.message || error);
+        return false;
+    }
+}
+
+export function subscribeKioskSelection(supabase, onChange) {
+    if (!supabase) {
+        onChange(normalizeSelection(null));
         return () => {};
     }
+
+    let receivedRealtime = false;
+    let initialFetchStarted = false;
+    const loadInitialSelection = () => {
+        if (initialFetchStarted) return;
+        initialFetchStarted = true;
+        fetchKioskSelection(supabase).then((selection) => {
+            if (!receivedRealtime) onChange(selection);
+        });
+    };
 
     const channel = supabase
         .channel("kiosk_state_changes")
         .on(
             "postgres_changes",
             { event: "UPDATE", schema: "public", table: STATE_TABLE, filter: "id=eq.1" },
-            (payload) => onChange(normalize(payload.new))
+            (payload) => {
+                receivedRealtime = true;
+                onChange(normalizeSelection(payload.new));
+            }
         )
-        .subscribe();
-    console.log("channel kiosk_state:", channel)
-    console.log("onChange", onChange)
+        .subscribe((status) => {
+            if (status === "SUBSCRIBED") loadInitialSelection();
+        });
 
     return () => supabase.removeChannel(channel);
 }
