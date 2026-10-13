@@ -25,7 +25,16 @@ function renderWelcome() {
     const box = card.firstElementChild?.classList.contains("visitor-box")
         ? card.firstElementChild
         : createVisitorBox();
-    fillVisitorBox(box, visitor);
+    fillVisitorBox(box, { ...visitor, template: "Hallo, {{Besuchername}}." });
+
+    let videoPlaceholder = box.querySelector(".visitor-video-placeholder");
+    if (!videoPlaceholder) {
+        videoPlaceholder = document.createElement("div");
+        videoPlaceholder.className = "visitor-video-placeholder";
+        videoPlaceholder.setAttribute("role", "img");
+        videoPlaceholder.setAttribute("aria-label", "Videoplatzhalter für den Weg zum Besucherraum");
+        box.appendChild(videoPlaceholder);
+    }
     card.replaceChildren(box);
 }
 

@@ -240,7 +240,14 @@ body.time-night .screen::before {
     height: 100%;
     max-width: none;
     min-height: 0;
-    grid-template-columns: minmax(150px, 22%) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 26%) minmax(0, 1fr) minmax(0, 1fr);
+    gap: clamp(14px, 2vw, 28px);
+    padding: clamp(16px, 2.5vw, 36px);
+}
+
+.visitor-welcome-overlay .logo-column {
+    height: 100%;
+    min-width: 0;
 }
 
 .visitor-welcome-overlay .visitor-logo {
@@ -248,7 +255,16 @@ body.time-night .screen::before {
 }
 
 .visitor-welcome-overlay .visitor-message {
-    font-size: clamp(28px, 4vh, 56px);
+    min-width: 0;
+    font-size: clamp(22px, 2.5vh, 36px);
+}
+
+.visitor-video-placeholder {
+    min-width: 0;
+    min-height: 0;
+    height: 100%;
+    border-radius: 4px;
+    background: #fff;
 }
 
 /* Weather animation canvas and layering */
