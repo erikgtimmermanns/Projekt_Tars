@@ -128,6 +128,7 @@ function renderStatistics(data, elements) {
     elements.status.dataset.stale = String(Boolean(data.stale));
     elements.status.classList.remove("error");
     elements.status.textContent = data.stale ? "Seekampf ist gerade nicht erreichbar; zuletzt geladene Werte werden gezeigt." : "";
+    elements.status.hidden = !data.stale;
 }
 
 export function initSeekampfOverlay() {

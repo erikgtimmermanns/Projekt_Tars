@@ -384,8 +384,9 @@ body.time-night .screen::before {
 .seekampf-statistics {
     display: grid;
     width: 100%;
-    min-height: 100%;
-    grid-template-rows: minmax(0, 1fr) auto;
+    min-height: 0;
+    grid-template-rows: auto auto;
+    align-content: start;
     gap: clamp(14px, 2vh, 24px);
 }
 
@@ -399,9 +400,8 @@ body.time-night .screen::before {
 .alliance-stat-card {
     display: grid;
     min-width: 0;
-    min-height: min(58vh, 680px);
-    align-content: space-between;
-    gap: clamp(16px, 3vh, 36px);
+    align-content: start;
+    gap: clamp(16px, 2vh, 24px);
     padding: clamp(18px, 2.5vw, 36px);
     border: 1px solid rgba(0, 0, 0, 0.1);
     border-top: 4px solid var(--alliance-accent, #0067b9);
