@@ -6,6 +6,8 @@ import { initFacts } from './facts.js';
 import { initPresentation } from './presentation.js';
 import { initVisitorWelcome } from './visitor-welcome.js';
 import { initTabletSelection } from '../tablet/tablet-display.js';
+import { initSeekampfTabletButton } from '../tablet/seekampf-overlay.js';
+import { initSeekampfOverlay } from './seekampf-overlay.js';
 
 console.log('kiosk app.js loaded');
 
@@ -39,6 +41,8 @@ function startDashboard() {
     try { initPresentation(); } catch (e) { console.warn('initPresentation failed', e); }
     try { initVisitorWelcome(); } catch (e) { console.warn('initVisitorWelcome failed', e); }
     try { initTabletSelection(); } catch (e) { console.warn('initTabletSelection failed', e); }
+    try { initSeekampfTabletButton(); } catch (e) { console.warn('initSeekampfTabletButton failed', e); }
+    try { initSeekampfOverlay(); } catch (e) { console.warn('initSeekampfOverlay failed', e); }
 }
 
 if (document.readyState === 'loading') {

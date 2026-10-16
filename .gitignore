@@ -1,2 +1,4 @@
 .kontext.md
 supabase_realtime_system.txt
+node_modules/
+.env

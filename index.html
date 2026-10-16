@@ -160,6 +160,25 @@
     <section id="visitor-welcome-overlay" class="visitor-welcome-overlay" aria-label="Besucherbegrüßung" aria-hidden="true" hidden>
         <div id="visitor-welcome-card"></div>
     </section>
+        <dialog id="seekampf-dialog" class="seekampf-dialog" aria-labelledby="seekampf-title">
+            <div class="seekampf-dialog-content">
+                <header class="seekampf-dialog-header">
+                    <h2 id="seekampf-title">Allianzstatistik · MTG / AZB</h2>
+                    <span id="seekampf-updated-at" class="seekampf-updated-at"></span>
+                </header>
+                <div class="seekampf-statistics-scroll">
+                    <p id="seekampf-status" class="seekampf-status" role="status" aria-live="polite">Statistik wird geladen ...</p>
+                    <section id="seekampf-statistics" class="seekampf-statistics" aria-label="Vergleich der Allianzen MTG und AZB" hidden>
+                        <div id="featured-alliances" class="featured-alliances"></div>
+                        <p id="alliance-point-gap" class="alliance-point-gap" hidden></p>
+                        <section class="server-statistics" aria-label="Serverkennzahlen">
+                            <h3>Weltweit</h3>
+                            <div id="server-metrics" class="server-metrics"></div>
+                        </section>
+                    </section>
+                </div>
+            </div>
+        </dialog>
 </body>
 
 </html>

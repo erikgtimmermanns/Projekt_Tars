@@ -28,8 +28,10 @@ body {
     width: 100vw;
     height: 100vh;
     display: flex;
+    flex-direction: column;
     align-items: stretch;
     justify-content: center;
+    gap: 12px;
     padding: 20px;
     background: var(--tablet-panel-bg);
 }
@@ -38,7 +40,7 @@ body {
     position: fixed;
     z-index: 5;
     right: 20px;
-    bottom: 20px;
+    bottom: calc(120px + env(safe-area-inset-bottom));
     left: 20px;
     margin: 0;
     padding: 14px 18px;
@@ -59,7 +61,9 @@ body {
 
 #visitor-btn-panel {
     width: 100%;
-    height: 100%;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
 }
 
 .visitor-stack {
@@ -67,7 +71,8 @@ body {
     flex-direction: column;
     gap: 12px;
     width: 100%;
-    height: 100%;
+    min-height: 100%;
+    height: auto;
 }
 
 .visitor-btn {
@@ -117,4 +122,69 @@ body {
     line-height: 1.2;
     color: var(--tablet-text);
     word-break: break-word;
+}
+
+.tablet-tools {
+    display: flex;
+    flex: 0 0 auto;
+    justify-content: flex-start;
+}
+
+.seekampf-open {
+    display: flex;
+    width: 80px;
+    height: 80px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 4px;
+    border: 1px solid var(--tablet-card-border);
+    border-radius: 12px;
+    background: var(--tablet-card-bg);
+    box-shadow: var(--tablet-card-shadow);
+    color: var(--tablet-text);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.seekampf-open:hover,
+.seekampf-open:focus-visible {
+    border-color: var(--cc-blue, #0067b9);
+    outline: 2px solid rgba(0, 103, 185, 0.35);
+    outline-offset: 2px;
+}
+
+.seekampf-open[aria-pressed="true"] {
+    border-color: var(--cc-blue, #0067b9);
+    box-shadow: 0 0 0 3px rgba(0, 103, 185, 0.14), var(--tablet-card-shadow);
+}
+
+.seekampf-open:disabled {
+    cursor: wait;
+    opacity: 0.7;
+}
+
+.seekampf-open-icon {
+    font-size: 30px;
+    line-height: 1;
+}
+
+@media (max-height: 420px) {
+    .screen {
+        padding: 10px 16px;
+    }
+
+    .visitor-btn {
+        min-height: 80px;
+        padding: 8px 12px;
+    }
+
+    .visitor-logo {
+        width: 56px;
+        height: 56px;
+    }
 }
