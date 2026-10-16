@@ -21,12 +21,14 @@ function renderWelcome() {
         return;
     }
 
-    const frame = document.createElement("https://www.youtube.com/embed/wSGoUSwNb44?si=hKo8BbpbyxQawIPf");
+    const frame = document.createElement("iframe");
     frame.className = "visitor-welcome-frame";
-    frame.title = `Informationen für ${visitor.name || "den Besucher"}`;
-    frame.src = visitor.iframeUrl || "about:blank";
+    frame.title = "YouTube-Video für Besucher";
+    frame.src = "https://www.youtube.com/embed/wSGoUSwNb44?si=hKo8BbpbyxQawIPf";
+    frame.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+    frame.allowFullscreen = true;
     frame.loading = "eager";
-    frame.referrerPolicy = "no-referrer";
+    frame.referrerPolicy = "strict-origin-when-cross-origin";
 
     const header = document.createElement("header");
     header.className = "visitor-welcome-header";
