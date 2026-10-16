@@ -1,6 +1,5 @@
 import { supabase } from "../shared/supabase.js";
 import { subscribeKioskSelection, setKioskSelection } from "../shared/tablet-settings.js";
-import { createVisitorBox, fillVisitorBox } from "../shared/visitor-panel.js";
 
 const WELCOME_TIMEOUT_MS = 60 * 1000;
 
@@ -22,20 +21,37 @@ function renderWelcome() {
         return;
     }
 
-    const box = card.firstElementChild?.classList.contains("visitor-box")
-        ? card.firstElementChild
-        : createVisitorBox();
-    fillVisitorBox(box, { ...visitor, template: "Hallo, {{Besuchername}}." });
+    const frame = document.createElement("https://www.youtube.com/embed/wSGoUSwNb44?si=hKo8BbpbyxQawIPf");
+    frame.className = "visitor-welcome-frame";
+    frame.title = `Informationen für ${visitor.name || "den Besucher"}`;
+    frame.src = visitor.iframeUrl || "about:blank";
+    frame.loading = "eager";
+    frame.referrerPolicy = "no-referrer";
 
-    let videoPlaceholder = box.querySelector(".visitor-video-placeholder");
-    if (!videoPlaceholder) {
-        videoPlaceholder = document.createElement("div");
-        videoPlaceholder.className = "visitor-video-placeholder";
-        videoPlaceholder.setAttribute("role", "img");
-        videoPlaceholder.setAttribute("aria-label", "Videoplatzhalter für den Weg zum Besucherraum");
-        box.appendChild(videoPlaceholder);
+    const header = document.createElement("header");
+    header.className = "visitor-welcome-header";
+
+    const logo = document.createElement("div");
+    logo.className = "visitor-welcome-logo";
+    if (visitor.imageUrl) {
+        logo.style.backgroundImage = `url(${JSON.stringify(visitor.imageUrl)})`;
+        logo.setAttribute("aria-label", `Logo ${visitor.name || "des Besuchers"}`);
+    } else {
+        logo.textContent = "Logo";
     }
-    card.replaceChildren(box);
+
+    const message = document.createElement("p");
+    message.className = "visitor-welcome-message";
+    message.append(document.createTextNode("Hallo, "));
+    const name = document.createElement("strong");
+    name.textContent = visitor.name || "Besucher";
+    message.append(name, document.createTextNode("."));
+
+    header.append(logo, message);
+    const frameArea = document.createElement("div");
+    frameArea.className = "visitor-welcome-frame-area";
+    frameArea.append(frame);
+    card.replaceChildren(header, frameArea);
 }
 
 function applySelection(selection) {
