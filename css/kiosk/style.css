@@ -301,7 +301,9 @@ body.time-night .screen::before {
 
 .visitor-welcome-frame-area {
     width: 100%;
-    height: clamp(280px, 56vh, 1000px);
+    max-width: 1600px;
+    height: auto;
+    aspect-ratio: 16 / 9;
     overflow: hidden;
     border: 1px solid #dce2e7;
     border-radius: 16px;
@@ -339,9 +341,6 @@ body.time-night .screen::before {
         height: clamp(100px, 16vh, 180px);
     }
 
-    .visitor-welcome-frame-area {
-        height: clamp(240px, 48vh, 720px);
-    }
 }
 
 .seekampf-dialog {

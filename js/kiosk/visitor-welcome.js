@@ -24,8 +24,8 @@ function renderWelcome() {
     const frame = document.createElement("iframe");
     frame.className = "visitor-welcome-frame";
     frame.title = "YouTube-Video für Besucher";
-    frame.src = "https://www.youtube.com/embed/wSGoUSwNb44?si=hKo8BbpbyxQawIPf";
-    frame.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+    frame.src = "https://www.youtube.com/embed/wSGoUSwNb44?autoplay=1&mute=1&playsinline=1&controls=1&rel=0";
+    frame.allow = "autoplay; encrypted-media; picture-in-picture";
     frame.allowFullscreen = true;
     frame.loading = "eager";
     frame.referrerPolicy = "strict-origin-when-cross-origin";
