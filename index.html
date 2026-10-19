@@ -14,6 +14,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script type="module" src="https://widgets.tradingview-widget.com/w/de_DE/tv-market-overview.js"></script>
+  <script type="module" src="https://widgets.tradingview-widget.com/w/en/tv-ticker-tape.js"></script>
 
   <script type="module" src="./js/kiosk/app.js"></script>
 
@@ -57,7 +58,7 @@
 
     <section class="market-overview-panel" aria-label="Marktübersicht">
       <tv-market-overview
-        symbol-sectors='[{"sectionName":"symbols":["FOREXCOM:SPXUSD","FOREXCOM:NSXUSD","FOREXCOM:DJI","FOREXCOM:UKXGBP"]},]'
+        symbol-sectors='[{"sectionName":"Indices","symbols":["FOREXCOM:SPXUSD","FOREXCOM:NSXUSD","FOREXCOM:DJI","FOREXCOM:UKXGBP"]},{"sectionName":"Stocks","symbols":["NASDAQ:MSFT","NASDAQ:NVDA","NASDAQ:AAPL","INDEX:DAX"]},{"sectionName":"Crypto","symbols":["BITSTAMP:BTCUSD","BITSTAMP:ETHUSD","CRYPTO:XRPUSD"]}]'
         hide-market-status
         chart-size="large"
       ></tv-market-overview>
@@ -166,6 +167,13 @@
       </div>
     </footer>
   </main>
+  <aside class="ticker-tape-dock" aria-label="Aktuelle Finanzmärkte" aria-hidden="true" inert>
+    <tv-ticker-tape
+      symbols="NASDAQ:MSFT,NASDAQ:NVDA,NASDAQ:AAPL,NASDAQ:AMZN,NASDAQ:GOOGL,NASDAQ:META,NASDAQ:TSLA,FOREXCOM:SPXUSD,FOREXCOM:NSXUSD,FOREXCOM:DJI,FX:EURUSD,CMCMARKETS:GOLD,BITSTAMP:BTCUSD"
+      item-size="compact"
+      hide-chart
+    ></tv-ticker-tape>
+  </aside>
     <section id="visitor-welcome-overlay" class="visitor-welcome-overlay" aria-label="Besucherbegrüßung" aria-hidden="true" hidden>
         <div id="visitor-welcome-card"></div>
     </section>
