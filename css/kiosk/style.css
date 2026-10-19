@@ -934,24 +934,56 @@ body.time-night .screen::before {
 
     align-items: stretch;
 
-    gap: 18px;
+    gap: 14px;
 
-    min-height: 110px;
+    min-height: 92px;
 
-    padding: 14px 20px;
+    padding: 10px 16px;
+}
+
+.weather-forecast {
+    display: flex;
+    align-items: stretch;
+    gap: 10px;
+    min-width: 0;
+}
+
+.forecast-day {
+    display: grid;
+    flex: 1 1 0;
+    align-content: center;
+    justify-items: start;
+    gap: 2px;
+    min-width: 0;
+    font-size: clamp(10px, 1.05vh, 14px);
+    line-height: 1.15;
+}
+
+.forecast-day-icon {
+    font-size: 17px;
+}
+
+.forecast-day-temp {
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.forecast-day-prob {
+    color: var(--text-soft);
+    white-space: nowrap;
 }
 
 .weather-current {
     display: grid;
     align-content: center;
-    gap: 14px;
+    gap: 10px;
     min-width: 0;
 }
 
 .weather-details {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
+    gap: 8px;
 }
 
 /* Linker Bereich */
@@ -967,7 +999,7 @@ body.time-night .screen::before {
 
 .weather-icon {
 
-    font-size: 48px;
+    font-size: 40px;
 
     animation:
         weatherFloat
