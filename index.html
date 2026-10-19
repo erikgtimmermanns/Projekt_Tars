@@ -13,6 +13,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Albert+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script type="module" src="https://widgets.tradingview-widget.com/w/en/tv-ticker-tape.js"></script>
 
   <script type="module" src="./js/kiosk/app.js"></script>
 
@@ -52,6 +53,10 @@
     <section class="presentation-panel" id="presentation-panel" aria-label="Aktuelle Nachrichten">
       <canvas id="presentation-canvas" aria-label="Nachrichtenpräsentation"></canvas>
       <p class="presentation-status" id="presentation-status" role="status">Nachrichten werden geladen ...</p>
+    </section>
+
+    <section class="market-ticker" aria-label="Börsenticker">
+      <tv-ticker-tape symbols="NASDAQ:MSFT,NASDAQ:NVDA,NASDAQ:AAPL,NASDAQ:AMZN,NASDAQ:GOOGL,NASDAQ:META,NASDAQ:TSLA,FOREXCOM:SPXUSD,FOREXCOM:NSXUSD,FOREXCOM:DJI,FX:EURUSD,CMCMARKETS:GOLD,BITSTAMP:BTCUSD"></tv-ticker-tape>
     </section>
 
     <section
