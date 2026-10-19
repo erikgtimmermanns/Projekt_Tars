@@ -23,10 +23,14 @@ export async function initPresentation() {
 
         try {
             const page = await documentHandle.getPage(pageNumber);
+            const baseViewport = page.getViewport({ scale: 1 });
+            panel.style.setProperty(
+                "--presentation-aspect-ratio",
+                `${baseViewport.width} / ${baseViewport.height}`
+            );
             const bounds = panel.getBoundingClientRect();
             if (bounds.width <= 0 || bounds.height <= 0) return;
 
-            const baseViewport = page.getViewport({ scale: 1 });
             const scale = Math.min(bounds.width / baseViewport.width, bounds.height / baseViewport.height);
             const viewport = page.getViewport({ scale });
             const pixelRatio = window.devicePixelRatio || 1;
