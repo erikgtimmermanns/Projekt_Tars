@@ -676,6 +676,14 @@ body.time-night .screen::before {
     z-index: 2;
 }
 
+/* Ensure weather symbols render on Linux kiosks without a bundled emoji font. */
+.weather-icon,
+.weather-detail-icon,
+.forecast-day-icon {
+    font-family: "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+    font-variant-emoji: emoji;
+}
+
 /* overlay to darken/diffuse the whole weather card depending on conditions */
 .weather::before {
     content: "";
