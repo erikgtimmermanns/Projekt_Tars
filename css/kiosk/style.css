@@ -194,7 +194,7 @@ body.time-night .screen::before {
 }
 
 .screen.seekampf-pinned {
-    grid-template-rows: auto auto minmax(0, 1fr) minmax(130px, 0.55fr) 88px minmax(110px, 0.65fr) auto;
+    grid-template-rows: auto auto minmax(0, 1fr) minmax(clamp(220px, 27vh, 420px), max-content) 88px minmax(70px, 0.65fr) auto;
 }
 
 .seekampf-pinned-panel {
