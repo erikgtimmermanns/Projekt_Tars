@@ -19,6 +19,16 @@ function formatSignedNumber(value) {
     return formatNumber(value);
 }
 
+function formatGrowthPercent(value) {
+    if (!Number.isFinite(value)) return "wird erfasst";
+    return new Intl.NumberFormat("de-DE", {
+        style: "percent",
+        signDisplay: "always",
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(value / 100);
+}
+
 function createMetric(label, value) {
     const wrapper = document.createElement("div");
     const term = document.createElement("dt");
@@ -75,6 +85,7 @@ function createAllianceCard(alliance, tag) {
     metrics.append(
         createMetric("Mitglieder", formatNumber(alliance.members)),
         createMetric("Heute", formatSignedNumber(alliance.dailyDelta)),
+        createMetric("Wachstum (24 Std.)", formatGrowthPercent(alliance.growth24hPercent)),
         createMetric("Rangänderung", formatSignedNumber(alliance.rankChange)),
         createMetric(
             "Punkte / Mitglied",
