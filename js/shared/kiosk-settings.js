@@ -3,6 +3,7 @@ import { VISITOR_ROTATE_DEFAULT_S } from "./config.js";
 
 export const SETTINGS_TABLE = "kiosk_settings";
 const STATE_TABLE = "kiosk_state";
+let subscriptionSequence = 0;
 
 export const DEFAULT_DISPLAY_MODE = "rotate";
 export const DEFAULT_ROTATE_INTERVAL_MS = VISITOR_ROTATE_DEFAULT_S * 1000;
@@ -53,7 +54,7 @@ export function subscribeKioskSettings(supabase, onChange) {
     }
 
     const channel = supabase
-        .channel("kiosk_settings_changes")
+        .channel(`kiosk_settings_changes_${++subscriptionSequence}`)
         .on(
             "postgres_changes",
             { event: "UPDATE", schema: "public", table: SETTINGS_TABLE, filter: "id=eq.1" },
