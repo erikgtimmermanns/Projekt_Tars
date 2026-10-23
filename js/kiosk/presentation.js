@@ -1,4 +1,4 @@
-const PDF_URL = "./assets/Firma_Fake_News_Orbital_Update%203.pdf";
+const PDF_URL = "./assets/Firma_Fake_News_Light_Style_Edition.pdf";
 const PDFJS_URL = "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.min.mjs";
 const PDFJS_WORKER_URL = "https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.min.mjs";
 const SLIDE_INTERVAL_MS = 10000;
