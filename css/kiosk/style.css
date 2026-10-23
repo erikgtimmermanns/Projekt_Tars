@@ -206,6 +206,7 @@ body.time-night .screen::before {
     min-height: 0;
     padding: clamp(14px, 2vh, 28px);
     overflow: hidden;
+    container-type: size;
     border: 1px solid var(--line);
     border-radius: var(--kiosk-radius);
     background: var(--white);
@@ -214,13 +215,32 @@ body.time-night .screen::before {
 
 .seekampf-pinned-panel[hidden] { display: none; }
 .screen.seekampf-pinned .seekampf-pinned-panel { display: flex; }
-.seekampf-pinned-panel .seekampf-dialog-header { flex: 0 0 auto; padding: 0 0 10px; }
-.seekampf-pinned-panel .seekampf-statistics-scroll { flex: 1; padding: 0; overflow: auto; }
-.seekampf-pinned-panel .seekampf-statistics { gap: clamp(8px, 1.4vh, 18px); }
-.seekampf-pinned-panel .featured-alliances { gap: clamp(8px, 1vw, 16px); }
-.seekampf-pinned-panel .alliance-stat-card { gap: clamp(8px, 1vh, 16px); padding: clamp(10px, 1.3vw, 20px); }
-.seekampf-pinned-panel .alliance-stat-metrics { gap: clamp(6px, 1vh, 14px); }
-.seekampf-pinned-panel .server-statistics { padding: clamp(10px, 1.2vw, 18px); }
+.seekampf-pinned-panel .seekampf-dialog-header { flex: 0 0 auto; min-height: 0; padding: 0 0 clamp(4px, 0.7cqh, 10px); }
+.seekampf-pinned-panel .seekampf-dialog-header h2 { font-size: clamp(14px, 2.1cqh, 22px); }
+.seekampf-pinned-panel .seekampf-updated-at { font-size: clamp(10px, 1.3cqh, 14px); }
+.seekampf-pinned-panel .seekampf-statistics-scroll { flex: 1; min-height: 0; padding: 0; overflow: hidden; }
+.seekampf-pinned-panel .seekampf-status { margin: 0; font-size: clamp(11px, 1.6cqh, 16px); }
+.seekampf-pinned-panel .seekampf-statistics { height: 100%; grid-template-rows: minmax(0, 1fr) auto; gap: clamp(4px, 1cqh, 14px); }
+.seekampf-pinned-panel .featured-alliances { height: 100%; gap: clamp(4px, 0.8vw, 12px); }
+.seekampf-pinned-panel .alliance-stat-card { height: 100%; grid-template-rows: auto auto auto; gap: clamp(3px, 0.8cqh, 12px); padding: clamp(6px, 1cqh, 16px); border-top-width: 3px; }
+.seekampf-pinned-panel .alliance-stat-heading { grid-template-columns: clamp(24px, 3.8cqh, 44px) minmax(0, 1fr) auto; gap: clamp(4px, 0.8vw, 10px); }
+.seekampf-pinned-panel .alliance-stat-flag { width: clamp(24px, 3.8cqh, 44px); height: clamp(24px, 3.8cqh, 44px); font-size: clamp(15px, 2.3cqh, 24px); }
+.seekampf-pinned-panel .alliance-stat-tag { font-size: clamp(9px, 1.2cqh, 13px); }
+.seekampf-pinned-panel .alliance-stat-name { font-size: clamp(12px, 1.8cqh, 19px); }
+.seekampf-pinned-panel .alliance-stat-rank { padding: clamp(3px, 0.5cqh, 6px) clamp(5px, 0.6vw, 10px); font-size: clamp(9px, 1.2cqh, 13px); }
+.seekampf-pinned-panel .alliance-stat-points { gap: 1px; padding: clamp(2px, 0.5cqh, 8px) 0; }
+.seekampf-pinned-panel .alliance-stat-points strong { font-size: clamp(16px, 3.8cqh, 38px); }
+.seekampf-pinned-panel .alliance-stat-points span { font-size: clamp(9px, 1.2cqh, 13px); }
+.seekampf-pinned-panel .alliance-stat-metrics { gap: clamp(3px, 0.8cqh, 10px); }
+.seekampf-pinned-panel .alliance-stat-metrics dt { font-size: clamp(8px, 1.1cqh, 12px); }
+.seekampf-pinned-panel .alliance-stat-metrics dd { margin-top: 1px; font-size: clamp(10px, 1.5cqh, 16px); }
+.seekampf-pinned-panel .alliance-stat-empty { padding: clamp(6px, 1cqh, 18px); font-size: clamp(10px, 1.4cqh, 15px); }
+.seekampf-pinned-panel .alliance-point-gap { margin: 0; font-size: clamp(10px, 1.3cqh, 14px); }
+.seekampf-pinned-panel .server-statistics { min-height: 0; padding: clamp(4px, 0.8cqh, 12px); }
+.seekampf-pinned-panel .server-statistics h3 { margin-bottom: clamp(3px, 0.6cqh, 8px); font-size: clamp(10px, 1.4cqh, 15px); }
+.seekampf-pinned-panel .server-metric { gap: 2px; padding: clamp(3px, 0.6cqh, 8px); }
+.seekampf-pinned-panel .server-metric span { font-size: clamp(8px, 1.1cqh, 12px); }
+.seekampf-pinned-panel .server-metric strong { font-size: clamp(11px, 1.8cqh, 20px); }
 
 .presentation-panel {
     grid-row: 3;
