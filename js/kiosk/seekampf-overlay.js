@@ -1,5 +1,6 @@
 import { supabase } from "../shared/supabase.js";
 import { subscribeKioskSettings } from "../shared/kiosk-settings.js";
+import { setSeekampfLayoutState } from "./layout.js";
 import {
     KIOSK_VIEW_ALLIANCE_COMPARISON,
     setKioskViewSelection,
@@ -156,11 +157,17 @@ export function initSeekampfOverlay() {
 
     let isActive = false;
     let isPinned = false;
+    let pinnedStatisticsReady = false;
     let requestSequence = 0;
     const elements = { status, statistics, alliances, pointGap, serverMetrics, updatedAt };
 
     const loadStatistics = async (target = elements) => {
         const currentRequest = ++requestSequence;
+        const isPinnedTarget = target === pinnedElements;
+        if (isPinnedTarget) {
+            pinnedStatisticsReady = false;
+            setSeekampfLayoutState(isPinned, false);
+        }
         target.status.hidden = false;
         target.status.dataset.stale = "false";
         target.status.classList.remove("error");
@@ -177,12 +184,20 @@ export function initSeekampfOverlay() {
             if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
             if (currentRequest !== requestSequence) return;
             renderStatistics(data, target);
+            if (isPinnedTarget) {
+                pinnedStatisticsReady = true;
+                setSeekampfLayoutState(isPinned, true);
+            }
         } catch (error) {
             if (currentRequest !== requestSequence) return;
             target.status.dataset.stale = "false";
             target.status.classList.add("error");
             target.status.textContent = error.message || "Statistik konnte nicht geladen werden.";
             target.updatedAt.textContent = "";
+            if (isPinnedTarget) {
+                pinnedStatisticsReady = false;
+                setSeekampfLayoutState(isPinned, false);
+            }
         } finally {
             if (currentRequest === requestSequence) {
                 target.statistics.removeAttribute("aria-busy");
@@ -212,8 +227,7 @@ export function initSeekampfOverlay() {
     const unsubscribeSettings = subscribeKioskSettings(supabase, (settings) => {
         const wasPinned = isPinned;
         isPinned = settings.seekampfPinned;
-        screen.classList.toggle("seekampf-pinned", isPinned);
-        pinnedPanel.hidden = !isPinned;
+        setSeekampfLayoutState(isPinned, pinnedStatisticsReady);
         if (isPinned && !wasPinned) void loadStatistics(pinnedElements);
         applySelection(latestSelection);
     });

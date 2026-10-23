@@ -8,11 +8,14 @@ import { initVisitorWelcome } from './visitor-welcome.js';
 import { initTabletSelection } from '../tablet/tablet-display.js';
 import { initSeekampfTabletButton } from '../tablet/seekampf-overlay.js';
 import { initSeekampfOverlay } from './seekampf-overlay.js';
+import { initKioskLayout } from './layout.js';
 
 console.log('kiosk app.js loaded');
 
 function startDashboard() {
     console.log('Dashboard wird gestartet');
+
+    initKioskLayout();
 
     try { ensureWeatherAnimator(); } catch (e) { /* ignore */ }
 

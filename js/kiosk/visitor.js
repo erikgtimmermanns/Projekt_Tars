@@ -4,6 +4,7 @@ import { getTodayIso } from "../shared/visit-dates.js";
 import { fetchKioskSettings, subscribeKioskSettings, DEFAULT_DISPLAY_MODE, DEFAULT_ROTATE_INTERVAL_MS } from "../shared/kiosk-settings.js";
 import { updateVisitorBtnPanel } from "../tablet/tablet-display.js";
 import { setVisitorWelcomeVisitors } from "./visitor-welcome.js";
+import { setVisitorLayoutState } from "./layout.js";
 
 // ?demo=5 zeigt 5 Testbesucher ohne Datenbank, ?mode=stack erzwingt die gestapelte Ansicht,
 // ?rotateSeconds=3 erzwingt ein Rotationsintervall. Zum Ausprobieren ohne Supabase-Zugriff,
@@ -48,6 +49,7 @@ export function updateVisitorPanel() {
     if (activeDisplay) {
         activeDisplay.update(currentVisitors, currentMode, currentRotateIntervalMs);
     }
+    setVisitorLayoutState(currentVisitors.length, currentMode);
 }
 
 
