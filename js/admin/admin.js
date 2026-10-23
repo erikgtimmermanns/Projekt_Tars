@@ -39,6 +39,7 @@ const screenConfigMessage = document.getElementById("screenConfigMessage");
 const saveScreenBtn = document.getElementById("saveScreenBtn");
 const rotateIntervalInput = document.getElementById("rotateIntervalInput");
 const seekampfPinnedInput = document.getElementById("seekampfPinnedInput");
+const headerLanguageSelect = document.getElementById("headerLanguageSelect");
 
 function getVisitorTextValue() {
   const el = visitorNameInput || document.getElementById("visitorNameInput");
@@ -56,6 +57,7 @@ let templatesById = new Map(); // id -> Vorlagentext
 let pendingDisplayMode = DEFAULT_DISPLAY_MODE; // Auswahl in "Bildschirm konfigurieren", erst mit Klick auf "Bildschirm speichern" übernommen
 let pendingRotateIntervalS = DEFAULT_ROTATE_INTERVAL_MS / 1000;
 let pendingSeekampfPinned = false;
+let pendingHeaderLanguage = "de";
 
 function clampRotateSeconds(value) {
   const seconds = Math.round(Number(value));
@@ -229,10 +231,12 @@ async function loadScreenSettings() {
     pendingDisplayMode = settings.mode;
     pendingRotateIntervalS = Math.round(settings.rotateIntervalMs / 1000);
     pendingSeekampfPinned = settings.seekampfPinned;
+    pendingHeaderLanguage = settings.headerLanguage;
   }
   modeRadios.forEach(radio => { radio.checked = radio.value === pendingDisplayMode; });
   rotateIntervalInput.value = pendingRotateIntervalS;
   seekampfPinnedInput.checked = pendingSeekampfPinned;
+  headerLanguageSelect.value = pendingHeaderLanguage;
   renderPreview();
 }
 
@@ -259,6 +263,9 @@ rotateIntervalInput.addEventListener("blur", () => {
 seekampfPinnedInput.addEventListener("change", () => {
   pendingSeekampfPinned = seekampfPinnedInput.checked;
 });
+headerLanguageSelect.addEventListener("change", () => {
+  pendingHeaderLanguage = headerLanguageSelect.value === "en" ? "en" : "de";
+});
 
 saveScreenBtn.addEventListener("click", async () => {
   if (!configIsSet || !supabase) {
@@ -267,7 +274,7 @@ saveScreenBtn.addEventListener("click", async () => {
   }
   const { error } = await supabase
     .from("kiosk_settings")
-    .update({ display_mode: pendingDisplayMode, rotate_interval_seconds: pendingRotateIntervalS, seekampf_pinned: pendingSeekampfPinned })
+    .update({ display_mode: pendingDisplayMode, rotate_interval_seconds: pendingRotateIntervalS, seekampf_pinned: pendingSeekampfPinned, header_language: pendingHeaderLanguage })
     .eq("id", 1);
   if (error) {
     showNotice(screenConfigMessage, "error", error.message || "Einstellung konnte nicht gespeichert werden.");

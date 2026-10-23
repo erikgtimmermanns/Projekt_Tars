@@ -3,9 +3,11 @@ import { VISITOR_ROTATE_DEFAULT_S } from "./config.js";
 
 export const SETTINGS_TABLE = "kiosk_settings";
 const STATE_TABLE = "kiosk_state";
+let subscriptionSequence = 0;
 
 export const DEFAULT_DISPLAY_MODE = "rotate";
 export const DEFAULT_ROTATE_INTERVAL_MS = VISITOR_ROTATE_DEFAULT_S * 1000;
+export const DEFAULT_HEADER_LANGUAGE = "de";
 
 const MIN_ROTATE_INTERVAL_S = 2;
 const MAX_ROTATE_INTERVAL_S = 60;
@@ -19,7 +21,8 @@ function normalize(row) {
     }
     seconds = Math.min(MAX_ROTATE_INTERVAL_S, Math.max(MIN_ROTATE_INTERVAL_S, seconds));
 
-    return { mode, rotateIntervalMs: seconds * 1000, seekampfPinned: row?.seekampf_pinned === true };
+    const headerLanguage = row?.header_language === "en" ? "en" : DEFAULT_HEADER_LANGUAGE;
+    return { mode, rotateIntervalMs: seconds * 1000, seekampfPinned: row?.seekampf_pinned === true, headerLanguage };
 }
 
 export async function fetchKioskSettings(supabase) {
@@ -27,7 +30,7 @@ export async function fetchKioskSettings(supabase) {
     try {
         const { data, error } = await supabase
             .from(SETTINGS_TABLE)
-            .select("display_mode, rotate_interval_seconds, seekampf_pinned")
+            .select("display_mode, rotate_interval_seconds, seekampf_pinned, header_language")
             .eq("id", 1)
             .maybeSingle();
         if (error || !data) return normalize(null);
@@ -51,7 +54,7 @@ export function subscribeKioskSettings(supabase, onChange) {
     }
 
     const channel = supabase
-        .channel("kiosk_settings_changes")
+        .channel(`kiosk_settings_changes_${++subscriptionSequence}`)
         .on(
             "postgres_changes",
             { event: "UPDATE", schema: "public", table: SETTINGS_TABLE, filter: "id=eq.1" },
