@@ -57,7 +57,13 @@ export function subscribeKioskSettings(supabase, onChange) {
             { event: "UPDATE", schema: "public", table: SETTINGS_TABLE, filter: "id=eq.1" },
             (payload) => onChange(normalize(payload.new))
         )
-        .subscribe();
+        .subscribe((status, error) => {
+            if (status === "SUBSCRIBED") {
+                console.info("Kiosk-Einstellungen werden live über Supabase aktualisiert.");
+            } else if (["CHANNEL_ERROR", "TIMED_OUT", "CLOSED"].includes(status)) {
+                console.warn("Supabase-Realtime für kiosk_settings ist nicht verfügbar:", status, error);
+            }
+        });
 
     return () => supabase.removeChannel(channel);
 }
