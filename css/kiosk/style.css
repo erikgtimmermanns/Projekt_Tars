@@ -72,9 +72,10 @@ body.time-night .screen::before {
 .screen {
     position: relative;
     display: grid;
-    grid-template-rows: auto auto minmax(0, 1fr) 88px auto auto;
+    grid-template-rows: auto auto minmax(0, 1fr) 88px minmax(110px, 1fr) auto;
     width: 100vw;
     height: 100vh;
+    height: 100dvh;
     overflow: hidden;
     padding: 18px 22px 12px;
     isolation: isolate;
@@ -192,6 +193,36 @@ body.time-night .screen::before {
     overflow: hidden;
 }
 
+.screen.seekampf-pinned {
+    grid-template-rows: auto auto minmax(0, 1fr) 88px minmax(150px, 0.8fr) auto;
+}
+
+.seekampf-pinned-panel {
+    grid-row: 3;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(8px, 1.2vh, 16px);
+    min-width: 0;
+    min-height: 0;
+    padding: clamp(14px, 2vh, 28px);
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: var(--kiosk-radius);
+    background: var(--white);
+    box-shadow: var(--kiosk-shadow);
+}
+
+.seekampf-pinned-panel[hidden] { display: none; }
+.screen.seekampf-pinned .presentation-panel { display: none; }
+.screen.seekampf-pinned .seekampf-pinned-panel { display: flex; }
+.seekampf-pinned-panel .seekampf-dialog-header { flex: 0 0 auto; padding: 0 0 10px; }
+.seekampf-pinned-panel .seekampf-statistics-scroll { flex: 1; padding: 0; overflow: auto; }
+.seekampf-pinned-panel .seekampf-statistics { gap: clamp(8px, 1.4vh, 18px); }
+.seekampf-pinned-panel .featured-alliances { gap: clamp(8px, 1vw, 16px); }
+.seekampf-pinned-panel .alliance-stat-card { gap: clamp(8px, 1vh, 16px); padding: clamp(10px, 1.3vw, 20px); }
+.seekampf-pinned-panel .alliance-stat-metrics { gap: clamp(6px, 1vh, 14px); }
+.seekampf-pinned-panel .server-statistics { padding: clamp(10px, 1.2vw, 18px); }
+
 .presentation-panel {
     grid-row: 3;
     align-self: start;
@@ -228,7 +259,7 @@ body.time-night .screen::before {
     align-self: end;
     min-width: 0;
     height: 88px;
-    margin-top: 10px;
+    margin-top: 0;
     overflow: hidden;
     border: 1px solid var(--line);
     border-radius: 12px;
@@ -449,6 +480,8 @@ body.time-night .screen::before {
     gap: clamp(14px, 2vh, 24px);
 }
 
+.seekampf-statistics[hidden] { display: none; }
+
 .featured-alliances {
     display: grid;
     min-height: 0;
@@ -651,6 +684,9 @@ body.time-night .screen::before {
 .weather {
     grid-row: 5;
     position: relative;
+    min-height: 0;
+    margin-top: 0;
+    container-type: size;
 }
 
 .weather-animation {
@@ -865,9 +901,9 @@ body.time-night .screen::before {
 
     width: 100%;
 
-    min-height: 110px;
+    min-height: 0;
 
-    margin-top: 14px;
+    margin-top: 0;
 
     overflow: hidden;
 
@@ -936,9 +972,11 @@ body.time-night .screen::before {
 
     gap: 14px;
 
-    min-height: 92px;
+    min-height: 0;
 
-    padding: 10px 16px;
+    height: 100%;
+
+    padding: clamp(8px, 2cqh, 30px) clamp(10px, 2vw, 30px);
 }
 
 .weather-forecast {
@@ -983,7 +1021,7 @@ body.time-night .screen::before {
 .weather-details {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
+    gap: clamp(4px, 1cqh, 12px);
 }
 
 /* Linker Bereich */
@@ -994,12 +1032,12 @@ body.time-night .screen::before {
 
     align-items: center;
 
-    gap: 15px;
+    gap: clamp(8px, 1.5cqh, 20px);
 }
 
 .weather-icon {
 
-    font-size: 40px;
+    font-size: clamp(26px, 5cqh, 68px);
 
     animation:
         weatherFloat
@@ -1016,7 +1054,7 @@ body.time-night .screen::before {
 
     color: var(--cc-blue);
 
-    font-size: 36px;
+    font-size: clamp(25px, 5cqh, 64px);
 
     font-weight: 700;
 
@@ -1027,7 +1065,7 @@ body.time-night .screen::before {
 
     color: var(--text-soft);
 
-    font-size: 16px;
+    font-size: clamp(12px, 1.8cqh, 22px);
 
     font-weight: 500;
 }

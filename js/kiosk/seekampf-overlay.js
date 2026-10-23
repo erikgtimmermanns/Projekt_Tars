@@ -1,4 +1,5 @@
 import { supabase } from "../shared/supabase.js";
+import { subscribeKioskSettings } from "../shared/kiosk-settings.js";
 import {
     KIOSK_VIEW_ALLIANCE_COMPARISON,
     setKioskViewSelection,
@@ -141,17 +142,30 @@ export function initSeekampfOverlay() {
     const updatedAt = dialog?.querySelector("#seekampf-updated-at");
     if (!dialog || !status || !statistics || !alliances || !pointGap || !serverMetrics || !updatedAt) return;
 
+    const pinnedPanel = document.getElementById("seekampf-pinned-panel");
+    const screen = document.querySelector(".screen");
+    const pinnedElements = {
+        status: document.getElementById("seekampf-pinned-status"),
+        statistics: document.getElementById("seekampf-pinned-statistics"),
+        alliances: document.getElementById("seekampf-pinned-alliances"),
+        pointGap: document.getElementById("seekampf-pinned-point-gap"),
+        serverMetrics: document.getElementById("seekampf-pinned-server-metrics"),
+        updatedAt: document.getElementById("seekampf-pinned-updated-at")
+    };
+    if (!pinnedPanel || !screen || Object.values(pinnedElements).some((element) => !element)) return;
+
     let isActive = false;
+    let isPinned = false;
     let requestSequence = 0;
     const elements = { status, statistics, alliances, pointGap, serverMetrics, updatedAt };
 
-    const loadStatistics = async () => {
+    const loadStatistics = async (target = elements) => {
         const currentRequest = ++requestSequence;
-        status.hidden = false;
-        status.dataset.stale = "false";
-        status.classList.remove("error");
-        status.textContent = "Statistik wird geladen ...";
-        statistics.setAttribute("aria-busy", "true");
+        target.status.hidden = false;
+        target.status.dataset.stale = "false";
+        target.status.classList.remove("error");
+        target.status.textContent = "Statistik wird geladen ...";
+        target.statistics.setAttribute("aria-busy", "true");
 
         try {
             const response = await fetch("/api/alliances/featured", { cache: "no-store" });
@@ -162,23 +176,24 @@ export function initSeekampfOverlay() {
             const data = await response.json();
             if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
             if (currentRequest !== requestSequence) return;
-            renderStatistics(data, elements);
+            renderStatistics(data, target);
         } catch (error) {
             if (currentRequest !== requestSequence) return;
-            status.dataset.stale = "false";
-            status.classList.add("error");
-            status.textContent = error.message || "Statistik konnte nicht geladen werden.";
-            updatedAt.textContent = "";
+            target.status.dataset.stale = "false";
+            target.status.classList.add("error");
+            target.status.textContent = error.message || "Statistik konnte nicht geladen werden.";
+            target.updatedAt.textContent = "";
         } finally {
             if (currentRequest === requestSequence) {
-                statistics.removeAttribute("aria-busy");
+                target.statistics.removeAttribute("aria-busy");
             }
         }
     };
 
     const applySelection = (selection) => {
+        const shouldShowDialog = !isPinned && selection.kioskView === KIOSK_VIEW_ALLIANCE_COMPARISON;
         const wasActive = isActive;
-        isActive = selection.kioskView === KIOSK_VIEW_ALLIANCE_COMPARISON;
+        isActive = shouldShowDialog;
 
         if (isActive) {
             if (!dialog.open) dialog.showModal();
@@ -188,7 +203,20 @@ export function initSeekampfOverlay() {
         }
     };
 
-    const unsubscribe = subscribeKioskSelection(supabase, applySelection);
+    let latestSelection = { kioskView: null };
+    const onSelection = (selection) => {
+        latestSelection = selection;
+        applySelection(selection);
+    };
+    const unsubscribe = subscribeKioskSelection(supabase, onSelection);
+    const unsubscribeSettings = subscribeKioskSettings(supabase, (settings) => {
+        const wasPinned = isPinned;
+        isPinned = settings.seekampfPinned;
+        screen.classList.toggle("seekampf-pinned", isPinned);
+        pinnedPanel.hidden = !isPinned;
+        if (isPinned && !wasPinned) void loadStatistics(pinnedElements);
+        applySelection(latestSelection);
+    });
     dialog.addEventListener("cancel", (event) => {
         event.preventDefault();
     });
@@ -201,6 +229,7 @@ export function initSeekampfOverlay() {
 
     return () => {
         unsubscribe();
+        unsubscribeSettings();
         if (dialog.open) dialog.close();
     };
 }

@@ -38,6 +38,7 @@ const modeRadios = document.querySelectorAll('input[name="displayMode"]');
 const screenConfigMessage = document.getElementById("screenConfigMessage");
 const saveScreenBtn = document.getElementById("saveScreenBtn");
 const rotateIntervalInput = document.getElementById("rotateIntervalInput");
+const seekampfPinnedInput = document.getElementById("seekampfPinnedInput");
 
 function getVisitorTextValue() {
   const el = visitorNameInput || document.getElementById("visitorNameInput");
@@ -54,6 +55,7 @@ let selectedName = "";
 let templatesById = new Map(); // id -> Vorlagentext
 let pendingDisplayMode = DEFAULT_DISPLAY_MODE; // Auswahl in "Bildschirm konfigurieren", erst mit Klick auf "Bildschirm speichern" übernommen
 let pendingRotateIntervalS = DEFAULT_ROTATE_INTERVAL_MS / 1000;
+let pendingSeekampfPinned = false;
 
 function clampRotateSeconds(value) {
   const seconds = Math.round(Number(value));
@@ -226,9 +228,11 @@ async function loadScreenSettings() {
     const settings = await fetchKioskSettings(supabase);
     pendingDisplayMode = settings.mode;
     pendingRotateIntervalS = Math.round(settings.rotateIntervalMs / 1000);
+    pendingSeekampfPinned = settings.seekampfPinned;
   }
   modeRadios.forEach(radio => { radio.checked = radio.value === pendingDisplayMode; });
   rotateIntervalInput.value = pendingRotateIntervalS;
+  seekampfPinnedInput.checked = pendingSeekampfPinned;
   renderPreview();
 }
 
@@ -252,6 +256,10 @@ rotateIntervalInput.addEventListener("blur", () => {
   rotateIntervalInput.value = pendingRotateIntervalS; // normalisiert die Anzeige (z. B. nach leerem Feld)
 });
 
+seekampfPinnedInput.addEventListener("change", () => {
+  pendingSeekampfPinned = seekampfPinnedInput.checked;
+});
+
 saveScreenBtn.addEventListener("click", async () => {
   if (!configIsSet || !supabase) {
     showNotice(screenConfigMessage, "error", "Supabase ist noch nicht konfiguriert.");
@@ -259,7 +267,7 @@ saveScreenBtn.addEventListener("click", async () => {
   }
   const { error } = await supabase
     .from("kiosk_settings")
-    .update({ display_mode: pendingDisplayMode, rotate_interval_seconds: pendingRotateIntervalS })
+    .update({ display_mode: pendingDisplayMode, rotate_interval_seconds: pendingRotateIntervalS, seekampf_pinned: pendingSeekampfPinned })
     .eq("id", 1);
   if (error) {
     showNotice(screenConfigMessage, "error", error.message || "Einstellung konnte nicht gespeichert werden.");

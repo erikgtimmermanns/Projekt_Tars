@@ -51,6 +51,24 @@
 
     <section class="visitor-panel" id="visitor-panel" hidden></section>
 
+    <section class="seekampf-pinned-panel" id="seekampf-pinned-panel" aria-label="Seekampf Allianzstatistik" hidden>
+      <header class="seekampf-dialog-header">
+        <h2>Allianzstatistik · MTG / AZB</h2>
+        <span id="seekampf-pinned-updated-at" class="seekampf-updated-at"></span>
+      </header>
+      <div class="seekampf-statistics-scroll">
+        <p id="seekampf-pinned-status" class="seekampf-status" role="status" aria-live="polite">Statistik wird geladen ...</p>
+        <section id="seekampf-pinned-statistics" class="seekampf-statistics" aria-label="Vergleich der Allianzen MTG und AZB" hidden>
+          <div id="seekampf-pinned-alliances" class="featured-alliances"></div>
+          <p id="seekampf-pinned-point-gap" class="alliance-point-gap" hidden></p>
+          <section class="server-statistics" aria-label="Serverkennzahlen">
+            <h3>Weltweit</h3>
+            <div id="seekampf-pinned-server-metrics" class="server-metrics"></div>
+          </section>
+        </section>
+      </div>
+    </section>
+
     <section class="presentation-panel" id="presentation-panel" aria-label="Aktuelle Nachrichten">
       <canvas id="presentation-canvas" aria-label="Nachrichtenpräsentation"></canvas>
       <p class="presentation-status" id="presentation-status" role="status">Nachrichten werden geladen ...</p>

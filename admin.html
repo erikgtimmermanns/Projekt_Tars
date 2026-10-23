@@ -135,7 +135,7 @@
             <!-- Ansicht: globale Bildschirm-Einstellung, unabhängig vom angemeldeten Konto -->
             <div class="card" id="screenConfigView" hidden>
               <h3>Anzeige auf dem Kiosk</h3>
-              <p class="field-hint">Gilt sofort für den Kiosk-Bildschirm, sobald mehr als ein Besucher heute zu Besuch ist. Die Vorschau rechts zeigt nur die Besucher von heute.</p>
+              <p class="field-hint">Die Besucheranzeige gilt, sobald mehr als ein Besucher heute zu Besuch ist. Die feste Seekampf-Ansicht gilt unabhängig davon. Änderungen werden nach dem Speichern live auf den Kiosk übertragen.</p>
 
               <div class="mode-options">
                 <label class="mode-option">
@@ -159,6 +159,14 @@
                 <input type="number" id="rotateIntervalInput" min="2" max="60" step="1" value="7">
                 <p class="field-hint">Nur für "Besucher rotieren" relevant, 2–60 Sekunden.</p>
               </div>
+
+              <label class="mode-option seekampf-pinned-option" for="seekampfPinnedInput">
+                <input type="checkbox" id="seekampfPinnedInput">
+                <div>
+                  <strong>Seekampf-Statistik dauerhaft anzeigen</strong>
+                  <p>Zeigt die Allianzstatistik fest auf dem Kiosk. Ticker und Wetter bleiben darunter sichtbar.</p>
+                </div>
+              </label>
 
               <div id="screenConfigMessage" class="notice-box"></div>
 
