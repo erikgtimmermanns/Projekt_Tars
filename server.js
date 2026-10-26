@@ -65,14 +65,20 @@ function normalizeOverview(data) {
 async function supabaseSnapshotRequest(path, options = {}) {
     if (!hasSnapshotStorage) throw new Error("SUPABASE_URL oder SUPABASE_SERVICE_ROLE_KEY fehlt.");
 
+    const headers = {
+        apikey: supabaseServiceRoleKey,
+        "Content-Type": "application/json",
+        ...options.headers
+    };
+    // New sb_secret_* keys are opaque API keys, not JWTs. Only legacy service_role
+    // JWTs belong in Authorization; sending sb_secret_* as Bearer causes auth failures.
+    if (!supabaseServiceRoleKey.startsWith("sb_secret_")) {
+        headers.Authorization = `Bearer ${supabaseServiceRoleKey}`;
+    }
+
     const response = await fetch(`${supabaseUrl}/rest/v1/${path}`, {
         ...options,
-        headers: {
-            apikey: supabaseServiceRoleKey,
-            Authorization: `Bearer ${supabaseServiceRoleKey}`,
-            "Content-Type": "application/json",
-            ...options.headers
-        },
+        headers,
         signal: AbortSignal.timeout(10000)
     });
     if (!response.ok) {
