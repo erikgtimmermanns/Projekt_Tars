@@ -43,7 +43,7 @@ const overviewFixture = {
 global.fetch = async (url, options) => {
     if (String(url).startsWith(nasaApodUrl)) {
         nasaCalls++;
-        return Response.json({
+        return Response.json([{
             date: "2026-10-26",
             title: "A test nebula",
             explanation: "A test explanation",
@@ -51,7 +51,7 @@ global.fetch = async (url, options) => {
             hdurl: "https://images.example.test/nebula.jpg",
             credit: "NASA",
             alt: "A nebula"
-        });
+        }]);
     }
     if (String(url) !== upstreamUrl) return nativeFetch(url, options);
     upstreamCalls++;
@@ -72,18 +72,19 @@ test("normalizes featured alliance stats without forwarding unrelated rankings",
 });
 
 test("normalizes only HTTPS NASA image entries", () => {
-    const result = normalizeApod({
+    const result = normalizeApod([{
         date: "2026-10-26",
         title: "A test nebula",
-        explanation: "A test explanation",
+        explanation: "<strong>A test</strong> explanation",
         media_type: "image",
         hdurl: "https://images.example.test/nebula.jpg",
         credit: "NASA",
         alt: "A nebula"
-    });
+    }], "2026-10-26");
 
     assert.equal(result.imageUrl, "https://images.example.test/nebula.jpg");
     assert.equal(result.title, "A test nebula");
+    assert.equal(result.explanation, "A test explanation");
     assert.equal(normalizeApod({ media_type: "video", url: "https://example.test/video" }), null);
     assert.equal(normalizeApod({ media_type: "image", hdurl: "http://example.test/image.jpg" }), null);
 });

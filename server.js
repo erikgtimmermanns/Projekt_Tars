@@ -38,7 +38,17 @@ function asHttpsUrl(value) {
     }
 }
 
-function normalizeApod(data) {
+function asPlainText(value) {
+    return String(value || "")
+        .replace(/<[^>]*>/g, " ")
+        .replace(/&amp;/g, "&")
+        .replace(/&#(?:39|8217);/g, "'")
+        .replace(/&quot;/g, '"')
+        .replace(/\s+/g, " ")
+        .trim();
+}
+
+function normalizeSingleApod(data) {
     if (!data || data.media_type !== "image") return null;
     // Im neuen APOD-Format verweist url auf die Artikelseite; ausschließlich
     // hdurl ist das anzeigbare Bild.
@@ -47,13 +57,24 @@ function normalizeApod(data) {
     return {
         date: String(data.date || ""),
         title: String(data.title || "NASA Picture of the Day"),
-        explanation: String(data.explanation || ""),
+        explanation: asPlainText(data.explanation),
         imageUrl,
-        credit: String(data.credit || ""),
-        copyright: String(data.copyright || ""),
-        alt: String(data.alt || ""),
+        credit: asPlainText(data.credit),
+        copyright: asPlainText(data.copyright),
+        alt: asPlainText(data.alt),
         stale: false
     };
+}
+
+function normalizeApod(data, requestedDate = "") {
+    // Der neue WordPress-Endpunkt liefert derzeit auch bei einer Datumsabfrage
+    // eine Liste. Das angefragte Datum erhält Vorrang, danach gilt der erste
+    // anzeigbare Bild-Eintrag als Fallback.
+    const entries = Array.isArray(data) ? data : [data];
+    const ordered = requestedDate
+        ? [...entries].sort((a, b) => Number(b?.date === requestedDate) - Number(a?.date === requestedDate))
+        : entries;
+    return ordered.map(normalizeSingleApod).find(Boolean) || null;
 }
 
 function utcDateOffset(daysAgo) {
@@ -69,7 +90,7 @@ async function fetchApodForDate(date) {
         signal: AbortSignal.timeout(10000)
     });
     if (!response.ok) throw new Error(`NASA antwortete mit HTTP ${response.status}.`);
-    return normalizeApod(await response.json());
+    return normalizeApod(await response.json(), date);
 }
 
 async function refreshApod() {
