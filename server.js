@@ -3,7 +3,10 @@ const express = require("express");
 const app = express();
 const port = Number(process.env.PORT) || 4173;
 const overviewUrl = "https://seekampf.de/api/v1/stats/overview";
+const nasaApodUrl = "https://science.nasa.gov/wp-json/wp/v2/apod-basic/";
+const nasaApiKey = process.env.NASA_API_KEY || "DEMO_KEY";
 const cacheDurationMs = 5 * 60 * 1000;
+const nasaCacheDurationMs = 6 * 60 * 60 * 1000;
 const snapshotIntervalMs = 15 * 60 * 1000;
 const historyWindowMs = 24 * 60 * 60 * 1000;
 const snapshotRetentionMs = 45 * 24 * 60 * 60 * 1000;
@@ -15,12 +18,92 @@ const hasSnapshotStorage = Boolean(supabaseUrl && supabaseServiceRoleKey);
 let cachedSnapshot = null;
 let cacheExpiresAt = 0;
 let refreshInFlight = null;
+let cachedApod = null;
+let apodCacheExpiresAt = 0;
+let apodRefreshInFlight = null;
 let lastSnapshotCleanupAt = 0;
 
 function asNumber(value) {
     if (value == null || value === "") return null;
     const parsed = Number(value);
     return Number.isFinite(parsed) ? parsed : null;
+}
+
+function asHttpsUrl(value) {
+    try {
+        const url = new URL(String(value || ""));
+        return url.protocol === "https:" ? url.toString() : null;
+    } catch {
+        return null;
+    }
+}
+
+function normalizeApod(data) {
+    if (!data || data.media_type !== "image") return null;
+    // Im neuen APOD-Format verweist url auf die Artikelseite; ausschließlich
+    // hdurl ist das anzeigbare Bild.
+    const imageUrl = asHttpsUrl(data.hdurl);
+    if (!imageUrl) return null;
+    return {
+        date: String(data.date || ""),
+        title: String(data.title || "NASA Picture of the Day"),
+        explanation: String(data.explanation || ""),
+        imageUrl,
+        credit: String(data.credit || ""),
+        copyright: String(data.copyright || ""),
+        alt: String(data.alt || ""),
+        stale: false
+    };
+}
+
+function utcDateOffset(daysAgo) {
+    const date = new Date();
+    date.setUTCDate(date.getUTCDate() - daysAgo);
+    return date.toISOString().slice(0, 10);
+}
+
+async function fetchApodForDate(date) {
+    const query = new URLSearchParams({ date, api_key: nasaApiKey });
+    const response = await fetch(`${nasaApodUrl}?${query}`, {
+        headers: { Accept: "application/json" },
+        signal: AbortSignal.timeout(10000)
+    });
+    if (!response.ok) throw new Error(`NASA antwortete mit HTTP ${response.status}.`);
+    return normalizeApod(await response.json());
+}
+
+async function refreshApod() {
+    if (apodRefreshInFlight) return apodRefreshInFlight;
+
+    apodRefreshInFlight = (async () => {
+        // Nicht jeder APOD-Eintrag ist ein Bild. Für den Kiosk suchen wir dann
+        // rückwärts nach einem Bild, damit die Bildkarte nie durch ein Video ersetzt wird.
+        for (let daysAgo = 0; daysAgo <= 7; daysAgo++) {
+            const apod = await fetchApodForDate(utcDateOffset(daysAgo));
+            if (apod) {
+                cachedApod = apod;
+                apodCacheExpiresAt = Date.now() + nasaCacheDurationMs;
+                return apod;
+            }
+        }
+        throw new Error("NASA lieferte in den letzten sieben Tagen kein Bild.");
+    })();
+
+    try {
+        return await apodRefreshInFlight;
+    } finally {
+        apodRefreshInFlight = null;
+    }
+}
+
+async function getApod() {
+    if (cachedApod && Date.now() < apodCacheExpiresAt) return cachedApod;
+    try {
+        return await refreshApod();
+    } catch (error) {
+        if (cachedApod) return { ...cachedApod, stale: true };
+        throw error;
+    }
 }
 
 function normalizeOverview(data) {
@@ -213,6 +296,16 @@ app.get("/api/alliances/featured", async (_request, response) => {
     }
 });
 
+app.get("/api/nasa/apod", async (_request, response) => {
+    try {
+        response.set("Cache-Control", "no-store");
+        response.json(await getApod());
+    } catch (error) {
+        console.error("NASA Picture of the Day konnte nicht geladen werden:", error);
+        response.status(502).json({ error: "NASA Picture of the Day ist gerade nicht erreichbar." });
+    }
+});
+
 app.use((request, response, next) => {
     const blockedPaths = ["/server.js", "/package.json", "/package-lock.json"];
     if (
@@ -237,4 +330,4 @@ if (require.main === module) {
     });
 }
 
-module.exports = { app, normalizeOverview };
+module.exports = { app, normalizeOverview, normalizeApod };

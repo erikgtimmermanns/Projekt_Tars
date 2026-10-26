@@ -466,6 +466,61 @@ a {
     font-family: "Albert Sans", Arial, sans-serif;
 }
 
+.preview-widget-panel {
+    margin-top: 18px;
+}
+
+.preview-widget-card {
+    display: grid;
+    grid-template-columns: minmax(180px, 38%) minmax(0, 1fr);
+    align-items: center;
+    gap: 18px;
+    min-height: 150px;
+    padding: 18px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 12px 28px rgba(18, 38, 63, 0.08);
+}
+
+.preview-widget-eyebrow {
+    margin: 0 0 5px;
+    color: var(--primary);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.preview-widget-title {
+    margin: 0;
+    font-size: 26px;
+}
+
+.preview-widget-copy {
+    display: -webkit-box;
+    margin: 9px 0 0;
+    overflow: hidden;
+    color: var(--muted);
+    font-size: 17px;
+    line-height: 1.4;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+}
+
+.preview-apod-image {
+    display: block;
+    width: 100%;
+    max-height: 230px;
+    border-radius: 12px;
+    background: #08121d;
+    object-fit: contain;
+}
+
+.widget-options-heading {
+    margin: 24px 0 10px;
+}
+
 .field-hint {
     color: var(--muted);
     margin: -8px 0 4px;

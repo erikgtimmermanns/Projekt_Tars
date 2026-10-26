@@ -8,9 +8,12 @@ let subscriptionSequence = 0;
 export const DEFAULT_DISPLAY_MODE = "rotate";
 export const DEFAULT_ROTATE_INTERVAL_MS = VISITOR_ROTATE_DEFAULT_S * 1000;
 export const DEFAULT_HEADER_LANGUAGE = "de";
+export const DEFAULT_WIDGET_ROTATE_INTERVAL_MS = 15 * 1000;
 
 const MIN_ROTATE_INTERVAL_S = 2;
 const MAX_ROTATE_INTERVAL_S = 60;
+const MIN_WIDGET_ROTATE_INTERVAL_S = 5;
+const MAX_WIDGET_ROTATE_INTERVAL_S = 120;
 
 function normalize(row) {
     const mode = row?.display_mode === "stack" ? "stack" : DEFAULT_DISPLAY_MODE;
@@ -21,8 +24,24 @@ function normalize(row) {
     }
     seconds = Math.min(MAX_ROTATE_INTERVAL_S, Math.max(MIN_ROTATE_INTERVAL_S, seconds));
 
+    let widgetSeconds = Number(row?.widget_rotate_interval_seconds);
+    if (!Number.isFinite(widgetSeconds)) {
+        widgetSeconds = DEFAULT_WIDGET_ROTATE_INTERVAL_MS / 1000;
+    }
+    widgetSeconds = Math.min(MAX_WIDGET_ROTATE_INTERVAL_S, Math.max(MIN_WIDGET_ROTATE_INTERVAL_S, widgetSeconds));
+
     const headerLanguage = row?.header_language === "en" ? "en" : DEFAULT_HEADER_LANGUAGE;
-    return { mode, rotateIntervalMs: seconds * 1000, seekampfPinned: row?.seekampf_pinned === true, headerLanguage };
+    // seekampf_pinned bleibt nur als Fallback für Datenbanken ohne die Widget-Migration erhalten.
+    const seekampfEnabled = row?.seekampf_enabled === true
+        || (row?.seekampf_enabled == null && row?.seekampf_pinned === true);
+    return {
+        mode,
+        rotateIntervalMs: seconds * 1000,
+        seekampfEnabled,
+        nasaApodEnabled: row?.nasa_apod_enabled === true,
+        widgetRotateIntervalMs: widgetSeconds * 1000,
+        headerLanguage
+    };
 }
 
 export async function fetchKioskSettings(supabase) {
@@ -30,7 +49,7 @@ export async function fetchKioskSettings(supabase) {
     try {
         const { data, error } = await supabase
             .from(SETTINGS_TABLE)
-            .select("display_mode, rotate_interval_seconds, seekampf_pinned, header_language")
+            .select("display_mode, rotate_interval_seconds, seekampf_pinned, seekampf_enabled, nasa_apod_enabled, widget_rotate_interval_seconds, header_language")
             .eq("id", 1)
             .maybeSingle();
         if (error || !data) return normalize(null);

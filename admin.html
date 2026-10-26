@@ -135,7 +135,7 @@
             <!-- Ansicht: globale Bildschirm-Einstellung, unabhängig vom angemeldeten Konto -->
             <div class="card" id="screenConfigView" hidden>
               <h3>Anzeige auf dem Kiosk</h3>
-              <p class="field-hint">Die Besucheranzeige gilt, sobald mehr als ein Besucher heute zu Besuch ist. Die feste Seekampf-Ansicht gilt unabhängig davon. Änderungen werden nach dem Speichern live auf den Kiosk übertragen.</p>
+              <p class="field-hint">Besucheranzeige und Zusatz-Widgets werden nach dem Speichern live auf den Kiosk übertragen.</p>
 
               <div class="mode-options">
                 <label class="mode-option">
@@ -169,13 +169,27 @@
                 <p class="field-hint">Nur für "Besucher rotieren" relevant, 2–60 Sekunden.</p>
               </div>
 
-              <label class="mode-option seekampf-pinned-option" for="seekampfPinnedInput">
-                <input type="checkbox" id="seekampfPinnedInput">
+              <h4 class="widget-options-heading">Widgets</h4>
+              <label class="mode-option" for="seekampfEnabledInput">
+                <input type="checkbox" id="seekampfEnabledInput">
                 <div>
-                  <strong>Seekampf-Statistik dauerhaft anzeigen</strong>
-                  <p>Zeigt die Allianzstatistik fest auf dem Kiosk. Ticker und Wetter bleiben darunter sichtbar.</p>
+                  <strong>Seekampf-Statistik</strong>
+                  <p>Zeigt den Allianzvergleich als Zusatzkarte auf dem Kiosk.</p>
                 </div>
               </label>
+              <label class="mode-option" for="nasaApodEnabledInput">
+                <input type="checkbox" id="nasaApodEnabledInput">
+                <div>
+                  <strong>NASA Picture of the Day</strong>
+                  <p>Zeigt das aktuelle NASA-Bild mit Titel und Beschreibung.</p>
+                </div>
+              </label>
+
+              <div class="field">
+                <label for="widgetRotateIntervalInput">Widget-Rotationsintervall (Sekunden)</label>
+                <input type="number" id="widgetRotateIntervalInput" min="5" max="120" step="1" value="15">
+                <p class="field-hint">Wird verwendet, sobald beide Widgets ausgewählt sind, 5–120 Sekunden.</p>
+              </div>
 
               <div id="screenConfigMessage" class="notice-box"></div>
 
@@ -191,6 +205,7 @@
             <div id="previewBox" class="preview-box">
               <div id="previewStage" class="preview-stage time-day">
                 <section class="visitor-panel" id="visitor-panel"></section>
+                <section id="previewWidgetPanel" class="preview-widget-panel" hidden></section>
               </div>
             </div>
           </div>

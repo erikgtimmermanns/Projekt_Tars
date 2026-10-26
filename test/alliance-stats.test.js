@@ -3,8 +3,10 @@ const { once } = require("node:events");
 const test = require("node:test");
 
 const upstreamUrl = "https://seekampf.de/api/v1/stats/overview";
+const nasaApodUrl = "https://science.nasa.gov/wp-json/wp/v2/apod-basic/";
 const nativeFetch = global.fetch;
 let upstreamCalls = 0;
+let nasaCalls = 0;
 
 const overviewFixture = {
     spieler_anzahl: 57,
@@ -39,12 +41,24 @@ const overviewFixture = {
 };
 
 global.fetch = async (url, options) => {
+    if (String(url).startsWith(nasaApodUrl)) {
+        nasaCalls++;
+        return Response.json({
+            date: "2026-10-26",
+            title: "A test nebula",
+            explanation: "A test explanation",
+            media_type: "image",
+            hdurl: "https://images.example.test/nebula.jpg",
+            credit: "NASA",
+            alt: "A nebula"
+        });
+    }
     if (String(url) !== upstreamUrl) return nativeFetch(url, options);
     upstreamCalls++;
     return Response.json(overviewFixture);
 };
 
-const { app, normalizeOverview } = require("../server.js");
+const { app, normalizeOverview, normalizeApod } = require("../server.js");
 
 test("normalizes featured alliance stats without forwarding unrelated rankings", () => {
     const result = normalizeOverview(overviewFixture);
@@ -55,6 +69,23 @@ test("normalizes featured alliance stats without forwarding unrelated rankings",
     assert.equal(result.featured[1].rankChange, -1);
     assert.equal(result.global.fleets, 423);
     assert.equal(Object.hasOwn(result, "top_spieler"), false);
+});
+
+test("normalizes only HTTPS NASA image entries", () => {
+    const result = normalizeApod({
+        date: "2026-10-26",
+        title: "A test nebula",
+        explanation: "A test explanation",
+        media_type: "image",
+        hdurl: "https://images.example.test/nebula.jpg",
+        credit: "NASA",
+        alt: "A nebula"
+    });
+
+    assert.equal(result.imageUrl, "https://images.example.test/nebula.jpg");
+    assert.equal(result.title, "A test nebula");
+    assert.equal(normalizeApod({ media_type: "video", url: "https://example.test/video" }), null);
+    assert.equal(normalizeApod({ media_type: "image", hdurl: "http://example.test/image.jpg" }), null);
 });
 
 test("featured endpoint returns normalized data and does not expose server files", async (context) => {
@@ -84,6 +115,26 @@ test("featured endpoint returns normalized data and does not expose server files
     assert.equal(packageResponse.status, 404);
     const serverResponse = await nativeFetch(`${baseUrl}/server.js`);
     assert.equal(serverResponse.status, 404);
+});
+
+test("NASA endpoint returns a normalized, cached image", async (context) => {
+    const server = app.listen(0, "127.0.0.1");
+    await once(server, "listening");
+    context.after(() => new Promise((resolve, reject) => {
+        server.close((error) => error ? reject(error) : resolve());
+    }));
+
+    const { port } = server.address();
+    const baseUrl = `http://127.0.0.1:${port}`;
+    const response = await nativeFetch(`${baseUrl}/api/nasa/apod`);
+    const result = await response.json();
+    const cachedResponse = await nativeFetch(`${baseUrl}/api/nasa/apod`);
+
+    assert.equal(response.status, 200);
+    assert.equal(result.title, "A test nebula");
+    assert.equal(result.imageUrl, "https://images.example.test/nebula.jpg");
+    assert.equal(cachedResponse.status, 200);
+    assert.equal(nasaCalls, 1);
 });
 
 test.after(() => {

@@ -1,6 +1,6 @@
 import { renderVisitorPanel } from "../shared/visitor-panel.js";
 import { createVisitorDisplay } from "../shared/visitor-display.js";
-import { fetchKioskSettings, DEFAULT_DISPLAY_MODE, DEFAULT_ROTATE_INTERVAL_MS } from "../shared/kiosk-settings.js";
+import { fetchKioskSettings, DEFAULT_DISPLAY_MODE, DEFAULT_ROTATE_INTERVAL_MS, DEFAULT_WIDGET_ROTATE_INTERVAL_MS } from "../shared/kiosk-settings.js";
 import { getTodayIso } from "../shared/visit-dates.js";
 import { createDatePicker } from "./date-picker.js";
 import { bucketName, configIsReady as configIsSet, supabase, tableName } from "../shared/supabase.js";
@@ -38,8 +38,11 @@ const modeRadios = document.querySelectorAll('input[name="displayMode"]');
 const screenConfigMessage = document.getElementById("screenConfigMessage");
 const saveScreenBtn = document.getElementById("saveScreenBtn");
 const rotateIntervalInput = document.getElementById("rotateIntervalInput");
-const seekampfPinnedInput = document.getElementById("seekampfPinnedInput");
+const seekampfEnabledInput = document.getElementById("seekampfEnabledInput");
+const nasaApodEnabledInput = document.getElementById("nasaApodEnabledInput");
+const widgetRotateIntervalInput = document.getElementById("widgetRotateIntervalInput");
 const headerLanguageSelect = document.getElementById("headerLanguageSelect");
+const previewWidgetPanel = document.getElementById("previewWidgetPanel");
 
 function getVisitorTextValue() {
   const el = visitorNameInput || document.getElementById("visitorNameInput");
@@ -56,13 +59,25 @@ let selectedName = "";
 let templatesById = new Map(); // id -> Vorlagentext
 let pendingDisplayMode = DEFAULT_DISPLAY_MODE; // Auswahl in "Bildschirm konfigurieren", erst mit Klick auf "Bildschirm speichern" übernommen
 let pendingRotateIntervalS = DEFAULT_ROTATE_INTERVAL_MS / 1000;
-let pendingSeekampfPinned = false;
+let pendingSeekampfEnabled = false;
+let pendingNasaApodEnabled = false;
+let pendingWidgetRotateIntervalS = DEFAULT_WIDGET_ROTATE_INTERVAL_MS / 1000;
 let pendingHeaderLanguage = "de";
+let previewWidgetTimer = null;
+let previewWidgetIndex = 0;
+let previewApod = null;
+let previewApodRequest = null;
 
 function clampRotateSeconds(value) {
   const seconds = Math.round(Number(value));
   if (!Number.isFinite(seconds)) return pendingRotateIntervalS;
   return Math.min(60, Math.max(2, seconds));
+}
+
+function clampWidgetRotateSeconds(value) {
+  const seconds = Math.round(Number(value));
+  if (!Number.isFinite(seconds)) return pendingWidgetRotateIntervalS;
+  return Math.min(120, Math.max(5, seconds));
 }
 
 function showMessage(el, type, text) {
@@ -173,6 +188,78 @@ function renderVisitorFormPreview() {
   });
 }
 
+function stopWidgetPreviewTimer() {
+  if (previewWidgetTimer) window.clearInterval(previewWidgetTimer);
+  previewWidgetTimer = null;
+}
+
+function appendPreviewText(parent, tagName, className, value) {
+  const element = document.createElement(tagName);
+  element.className = className;
+  element.textContent = value;
+  parent.appendChild(element);
+}
+
+function renderWidgetPreview() {
+  if (!previewWidgetPanel) return;
+  stopWidgetPreviewTimer();
+  if (screenConfigView.hidden) {
+    previewWidgetPanel.hidden = true;
+    return;
+  }
+  const widgets = [];
+  if (pendingSeekampfEnabled) widgets.push("seekampf");
+  if (pendingNasaApodEnabled) widgets.push("nasa");
+  if (!widgets.length) {
+    previewWidgetPanel.hidden = true;
+    previewWidgetPanel.replaceChildren();
+    return;
+  }
+
+  previewWidgetIndex %= widgets.length;
+  const renderCurrent = () => {
+    const widget = widgets[previewWidgetIndex];
+    const card = document.createElement("article");
+    card.className = "preview-widget-card";
+    if (widget === "seekampf") {
+      appendPreviewText(card, "p", "preview-widget-eyebrow", "Seekampf-Statistik");
+      appendPreviewText(card, "h4", "preview-widget-title", "Allianzstatistik · MTG / AZB");
+      appendPreviewText(card, "p", "preview-widget-copy", "Die aktuelle Allianzstatistik wird auf dem Kiosk geladen.");
+    } else if (previewApod) {
+      const image = document.createElement("img");
+      image.className = "preview-apod-image";
+      image.src = previewApod.imageUrl;
+      image.alt = previewApod.alt || previewApod.title || "NASA Picture of the Day";
+      card.appendChild(image);
+      const copy = document.createElement("div");
+      appendPreviewText(copy, "p", "preview-widget-eyebrow", "NASA Picture of the Day");
+      appendPreviewText(copy, "h4", "preview-widget-title", previewApod.title || "NASA Picture of the Day");
+      appendPreviewText(copy, "p", "preview-widget-copy", previewApod.explanation || "");
+      card.appendChild(copy);
+    } else {
+      appendPreviewText(card, "p", "preview-widget-eyebrow", "NASA Picture of the Day");
+      appendPreviewText(card, "h4", "preview-widget-title", "NASA-Bild wird geladen …");
+    }
+    previewWidgetPanel.replaceChildren(card);
+    previewWidgetPanel.hidden = false;
+  };
+
+  renderCurrent();
+  if (pendingNasaApodEnabled && !previewApod && !previewApodRequest) {
+    previewApodRequest = fetch("/api/nasa/apod", { cache: "no-store" })
+      .then(response => response.ok ? response.json() : Promise.reject(new Error(`HTTP ${response.status}`)))
+      .then(data => { previewApod = data; })
+      .catch(error => console.warn("NASA-Vorschau konnte nicht geladen werden:", error))
+      .finally(() => { previewApodRequest = null; renderWidgetPreview(); });
+  }
+  if (widgets.length > 1) {
+    previewWidgetTimer = window.setInterval(() => {
+      previewWidgetIndex = (previewWidgetIndex + 1) % widgets.length;
+      renderCurrent();
+    }, pendingWidgetRotateIntervalS * 1000);
+  }
+}
+
 // Bildschirm-Ansicht: nur die Besucher, die heute auch im Kiosk erscheinen würden (visit_date enthält heute)
 function renderScreenPreview() {
   const today = getTodayIso();
@@ -185,6 +272,7 @@ function renderScreenPreview() {
       template: templatesById.get(String(v.template_id)) || ""
     }));
   previewDisplay.update(visitors, pendingDisplayMode, pendingRotateIntervalS * 1000);
+  renderWidgetPreview();
 }
 
 function renderPreview() {
@@ -213,6 +301,8 @@ function showVisitorConfig() {
   konfigUserbtn.className = "secondary-btn";
   konfigScreenbtn.className = "primary-btn";
   previewDisplay.update([], null); // laufenden Rotations-/Stapel-Timer der Bildschirm-Vorschau beenden
+  stopWidgetPreviewTimer();
+  if (previewWidgetPanel) previewWidgetPanel.hidden = true;
   renderPreview();
 }
 
@@ -230,12 +320,16 @@ async function loadScreenSettings() {
     const settings = await fetchKioskSettings(supabase);
     pendingDisplayMode = settings.mode;
     pendingRotateIntervalS = Math.round(settings.rotateIntervalMs / 1000);
-    pendingSeekampfPinned = settings.seekampfPinned;
+    pendingSeekampfEnabled = settings.seekampfEnabled;
+    pendingNasaApodEnabled = settings.nasaApodEnabled;
+    pendingWidgetRotateIntervalS = Math.round(settings.widgetRotateIntervalMs / 1000);
     pendingHeaderLanguage = settings.headerLanguage;
   }
   modeRadios.forEach(radio => { radio.checked = radio.value === pendingDisplayMode; });
   rotateIntervalInput.value = pendingRotateIntervalS;
-  seekampfPinnedInput.checked = pendingSeekampfPinned;
+  seekampfEnabledInput.checked = pendingSeekampfEnabled;
+  nasaApodEnabledInput.checked = pendingNasaApodEnabled;
+  widgetRotateIntervalInput.value = pendingWidgetRotateIntervalS;
   headerLanguageSelect.value = pendingHeaderLanguage;
   renderPreview();
 }
@@ -260,8 +354,20 @@ rotateIntervalInput.addEventListener("blur", () => {
   rotateIntervalInput.value = pendingRotateIntervalS; // normalisiert die Anzeige (z. B. nach leerem Feld)
 });
 
-seekampfPinnedInput.addEventListener("change", () => {
-  pendingSeekampfPinned = seekampfPinnedInput.checked;
+seekampfEnabledInput.addEventListener("change", () => {
+  pendingSeekampfEnabled = seekampfEnabledInput.checked;
+  renderPreview();
+});
+nasaApodEnabledInput.addEventListener("change", () => {
+  pendingNasaApodEnabled = nasaApodEnabledInput.checked;
+  renderPreview();
+});
+widgetRotateIntervalInput.addEventListener("input", () => {
+  pendingWidgetRotateIntervalS = clampWidgetRotateSeconds(widgetRotateIntervalInput.value);
+  renderPreview();
+});
+widgetRotateIntervalInput.addEventListener("blur", () => {
+  widgetRotateIntervalInput.value = pendingWidgetRotateIntervalS;
 });
 headerLanguageSelect.addEventListener("change", () => {
   pendingHeaderLanguage = headerLanguageSelect.value === "en" ? "en" : "de";
@@ -274,7 +380,14 @@ saveScreenBtn.addEventListener("click", async () => {
   }
   const { error } = await supabase
     .from("kiosk_settings")
-    .update({ display_mode: pendingDisplayMode, rotate_interval_seconds: pendingRotateIntervalS, seekampf_pinned: pendingSeekampfPinned, header_language: pendingHeaderLanguage })
+    .update({
+      display_mode: pendingDisplayMode,
+      rotate_interval_seconds: pendingRotateIntervalS,
+      seekampf_enabled: pendingSeekampfEnabled,
+      nasa_apod_enabled: pendingNasaApodEnabled,
+      widget_rotate_interval_seconds: pendingWidgetRotateIntervalS,
+      header_language: pendingHeaderLanguage
+    })
     .eq("id", 1);
   if (error) {
     showNotice(screenConfigMessage, "error", error.message || "Einstellung konnte nicht gespeichert werden.");

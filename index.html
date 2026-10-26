@@ -51,22 +51,37 @@
 
     <section class="visitor-panel" id="visitor-panel" hidden></section>
 
-    <section class="seekampf-pinned-panel" id="seekampf-pinned-panel" aria-label="Seekampf Allianzstatistik" hidden>
-      <header class="seekampf-dialog-header">
-        <h2>Allianzstatistik · MTG / AZB</h2>
-        <span id="seekampf-pinned-updated-at" class="seekampf-updated-at"></span>
-      </header>
-      <div class="seekampf-statistics-scroll">
-        <p id="seekampf-pinned-status" class="seekampf-status" role="status" aria-live="polite">Statistik wird geladen ...</p>
-        <section id="seekampf-pinned-statistics" class="seekampf-statistics" aria-label="Vergleich der Allianzen MTG und AZB" hidden>
-          <div id="seekampf-pinned-alliances" class="featured-alliances"></div>
-          <p id="seekampf-pinned-point-gap" class="alliance-point-gap" hidden></p>
-          <section class="server-statistics" aria-label="Serverkennzahlen">
-            <h3>Weltweit</h3>
-            <div id="seekampf-pinned-server-metrics" class="server-metrics"></div>
+    <section class="kiosk-widget-panel" id="kiosk-widget-panel" aria-label="Zusatzinformationen" hidden>
+      <section class="seekampf-pinned-panel kiosk-widget-card" id="seekampf-pinned-panel" aria-label="Seekampf Allianzstatistik" hidden>
+        <header class="seekampf-dialog-header">
+          <h2>Allianzstatistik · MTG / AZB</h2>
+          <span id="seekampf-pinned-updated-at" class="seekampf-updated-at"></span>
+        </header>
+        <div class="seekampf-statistics-scroll">
+          <p id="seekampf-pinned-status" class="seekampf-status" role="status" aria-live="polite">Statistik wird geladen ...</p>
+          <section id="seekampf-pinned-statistics" class="seekampf-statistics" aria-label="Vergleich der Allianzen MTG und AZB" hidden>
+            <div id="seekampf-pinned-alliances" class="featured-alliances"></div>
+            <p id="seekampf-pinned-point-gap" class="alliance-point-gap" hidden></p>
+            <section class="server-statistics" aria-label="Serverkennzahlen">
+              <h3>Weltweit</h3>
+              <div id="seekampf-pinned-server-metrics" class="server-metrics"></div>
+            </section>
           </section>
-        </section>
-      </div>
+        </div>
+      </section>
+
+      <section class="nasa-apod-panel kiosk-widget-card" id="nasa-apod-panel" aria-label="NASA Picture of the Day" hidden>
+        <p class="nasa-apod-status" data-apod-status role="status" aria-live="polite">NASA Picture of the Day wird geladen ...</p>
+        <div class="nasa-apod-content">
+          <img data-apod-image class="nasa-apod-image" alt="">
+          <div class="nasa-apod-copy">
+            <p class="nasa-apod-eyebrow">NASA Picture of the Day</p>
+            <h2 data-apod-title></h2>
+            <p data-apod-explanation class="nasa-apod-explanation"></p>
+            <p data-apod-meta class="nasa-apod-meta"></p>
+          </div>
+        </div>
+      </section>
     </section>
 
     <section class="presentation-panel" id="presentation-panel" aria-label="Aktuelle Nachrichten">

@@ -194,10 +194,18 @@ body.time-night .screen::before {
     overflow: hidden;
 }
 
-.seekampf-pinned-panel {
+.kiosk-widget-panel {
     grid-row: 4;
+    min-width: 0;
+    min-height: 0;
+}
+
+.kiosk-widget-panel[hidden],
+.kiosk-widget-card[hidden] { display: none; }
+
+.seekampf-pinned-panel,
+.nasa-apod-panel {
     display: grid;
-    grid-template-rows: auto auto;
     align-content: start;
     gap: 12px;
     min-width: 0;
@@ -210,22 +218,87 @@ body.time-night .screen::before {
     box-shadow: var(--kiosk-shadow);
 }
 
-.seekampf-pinned-panel[hidden] { display: none; }
 .seekampf-pinned-panel .seekampf-dialog-header { min-height: 0; padding: 0 0 10px; }
 .seekampf-pinned-panel .seekampf-statistics-scroll { min-height: 0; padding: 0; overflow: visible; background: transparent; }
-.seekampf-pinned-panel.is-measuring,
-.seekampf-pinned-panel.is-measuring[hidden] {
+.kiosk-widget-card.is-measuring,
+.kiosk-widget-card.is-measuring[hidden] {
     position: fixed !important;
     top: 0 !important;
     left: -100000px !important;
     display: block !important;
-    width: var(--seekampf-measure-width) !important;
+    width: var(--widget-measure-width) !important;
     height: auto !important;
     max-height: none !important;
     visibility: hidden !important;
     overflow: visible !important;
 }
 .seekampf-pinned-panel.is-measuring .seekampf-statistics-scroll { height: auto; overflow: visible; }
+
+.nasa-apod-content {
+    display: grid;
+    grid-template-columns: minmax(180px, 38%) minmax(0, 1fr);
+    align-items: center;
+    gap: 18px;
+}
+
+.nasa-apod-image {
+    display: block;
+    width: 100%;
+    max-height: min(28vh, 310px);
+    border-radius: 12px;
+    background: #08121d;
+    object-fit: contain;
+}
+
+.nasa-apod-copy h2 {
+    margin: 0;
+    font-size: clamp(21px, 2.4vh, 32px);
+    line-height: 1.12;
+}
+
+.nasa-apod-eyebrow,
+.nasa-apod-meta,
+.nasa-apod-explanation {
+    margin: 0;
+}
+
+.nasa-apod-eyebrow {
+    margin-bottom: 5px;
+    color: var(--cc-blue);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.nasa-apod-explanation {
+    display: -webkit-box;
+    margin-top: 10px;
+    overflow: hidden;
+    color: var(--text-soft);
+    font-size: clamp(14px, 1.7vh, 18px);
+    line-height: 1.42;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+}
+
+.nasa-apod-meta {
+    margin-top: 10px;
+    color: var(--text-soft);
+    font-size: 13px;
+}
+
+.nasa-apod-status {
+    margin: 0;
+    color: var(--text-soft);
+}
+
+.nasa-apod-status.error { color: #b42318; }
+
+@media (max-height: 750px) {
+    .nasa-apod-image { max-height: 190px; }
+    .nasa-apod-explanation { -webkit-line-clamp: 2; }
+}
 
 .presentation-panel {
     grid-row: 3;

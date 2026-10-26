@@ -2,8 +2,7 @@ const layoutState = {
     visitorCount: 0,
     visitorMode: "rotate",
     visitorStateReady: false,
-    seekampfEnabled: false,
-    seekampfReady: false
+    widgetEnabled: false
 };
 
 let screen;
@@ -19,12 +18,14 @@ function scheduleLayout() {
     });
 }
 
-function measurePinnedPanel(panel, width) {
-    panel.style.setProperty("--seekampf-measure-width", `${width}px`);
-    panel.classList.add("is-measuring");
-    const height = panel.getBoundingClientRect().height;
-    panel.classList.remove("is-measuring");
-    panel.style.removeProperty("--seekampf-measure-width");
+function measureWidgetPanel(panel, width) {
+    const activeWidget = panel.querySelector(".kiosk-widget-card:not([hidden])");
+    if (!activeWidget) return 0;
+    activeWidget.style.setProperty("--widget-measure-width", `${width}px`);
+    activeWidget.classList.add("is-measuring");
+    const height = activeWidget.getBoundingClientRect().height;
+    activeWidget.classList.remove("is-measuring");
+    activeWidget.style.removeProperty("--widget-measure-width");
     return height;
 }
 
@@ -35,8 +36,7 @@ function getBoxHeight(element) {
 function updateLayout() {
     if (!screen || !pinnedPanel) return;
 
-    const shouldBeEligible = layoutState.seekampfEnabled
-        && layoutState.seekampfReady
+    const shouldBeEligible = layoutState.widgetEnabled
         && layoutState.visitorStateReady
         && !(layoutState.visitorCount > 1 && layoutState.visitorMode === "stack");
     if (!shouldBeEligible) {
@@ -62,7 +62,7 @@ function updateLayout() {
     const footer = screen.querySelector(".footer");
     const presentationMargin = Number.parseFloat(getComputedStyle(presentation).marginTop) || 0;
     const footerMargin = Number.parseFloat(getComputedStyle(footer).marginTop) || 0;
-    const statHeight = measurePinnedPanel(pinnedPanel, contentWidth);
+    const statHeight = measureWidgetPanel(pinnedPanel, contentWidth);
 
     const reservedHeight = getBoxHeight(header)
         + getBoxHeight(visitor)
@@ -86,15 +86,19 @@ export function setVisitorLayoutState(count, mode) {
     scheduleLayout();
 }
 
-export function setSeekampfLayoutState(enabled, ready) {
-    layoutState.seekampfEnabled = Boolean(enabled);
-    layoutState.seekampfReady = Boolean(ready);
+export function setWidgetLayoutState(enabled) {
+    layoutState.widgetEnabled = Boolean(enabled);
     scheduleLayout();
+}
+
+// Kompatibilität für vorhandene Aufrufer während der Widget-Umstellung.
+export function setSeekampfLayoutState(enabled) {
+    setWidgetLayoutState(enabled);
 }
 
 export function initKioskLayout() {
     screen = document.querySelector(".screen");
-    pinnedPanel = document.getElementById("seekampf-pinned-panel");
+    pinnedPanel = document.getElementById("kiosk-widget-panel");
     if (!screen || !pinnedPanel) return;
 
     if (typeof ResizeObserver === "function") {

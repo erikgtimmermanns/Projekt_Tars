@@ -9,6 +9,7 @@ import { initTabletSelection } from '../tablet/tablet-display.js';
 import { initSeekampfTabletButton } from '../tablet/seekampf-overlay.js';
 import { initSeekampfOverlay } from './seekampf-overlay.js';
 import { initKioskLayout } from './layout.js';
+import { initKioskWidgets } from './widget-display.js';
 
 console.log('kiosk app.js loaded');
 
@@ -46,6 +47,7 @@ function startDashboard() {
     try { initTabletSelection(); } catch (e) { console.warn('initTabletSelection failed', e); }
     try { initSeekampfTabletButton(); } catch (e) { console.warn('initSeekampfTabletButton failed', e); }
     try { initSeekampfOverlay(); } catch (e) { console.warn('initSeekampfOverlay failed', e); }
+    try { initKioskWidgets(); } catch (e) { console.warn('initKioskWidgets failed', e); }
 }
 
 if (document.readyState === 'loading') {
