@@ -194,6 +194,14 @@ body.time-night .screen::before {
     overflow: hidden;
 }
 
+/* Die sichtbare Besucherfläche bleibt unabhängig vom Bildformat konstant.
+   Nur der Stapelmodus darf für mehrere Besucher höher werden. */
+.screen > .visitor-panel.visitor-panel--single,
+.screen > .visitor-panel.visitor-panel--rotate {
+    height: 198px;
+    max-height: 198px;
+}
+
 .kiosk-widget-panel {
     grid-row: 4;
     min-width: 0;

@@ -41,6 +41,7 @@ export function createVisitorDisplay(panel) {
     function renderEmpty() {
         stopTimer();
         panel.hidden = true;
+        panel.classList.remove("visitor-panel--single", "visitor-panel--rotate", "visitor-panel--stack");
         panel.replaceChildren();
     }
 
@@ -48,6 +49,8 @@ export function createVisitorDisplay(panel) {
     function renderSingle(visitor) {
         stopTimer();
         panel.hidden = false;
+        panel.classList.remove("visitor-panel--rotate", "visitor-panel--stack");
+        panel.classList.add("visitor-panel--single");
         const onlyChild = panel.children.length === 1 ? panel.firstElementChild : null;
         const box = (onlyChild && onlyChild.classList.contains("visitor-box")) ? onlyChild : createVisitorBox();
         if (box !== onlyChild) {
@@ -82,6 +85,8 @@ export function createVisitorDisplay(panel) {
 
     function renderRotate(freshStart) {
         panel.hidden = false;
+        panel.classList.remove("visitor-panel--single", "visitor-panel--stack");
+        panel.classList.add("visitor-panel--rotate");
         let root = panel.children.length === 1 ? panel.firstElementChild : null;
         let rail, box;
         if (!root || !root.classList.contains("visitor-rotate")) {
@@ -128,6 +133,8 @@ export function createVisitorDisplay(panel) {
 
     function renderStack() {
         panel.hidden = false;
+        panel.classList.remove("visitor-panel--single", "visitor-panel--rotate");
+        panel.classList.add("visitor-panel--stack");
         let root = panel.children.length === 1 ? panel.firstElementChild : null;
         if (!root || !root.classList.contains("visitor-stack")) {
             root = document.createElement("div");
