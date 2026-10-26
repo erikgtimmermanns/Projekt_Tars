@@ -244,7 +244,7 @@ body.time-night .screen::before {
 
 .nasa-apod-content {
     display: grid;
-    grid-template-columns: minmax(180px, 38%) minmax(0, 1fr);
+    grid-template-columns: minmax(300px, 54%) minmax(0, 1fr);
     align-items: center;
     gap: 18px;
 }
@@ -252,7 +252,7 @@ body.time-night .screen::before {
 .nasa-apod-image {
     display: block;
     width: 100%;
-    max-height: min(28vh, 310px);
+    max-height: min(42vh, 460px);
     border-radius: 12px;
     background: #08121d;
     object-fit: contain;
@@ -304,7 +304,7 @@ body.time-night .screen::before {
 .nasa-apod-status.error { color: #b42318; }
 
 @media (max-height: 750px) {
-    .nasa-apod-image { max-height: 190px; }
+    .nasa-apod-image { max-height: 260px; }
     .nasa-apod-explanation { -webkit-line-clamp: 2; }
 }
 
