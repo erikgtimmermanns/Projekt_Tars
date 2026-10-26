@@ -85,8 +85,13 @@ async function supabaseSnapshotRequest(path, options = {}) {
         const details = await response.text();
         throw new Error(`Supabase Snapshot-Speicher antwortete mit HTTP ${response.status}: ${details}`);
     }
-    if (response.status === 204) return null;
-    return response.json();
+    const responseBody = await response.text();
+    if (!responseBody.trim()) return null;
+    try {
+        return JSON.parse(responseBody);
+    } catch {
+        throw new Error("Supabase Snapshot-Speicher hat eine ungültige JSON-Antwort zurückgegeben.");
+    }
 }
 
 async function storeAllianceSnapshot(snapshot) {
