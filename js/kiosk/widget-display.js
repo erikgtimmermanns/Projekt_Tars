@@ -4,6 +4,43 @@ import { setWidgetLayoutState } from "./layout.js";
 
 const WIDGET_SEEKAMPF = "seekampf";
 const WIDGET_NASA_APOD = "nasa-apod";
+const EXPLANATION_SCROLL_SPEED_PX_PER_SECOND = 14;
+const EXPLANATION_SCROLL_PAUSE_MS = 2200;
+const explanationScrollFrames = new WeakMap();
+
+function stopExplanationScroll(element) {
+    const frame = explanationScrollFrames.get(element);
+    if (frame) window.cancelAnimationFrame(frame);
+    explanationScrollFrames.delete(element);
+}
+
+function startExplanationScroll(element) {
+    if (!element || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+    stopExplanationScroll(element);
+    element.scrollTop = 0;
+
+    window.requestAnimationFrame(() => {
+        const maxScrollTop = element.scrollHeight - element.clientHeight;
+        if (maxScrollTop <= 1) return;
+
+        const scrollingDurationMs = maxScrollTop / EXPLANATION_SCROLL_SPEED_PX_PER_SECOND * 1000;
+        const cycleDurationMs = EXPLANATION_SCROLL_PAUSE_MS * 2 + scrollingDurationMs;
+        const startedAt = performance.now();
+        const tick = (now) => {
+            const elapsed = (now - startedAt) % cycleDurationMs;
+            if (elapsed <= EXPLANATION_SCROLL_PAUSE_MS) {
+                element.scrollTop = 0;
+            } else if (elapsed <= EXPLANATION_SCROLL_PAUSE_MS + scrollingDurationMs) {
+                element.scrollTop = (elapsed - EXPLANATION_SCROLL_PAUSE_MS)
+                    / scrollingDurationMs * maxScrollTop;
+            } else {
+                element.scrollTop = maxScrollTop;
+            }
+            explanationScrollFrames.set(element, window.requestAnimationFrame(tick));
+        };
+        explanationScrollFrames.set(element, window.requestAnimationFrame(tick));
+    });
+}
 
 function formatApodDate(value) {
     const date = new Date(`${value}T12:00:00Z`);
@@ -23,6 +60,7 @@ function renderApod(panel, data) {
     image.alt = data.alt || data.title || "NASA Astronomy Picture of the Day";
     title.textContent = data.title || "NASA Picture of the Day";
     explanation.textContent = String(data.explanation || "").replace(/\s+/g, " ").trim();
+    startExplanationScroll(explanation);
     const credit = data.copyright || data.credit;
     meta.textContent = [formatApodDate(data.date), credit ? `© ${credit}` : "NASA"].filter(Boolean).join(" · ");
     status.hidden = !data.stale;
@@ -62,6 +100,11 @@ export function initKioskWidgets() {
         seekampfPanel.hidden = active !== WIDGET_SEEKAMPF;
         apodPanel.hidden = active !== WIDGET_NASA_APOD;
         panel.hidden = !active;
+        if (active === WIDGET_NASA_APOD) {
+            startExplanationScroll(apodPanel.querySelector("[data-apod-explanation]"));
+        } else {
+            stopExplanationScroll(apodPanel.querySelector("[data-apod-explanation]"));
+        }
         setWidgetLayoutState(Boolean(active));
     };
 

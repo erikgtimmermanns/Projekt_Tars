@@ -9,6 +9,7 @@ let screen;
 let pinnedPanel;
 let resizeObserver;
 let scheduledFrame = 0;
+let sharedWidgetHeight = 0;
 
 function scheduleLayout() {
     if (scheduledFrame) return;
@@ -22,10 +23,18 @@ function measureWidgetPanel(panel, width) {
     const activeWidget = panel.querySelector(".kiosk-widget-card:not([hidden])");
     if (!activeWidget) return 0;
     activeWidget.style.setProperty("--widget-measure-width", `${width}px`);
+    if (activeWidget.id === "nasa-apod-panel" && sharedWidgetHeight > 0) {
+        activeWidget.style.setProperty("--widget-measure-height", `${sharedWidgetHeight}px`);
+    }
     activeWidget.classList.add("is-measuring");
     const height = activeWidget.getBoundingClientRect().height;
     activeWidget.classList.remove("is-measuring");
     activeWidget.style.removeProperty("--widget-measure-width");
+    activeWidget.style.removeProperty("--widget-measure-height");
+    if (activeWidget.id === "seekampf-pinned-panel" && height > 0) {
+        sharedWidgetHeight = height;
+        panel.style.setProperty("--kiosk-widget-height", `${height}px`);
+    }
     return height;
 }
 
@@ -104,6 +113,7 @@ export function initKioskLayout() {
     if (typeof ResizeObserver === "function") {
         resizeObserver = new ResizeObserver(scheduleLayout);
         [screen, ...screen.querySelectorAll(".topbar, #visitor-panel, #presentation-panel, .market-ticker, .footer")]
+        .concat([...screen.querySelectorAll(".kiosk-widget-card")])
             .forEach((element) => resizeObserver.observe(element));
     }
     window.addEventListener("resize", scheduleLayout);

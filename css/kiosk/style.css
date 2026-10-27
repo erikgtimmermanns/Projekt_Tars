@@ -228,6 +228,11 @@ body.time-night .screen::before {
 
 .seekampf-pinned-panel .seekampf-dialog-header { min-height: 0; padding: 0 0 10px; }
 .seekampf-pinned-panel .seekampf-statistics-scroll { min-height: 0; padding: 0; overflow: visible; background: transparent; }
+.nasa-apod-panel {
+    grid-template-rows: auto minmax(0, 1fr);
+    height: var(--kiosk-widget-height, auto);
+    overflow: hidden;
+}
 .kiosk-widget-card.is-measuring,
 .kiosk-widget-card.is-measuring[hidden] {
     position: fixed !important;
@@ -235,7 +240,7 @@ body.time-night .screen::before {
     left: -100000px !important;
     display: block !important;
     width: var(--widget-measure-width) !important;
-    height: auto !important;
+    height: var(--widget-measure-height, auto) !important;
     max-height: none !important;
     visibility: hidden !important;
     overflow: visible !important;
@@ -244,15 +249,19 @@ body.time-night .screen::before {
 
 .nasa-apod-content {
     display: grid;
-    grid-template-columns: minmax(360px, 68%) minmax(0, 1fr);
+    grid-template-columns: minmax(300px, 54%) minmax(0, 1fr);
     align-items: center;
     gap: 18px;
+    min-height: 0;
+    height: 100%;
 }
 
 .nasa-apod-image {
     display: block;
     width: 100%;
-    max-height: min(56vh, 620px);
+    height: 100%;
+    max-height: none;
+    min-height: 0;
     border-radius: 12px;
     background: #08121d;
     object-fit: contain;
@@ -262,6 +271,14 @@ body.time-night .screen::before {
     margin: 0;
     font-size: clamp(21px, 2.4vh, 32px);
     line-height: 1.12;
+}
+
+.nasa-apod-copy {
+    display: grid;
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+    align-self: stretch;
+    min-width: 0;
+    min-height: 0;
 }
 
 .nasa-apod-eyebrow,
@@ -281,6 +298,8 @@ body.time-night .screen::before {
 
 .nasa-apod-explanation {
     margin-top: 10px;
+    min-height: 0;
+    overflow: hidden;
     color: var(--text-soft);
     font-size: clamp(14px, 1.7vh, 18px);
     line-height: 1.42;
@@ -300,7 +319,7 @@ body.time-night .screen::before {
 .nasa-apod-status.error { color: #b42318; }
 
 @media (max-height: 750px) {
-    .nasa-apod-image { max-height: min(48vh, 360px); }
+    .nasa-apod-image { max-height: none; }
 }
 
 .presentation-panel {
