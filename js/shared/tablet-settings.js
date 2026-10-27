@@ -1,16 +1,24 @@
 const STATE_TABLE = "kiosk_state";
 
 export const KIOSK_VIEW_ALLIANCE_COMPARISON = "alliance-comparison";
+export const KIOSK_VIEW_NASA_APOD = "nasa-apod";
 export const SEEKAMPF_STATISTICS_URL = "https://seekampf.de/statistik";
 
-const SELECTION_FIELDS = "selected_visitor_id, selected_visitor_at, selected_kiosk_url, selected_kiosk_at";
+const SELECTION_FIELDS = "selected_visitor_id, selected_visitor_at, selected_kiosk_view, selected_kiosk_url, selected_kiosk_at";
 let subscriptionSequence = 0;
+
+function normalizeKioskView(row) {
+    if (row?.selected_kiosk_view === KIOSK_VIEW_ALLIANCE_COMPARISON) return KIOSK_VIEW_ALLIANCE_COMPARISON;
+    if (row?.selected_kiosk_view === KIOSK_VIEW_NASA_APOD) return KIOSK_VIEW_NASA_APOD;
+    // Kompatibilität mit dem Status vor der Widget-Ansichtsmigration.
+    return row?.selected_kiosk_url === SEEKAMPF_STATISTICS_URL ? KIOSK_VIEW_ALLIANCE_COMPARISON : null;
+}
 
 function normalizeSelection(row) {
     return {
         visitorId: row?.selected_visitor_id == null ? null : String(row.selected_visitor_id),
         selectedAt: row?.selected_visitor_at || null,
-        kioskView: row?.selected_kiosk_url === SEEKAMPF_STATISTICS_URL ? KIOSK_VIEW_ALLIANCE_COMPARISON : null,
+        kioskView: normalizeKioskView(row),
         kioskViewAt: row?.selected_kiosk_at || null
     };
 }
@@ -86,11 +94,13 @@ export async function setKioskViewSelection(supabase, view) {
     if (!supabase) return false;
 
     const selectedView = view == null ? null : String(view);
-    if (selectedView !== null && selectedView !== KIOSK_VIEW_ALLIANCE_COMPARISON) return false;
+    if (selectedView !== null
+        && selectedView !== KIOSK_VIEW_ALLIANCE_COMPARISON
+        && selectedView !== KIOSK_VIEW_NASA_APOD) return false;
 
     try {
-        const { error } = await supabase.rpc("set_kiosk_url_selection", {
-            p_url: selectedView === KIOSK_VIEW_ALLIANCE_COMPARISON ? SEEKAMPF_STATISTICS_URL : null
+        const { error } = await supabase.rpc("set_kiosk_view_selection", {
+            p_view: selectedView
         });
         if (error) throw error;
         return true;

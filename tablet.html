@@ -19,13 +19,24 @@
         <section id="visitor-btn-panel" class="visitor-btn-panel"></section>
     <aside class="tablet-tools" aria-label="Weitere Bereiche">
       <button
-        id="seekampf-open"
-        class="seekampf-open"
+        class="widget-open"
         type="button"
+        data-kiosk-view="alliance-comparison"
         aria-label="Allianzstatistik auf dem Kiosk öffnen"
+        hidden
       >
-        <span class="seekampf-open-icon" aria-hidden="true">⚓</span>
+        <span class="widget-open-icon" aria-hidden="true">⚓</span>
         <span>Seekampf</span>
+      </button>
+      <button
+        class="widget-open"
+        type="button"
+        data-kiosk-view="nasa-apod"
+        aria-label="NASA Picture of the Day auf dem Kiosk öffnen"
+        hidden
+      >
+        <span class="widget-open-icon" aria-hidden="true">✦</span>
+        <span>NASA Bild</span>
       </button>
     </aside>
     <p id="selection-status" class="selection-status" role="status" aria-live="polite" hidden></p>

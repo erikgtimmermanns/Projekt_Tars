@@ -1,11 +1,13 @@
 import { supabase } from "../shared/supabase.js";
 import { subscribeKioskSettings } from "../shared/kiosk-settings.js";
 import { setWidgetLayoutState } from "./layout.js";
+import { loadApod as fetchApod } from "./apod.js";
 
 const WIDGET_SEEKAMPF = "seekampf";
 const WIDGET_NASA_APOD = "nasa-apod";
-const EXPLANATION_SCROLL_SPEED_PX_PER_SECOND = 14;
-const EXPLANATION_SCROLL_PAUSE_MS = 2200;
+const EXPLANATION_SCROLL_SPEED_PX_PER_SECOND = 8;
+const EXPLANATION_SCROLL_START_DELAY_MS = 5000;
+const EXPLANATION_SCROLL_END_PAUSE_MS = 6000;
 const explanationScrollFrames = new WeakMap();
 
 function stopExplanationScroll(element) {
@@ -24,14 +26,16 @@ function startExplanationScroll(element) {
         if (maxScrollTop <= 1) return;
 
         const scrollingDurationMs = maxScrollTop / EXPLANATION_SCROLL_SPEED_PX_PER_SECOND * 1000;
-        const cycleDurationMs = EXPLANATION_SCROLL_PAUSE_MS * 2 + scrollingDurationMs;
+        const cycleDurationMs = EXPLANATION_SCROLL_START_DELAY_MS
+            + scrollingDurationMs
+            + EXPLANATION_SCROLL_END_PAUSE_MS;
         const startedAt = performance.now();
         const tick = (now) => {
             const elapsed = (now - startedAt) % cycleDurationMs;
-            if (elapsed <= EXPLANATION_SCROLL_PAUSE_MS) {
+            if (elapsed <= EXPLANATION_SCROLL_START_DELAY_MS) {
                 element.scrollTop = 0;
-            } else if (elapsed <= EXPLANATION_SCROLL_PAUSE_MS + scrollingDurationMs) {
-                element.scrollTop = (elapsed - EXPLANATION_SCROLL_PAUSE_MS)
+            } else if (elapsed <= EXPLANATION_SCROLL_START_DELAY_MS + scrollingDurationMs) {
+                element.scrollTop = (elapsed - EXPLANATION_SCROLL_START_DELAY_MS)
                     / scrollingDurationMs * maxScrollTop;
             } else {
                 element.scrollTop = maxScrollTop;
@@ -54,7 +58,8 @@ function renderApod(panel, data) {
     const explanation = panel.querySelector("[data-apod-explanation]");
     const meta = panel.querySelector("[data-apod-meta]");
     const status = panel.querySelector("[data-apod-status]");
-    if (!image || !title || !explanation || !meta || !status) return;
+    const content = panel.querySelector(".nasa-apod-content");
+    if (!image || !title || !explanation || !meta || !status || !content) return;
 
     image.src = data.imageUrl;
     image.alt = data.alt || data.title || "NASA Astronomy Picture of the Day";
@@ -63,6 +68,8 @@ function renderApod(panel, data) {
     startExplanationScroll(explanation);
     const credit = data.copyright || data.credit;
     meta.textContent = [formatApodDate(data.date), credit ? `© ${credit}` : "NASA"].filter(Boolean).join(" · ");
+    content.hidden = false;
+    status.classList.remove("error");
     status.hidden = !data.stale;
     status.textContent = data.stale ? "NASA ist gerade nicht erreichbar; zuletzt geladenes Bild wird gezeigt." : "";
 }
@@ -120,17 +127,11 @@ export function initKioskWidgets() {
     const loadApod = () => {
         if (apodPromise) return apodPromise;
         apodPromise = (async () => {
-            const response = await fetch("/api/nasa/apod", { cache: "no-store" });
-            const contentType = response.headers.get("content-type") || "";
-            if (!contentType.includes("application/json")) {
-                throw new Error("API-Server fehlt. Bitte im Projektordner `npm start` ausführen und die Seite über Port 4173 öffnen.");
-            }
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
-            if (!data.imageUrl) throw new Error("NASA lieferte kein anzeigbares Bild.");
+            const data = await fetchApod();
             renderApod(apodPanel, data);
             return data;
         })().catch((error) => {
+            apodPromise = null;
             renderApodError(apodPanel, error);
             throw error;
         });

@@ -6,8 +6,9 @@ import { initFacts } from './facts.js';
 import { initPresentation } from './presentation.js';
 import { initVisitorWelcome } from './visitor-welcome.js';
 import { initTabletSelection } from '../tablet/tablet-display.js';
-import { initSeekampfTabletButton } from '../tablet/seekampf-overlay.js';
+import { initWidgetTabletButtons } from '../tablet/seekampf-overlay.js';
 import { initSeekampfOverlay } from './seekampf-overlay.js';
+import { initNasaApodOverlay } from './nasa-apod-overlay.js';
 import { initKioskLayout } from './layout.js';
 import { initKioskWidgets } from './widget-display.js';
 
@@ -45,8 +46,9 @@ function startDashboard() {
     try { initPresentation(); } catch (e) { console.warn('initPresentation failed', e); }
     try { initVisitorWelcome(); } catch (e) { console.warn('initVisitorWelcome failed', e); }
     try { initTabletSelection(); } catch (e) { console.warn('initTabletSelection failed', e); }
-    try { initSeekampfTabletButton(); } catch (e) { console.warn('initSeekampfTabletButton failed', e); }
+    try { initWidgetTabletButtons(); } catch (e) { console.warn('initWidgetTabletButtons failed', e); }
     try { initSeekampfOverlay(); } catch (e) { console.warn('initSeekampfOverlay failed', e); }
+    try { initNasaApodOverlay(); } catch (e) { console.warn('initNasaApodOverlay failed', e); }
     try { initKioskWidgets(); } catch (e) { console.warn('initKioskWidgets failed', e); }
 }
 

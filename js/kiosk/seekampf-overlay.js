@@ -202,7 +202,7 @@ export function initSeekampfOverlay() {
     };
 
     const applySelection = (selection) => {
-        const shouldShowDialog = !isPinned && selection.kioskView === KIOSK_VIEW_ALLIANCE_COMPARISON;
+        const shouldShowDialog = isPinned && selection.kioskView === KIOSK_VIEW_ALLIANCE_COMPARISON;
         const wasActive = isActive;
         isActive = shouldShowDialog;
 
@@ -224,6 +224,9 @@ export function initSeekampfOverlay() {
         const wasPinned = isPinned;
         isPinned = settings.seekampfEnabled;
         if (isPinned && !wasPinned) void loadStatistics(pinnedElements);
+        if (!isPinned && latestSelection.kioskView === KIOSK_VIEW_ALLIANCE_COMPARISON) {
+            void setKioskViewSelection(supabase, null);
+        }
         applySelection(latestSelection);
     });
     dialog.addEventListener("cancel", (event) => {

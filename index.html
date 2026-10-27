@@ -218,6 +218,30 @@
                 </div>
             </div>
         </dialog>
+        <dialog id="nasa-apod-dialog" class="nasa-apod-dialog" aria-labelledby="nasa-apod-dialog-title">
+            <div class="nasa-apod-dialog-content">
+                <header class="nasa-apod-dialog-header">
+                    <div>
+                        <p class="nasa-apod-eyebrow">NASA Picture of the Day</p>
+                        <h2 id="nasa-apod-dialog-title">Astronomy Picture of the Day</h2>
+                    </div>
+                    <p class="nasa-apod-dialog-hint">Diese Ansicht wird am Tablet geschlossen.</p>
+                </header>
+                <div class="nasa-apod-dialog-scroll">
+                    <section class="nasa-apod-dialog-panel" aria-label="NASA Astronomy Picture of the Day">
+                        <p class="nasa-apod-status" data-apod-status role="status" aria-live="polite">NASA Picture of the Day wird geladen ...</p>
+                        <div class="nasa-apod-content">
+                            <img data-apod-image class="nasa-apod-image" alt="">
+                            <div class="nasa-apod-copy">
+                                <h3 data-apod-title></h3>
+                                <p data-apod-explanation class="nasa-apod-explanation"></p>
+                                <p data-apod-meta class="nasa-apod-meta"></p>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </dialog>
 </body>
 
 </html>

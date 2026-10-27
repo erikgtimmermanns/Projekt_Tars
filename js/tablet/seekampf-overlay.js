@@ -1,6 +1,8 @@
 import { supabase } from "../shared/supabase.js";
+import { subscribeKioskSettings } from "../shared/kiosk-settings.js";
 import {
     KIOSK_VIEW_ALLIANCE_COMPARISON,
+    KIOSK_VIEW_NASA_APOD,
     setKioskViewSelection,
     subscribeKioskSelection
 } from "../shared/tablet-settings.js";
@@ -19,43 +21,74 @@ function showSelectionStatus(message, isError = false) {
     }, isError ? 8000 : 2500);
 }
 
-export function initSeekampfTabletButton() {
-    const trigger = document.getElementById("seekampf-open");
-    if (!trigger) return;
+function labelForView(view) {
+    return view === KIOSK_VIEW_NASA_APOD ? "NASA Picture of the Day" : "Allianzstatistik";
+}
 
-    let isActive = false;
+export function initWidgetTabletButtons() {
+    const tools = document.querySelector(".tablet-tools");
+    const triggers = [...document.querySelectorAll("[data-kiosk-view]")];
+    if (!tools || !triggers.length) return () => {};
+
+    let activeView = null;
     let isPending = false;
-    trigger.setAttribute("aria-pressed", "false");
+    let settings = { seekampfEnabled: false, nasaApodEnabled: false };
+
+    const setButtons = () => {
+        triggers.forEach((trigger) => {
+            const view = trigger.dataset.kioskView;
+            const enabled = view === KIOSK_VIEW_ALLIANCE_COMPARISON
+                ? settings.seekampfEnabled
+                : settings.nasaApodEnabled;
+            trigger.hidden = !enabled;
+            trigger.setAttribute("aria-pressed", String(activeView === view));
+        });
+        tools.hidden = triggers.every((trigger) => trigger.hidden);
+    };
 
     const unsubscribe = subscribeKioskSelection(supabase, (selection) => {
-        const wasActive = isActive;
-        isActive = selection.kioskView === KIOSK_VIEW_ALLIANCE_COMPARISON;
-        trigger.setAttribute("aria-pressed", String(isActive));
-        if (wasActive !== isActive) {
-            showSelectionStatus(isActive ? "Allianzstatistik am Empfangsbildschirm geöffnet." : "Statistik geschlossen.");
+        const wasActiveView = activeView;
+        activeView = selection.kioskView;
+        setButtons();
+        if (wasActiveView !== activeView) {
+            showSelectionStatus(activeView
+                ? `${labelForView(activeView)} am Empfangsbildschirm geöffnet.`
+                : "Zusatzansicht geschlossen.");
         }
     });
+    const unsubscribeSettings = subscribeKioskSettings(supabase, (nextSettings) => {
+        settings = nextSettings;
+        setButtons();
+    });
 
-    trigger.addEventListener("click", async () => {
+    triggers.forEach((trigger) => trigger.addEventListener("click", async () => {
         if (isPending) return;
         isPending = true;
-        trigger.disabled = true;
+        triggers.forEach((button) => { button.disabled = true; });
 
-        const nextView = isActive ? null : KIOSK_VIEW_ALLIANCE_COMPARISON;
+        const selectedView = trigger.dataset.kioskView;
+        const nextView = activeView === selectedView ? null : selectedView;
         showSelectionStatus(
-            nextView ? "Allianzstatistik wird am Empfangsbildschirm geöffnet ..." : "Statistik wird geschlossen ..."
+            nextView ? `${labelForView(nextView)} wird am Empfangsbildschirm geöffnet ...` : "Zusatzansicht wird geschlossen ..."
         );
 
         const saved = await setKioskViewSelection(supabase, nextView);
         isPending = false;
-        trigger.disabled = false;
+        triggers.forEach((button) => { button.disabled = false; });
 
         if (saved) {
-            showSelectionStatus(nextView ? "Allianzstatistik wird am Empfangsbildschirm angezeigt." : "Statistik geschlossen.");
+            showSelectionStatus(nextView
+                ? `${labelForView(nextView)} wird am Empfangsbildschirm angezeigt.`
+                : "Zusatzansicht geschlossen.");
         } else {
             showSelectionStatus("Übertragung fehlgeschlagen. Supabase-Migration und Verbindung prüfen.", true);
         }
-    });
+    }));
 
-    return unsubscribe;
+    return () => {
+        unsubscribe();
+        unsubscribeSettings();
+    };
 }
+
+export const initSeekampfTabletButton = initWidgetTabletButtons;

@@ -128,9 +128,11 @@ body {
     display: flex;
     flex: 0 0 auto;
     justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 12px;
 }
 
-.seekampf-open {
+.widget-open {
     display: flex;
     width: 80px;
     height: 80px;
@@ -151,24 +153,24 @@ body {
     cursor: pointer;
 }
 
-.seekampf-open:hover,
-.seekampf-open:focus-visible {
+.widget-open:hover,
+.widget-open:focus-visible {
     border-color: var(--cc-blue, #0067b9);
     outline: 2px solid rgba(0, 103, 185, 0.35);
     outline-offset: 2px;
 }
 
-.seekampf-open[aria-pressed="true"] {
+.widget-open[aria-pressed="true"] {
     border-color: var(--cc-blue, #0067b9);
     box-shadow: 0 0 0 3px rgba(0, 103, 185, 0.14), var(--tablet-card-shadow);
 }
 
-.seekampf-open:disabled {
+.widget-open:disabled {
     cursor: wait;
     opacity: 0.7;
 }
 
-.seekampf-open-icon {
+.widget-open-icon {
     font-size: 30px;
     line-height: 1;
 }
