@@ -64,6 +64,10 @@ export function renderCoudChart(target, range = "1D", { onError } = {}) {
         hideSymbolLogo: false
     });
 
-    container.append(chart, copyright, script);
+    container.append(chart, copyright);
     target.replaceChildren(container);
+    // Externe Scripts müssen erst nach dem Einfügen des Containers ins
+    // Dokument angehängt werden. Andernfalls wird der iframe-Embed je nach
+    // Browser nicht initialisiert.
+    container.append(script);
 }

@@ -39,6 +39,7 @@ export function initWidgetTabletButtons() {
 
     let activeView = null;
     let activeChartRange = "1D";
+    let latestSelection = { kioskView: null, chartRange: "1D", kioskViewAt: null };
     let isPending = false;
     let chartRangePending = false;
     let settings = { seekampfEnabled: false, nasaApodEnabled: false, coudChartEnabled: false };
@@ -71,7 +72,9 @@ export function initWidgetTabletButtons() {
         });
         tools.hidden = triggers.every((trigger) => trigger.hidden);
         if (chartControls) {
-            chartControls.hidden = activeView !== KIOSK_VIEW_COUD_CHART || !settings.coudChartEnabled;
+            const coudIsOpen = activeView === KIOSK_VIEW_COUD_CHART && settings.coudChartEnabled;
+            chartControls.hidden = !coudIsOpen;
+            chartControls.classList.toggle("is-open", coudIsOpen);
         }
         chartRangeTriggers.forEach((trigger) => {
             trigger.setAttribute("aria-pressed", String(trigger.dataset.coudChartRange === activeChartRange));
@@ -80,6 +83,7 @@ export function initWidgetTabletButtons() {
     };
 
     const unsubscribe = subscribeKioskSelection(supabase, (selection) => {
+        latestSelection = selection;
         const wasActiveView = activeView;
         activeView = selection.kioskView;
         activeChartRange = selection.chartRange;
@@ -103,6 +107,13 @@ export function initWidgetTabletButtons() {
 
         const selectedView = trigger.dataset.kioskView;
         const nextView = activeView === selectedView ? null : selectedView;
+        // Die Steuerung gehört nur zur geöffneten COUD-Ansicht. Sie verschwindet
+        // beim Schließen oder Wechseln unverzüglich, nicht erst nach Realtime.
+        if (activeView === KIOSK_VIEW_COUD_CHART && nextView !== KIOSK_VIEW_COUD_CHART) {
+            activeView = nextView;
+            clearAutoCloseTimer();
+            setButtons();
+        }
         showSelectionStatus(
             nextView ? `${labelForView(nextView)} wird am Empfangsbildschirm geöffnet ...` : "Zusatzansicht wird geschlossen ..."
         );
@@ -116,6 +127,10 @@ export function initWidgetTabletButtons() {
                 ? `${labelForView(nextView)} wird am Empfangsbildschirm angezeigt.`
                 : "Zusatzansicht geschlossen.");
         } else {
+            activeView = latestSelection.kioskView;
+            activeChartRange = latestSelection.chartRange;
+            setButtons();
+            scheduleAutoClose(latestSelection);
             showSelectionStatus("Übertragung fehlgeschlagen. Supabase-Migration und Verbindung prüfen.", true);
         }
     }));
