@@ -4,6 +4,7 @@ import {
     KIOSK_VIEW_ALLIANCE_COMPARISON,
     KIOSK_VIEW_NASA_APOD,
     KIOSK_VIEW_COUD_CHART,
+    getLastKioskControlError,
     getKioskViewAutoCloseDelay,
     setKioskChartRange,
     setKioskViewSelection,
@@ -131,7 +132,7 @@ export function initWidgetTabletButtons() {
             activeChartRange = latestSelection.chartRange;
             setButtons();
             scheduleAutoClose(latestSelection);
-            showSelectionStatus("Übertragung fehlgeschlagen. Supabase-Migration und Verbindung prüfen.", true);
+            showSelectionStatus(getLastKioskControlError() || "Übertragung fehlgeschlagen. Supabase-Migration und Verbindung prüfen.", true);
         }
     }));
 
@@ -145,7 +146,7 @@ export function initWidgetTabletButtons() {
         chartRangePending = false;
         setButtons();
         if (!saved) {
-            showSelectionStatus("Zeitraum konnte nicht übertragen werden.", true);
+            showSelectionStatus(getLastKioskControlError() || "Zeitraum konnte nicht übertragen werden.", true);
         }
     }));
 

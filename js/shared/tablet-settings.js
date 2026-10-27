@@ -16,6 +16,11 @@ export const COUD_CHART_RANGES = Object.freeze([
 
 const SELECTION_FIELDS = "selected_visitor_id, selected_visitor_at, selected_kiosk_view, selected_kiosk_chart_range, selected_kiosk_url, selected_kiosk_at";
 let subscriptionSequence = 0;
+let lastKioskControlError = "";
+
+export function getLastKioskControlError() {
+    return lastKioskControlError;
+}
 
 function normalizeKioskView(row) {
     if (row?.selected_kiosk_view === KIOSK_VIEW_ALLIANCE_COMPARISON) return KIOSK_VIEW_ALLIANCE_COMPARISON;
@@ -85,11 +90,18 @@ export function subscribeKioskSelection(supabase, onChange) {
 
     let receivedRealtime = false;
     let initialFetchStarted = false;
+    let realtimeAvailable = false;
+    let disposed = false;
     const loadInitialSelection = () => {
         if (initialFetchStarted) return;
         initialFetchStarted = true;
         fetchKioskSelection(supabase).then((selection) => {
             if (!receivedRealtime) onChange(selection);
+        });
+    };
+    const refreshWithoutRealtime = () => {
+        fetchKioskSelection(supabase).then((selection) => {
+            if (!disposed) onChange(selection);
         });
     };
 
@@ -100,24 +112,49 @@ export function subscribeKioskSelection(supabase, onChange) {
             { event: "UPDATE", schema: "public", table: STATE_TABLE, filter: "id=eq.1" },
             (payload) => {
                 receivedRealtime = true;
+                realtimeAvailable = true;
                 onChange(normalizeSelection(payload.new));
             }
         )
         .subscribe((status) => {
-            if (status === "SUBSCRIBED") loadInitialSelection();
+            if (status === "SUBSCRIBED") {
+                realtimeAvailable = true;
+                loadInitialSelection();
+            } else if (["CHANNEL_ERROR", "TIMED_OUT", "CLOSED"].includes(status)) {
+                realtimeAvailable = false;
+                refreshWithoutRealtime();
+            }
         });
 
-    return () => supabase.removeChannel(channel);
+    // Sicherheitsnetz für Kiosk-Installationen, deren Realtime-Verbindung
+    // blockiert ist oder zwar verbunden wirkt, aber keine UPDATE-Ereignisse
+    // ausliefert. Der Status besteht aus genau einer Datenbankzeile.
+    const pollingTimer = window.setInterval(() => {
+        refreshWithoutRealtime();
+    }, 3000);
+
+    return () => {
+        disposed = true;
+        window.clearInterval(pollingTimer);
+        return supabase.removeChannel(channel);
+    };
 }
 
 export async function setKioskViewSelection(supabase, view) {
-    if (!supabase) return false;
+    lastKioskControlError = "";
+    if (!supabase) {
+        lastKioskControlError = "Die Supabase-Verbindung ist nicht eingerichtet.";
+        return false;
+    }
 
     const selectedView = view == null ? null : String(view);
     if (selectedView !== null
         && selectedView !== KIOSK_VIEW_ALLIANCE_COMPARISON
         && selectedView !== KIOSK_VIEW_NASA_APOD
-        && selectedView !== KIOSK_VIEW_COUD_CHART) return false;
+        && selectedView !== KIOSK_VIEW_COUD_CHART) {
+        lastKioskControlError = "Die gewählte Kioskansicht ist ungültig.";
+        return false;
+    }
 
     try {
         const { error } = await supabase.rpc("set_kiosk_view_selection", {
@@ -126,19 +163,29 @@ export async function setKioskViewSelection(supabase, view) {
         if (error) throw error;
         return true;
     } catch (error) {
+        lastKioskControlError = error.message || "Die Kioskansicht konnte nicht gespeichert werden.";
         console.warn("Kiosk-Ansicht konnte nicht gespeichert werden:", error.message || error);
         return false;
     }
 }
 
 export async function setKioskChartRange(supabase, range) {
-    if (!supabase || !COUD_CHART_RANGES.some((item) => item.value === range)) return false;
+    lastKioskControlError = "";
+    if (!supabase) {
+        lastKioskControlError = "Die Supabase-Verbindung ist nicht eingerichtet.";
+        return false;
+    }
+    if (!COUD_CHART_RANGES.some((item) => item.value === range)) {
+        lastKioskControlError = "Der gewählte Zeitraum ist ungültig.";
+        return false;
+    }
 
     try {
         const { error } = await supabase.rpc("set_kiosk_chart_range", { p_range: range });
         if (error) throw error;
         return true;
     } catch (error) {
+        lastKioskControlError = error.message || "Der Chartzeitraum konnte nicht gespeichert werden.";
         console.warn("Kiosk-Chartzeitraum konnte nicht gespeichert werden:", error.message || error);
         return false;
     }
