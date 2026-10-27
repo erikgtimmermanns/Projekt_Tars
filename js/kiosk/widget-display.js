@@ -5,12 +5,6 @@ import { setWidgetLayoutState } from "./layout.js";
 const WIDGET_SEEKAMPF = "seekampf";
 const WIDGET_NASA_APOD = "nasa-apod";
 
-function trimExplanation(value, maxLength = 420) {
-    const text = String(value || "").replace(/\s+/g, " ").trim();
-    if (text.length <= maxLength) return text;
-    return `${text.slice(0, maxLength).trimEnd()} …`;
-}
-
 function formatApodDate(value) {
     const date = new Date(`${value}T12:00:00Z`);
     if (Number.isNaN(date.getTime())) return "";
@@ -28,7 +22,7 @@ function renderApod(panel, data) {
     image.src = data.imageUrl;
     image.alt = data.alt || data.title || "NASA Astronomy Picture of the Day";
     title.textContent = data.title || "NASA Picture of the Day";
-    explanation.textContent = trimExplanation(data.explanation);
+    explanation.textContent = String(data.explanation || "").replace(/\s+/g, " ").trim();
     const credit = data.copyright || data.credit;
     meta.textContent = [formatApodDate(data.date), credit ? `© ${credit}` : "NASA"].filter(Boolean).join(" · ");
     status.hidden = !data.stale;
