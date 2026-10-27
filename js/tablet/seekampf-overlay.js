@@ -3,6 +3,9 @@ import { subscribeKioskSettings } from "../shared/kiosk-settings.js";
 import {
     KIOSK_VIEW_ALLIANCE_COMPARISON,
     KIOSK_VIEW_NASA_APOD,
+    KIOSK_VIEW_COUD_CHART,
+    getKioskViewAutoCloseDelay,
+    setKioskChartRange,
     setKioskViewSelection,
     subscribeKioskSelection
 } from "../shared/tablet-settings.js";
@@ -22,34 +25,66 @@ function showSelectionStatus(message, isError = false) {
 }
 
 function labelForView(view) {
-    return view === KIOSK_VIEW_NASA_APOD ? "NASA Picture of the Day" : "Allianzstatistik";
+    if (view === KIOSK_VIEW_NASA_APOD) return "NASA Picture of the Day";
+    if (view === KIOSK_VIEW_COUD_CHART) return "COUD Aktienchart";
+    return "Allianzstatistik";
 }
 
 export function initWidgetTabletButtons() {
     const tools = document.querySelector(".tablet-tools");
     const triggers = [...document.querySelectorAll("[data-kiosk-view]")];
+    const chartControls = document.getElementById("coud-chart-controls");
+    const chartRangeTriggers = [...document.querySelectorAll("[data-coud-chart-range]")];
     if (!tools || !triggers.length) return () => {};
 
     let activeView = null;
+    let activeChartRange = "1D";
     let isPending = false;
-    let settings = { seekampfEnabled: false, nasaApodEnabled: false };
+    let chartRangePending = false;
+    let settings = { seekampfEnabled: false, nasaApodEnabled: false, coudChartEnabled: false };
+    let autoCloseTimer = null;
+
+    const clearAutoCloseTimer = () => {
+        if (autoCloseTimer !== null) window.clearTimeout(autoCloseTimer);
+        autoCloseTimer = null;
+    };
+
+    const scheduleAutoClose = (selection) => {
+        clearAutoCloseTimer();
+        if (!activeView) return;
+        autoCloseTimer = window.setTimeout(() => {
+            autoCloseTimer = null;
+            if (activeView) void setKioskViewSelection(supabase, null);
+        }, getKioskViewAutoCloseDelay(selection.kioskViewAt));
+    };
 
     const setButtons = () => {
         triggers.forEach((trigger) => {
             const view = trigger.dataset.kioskView;
             const enabled = view === KIOSK_VIEW_ALLIANCE_COMPARISON
                 ? settings.seekampfEnabled
-                : settings.nasaApodEnabled;
+                : view === KIOSK_VIEW_NASA_APOD
+                    ? settings.nasaApodEnabled
+                    : settings.coudChartEnabled;
             trigger.hidden = !enabled;
             trigger.setAttribute("aria-pressed", String(activeView === view));
         });
         tools.hidden = triggers.every((trigger) => trigger.hidden);
+        if (chartControls) {
+            chartControls.hidden = activeView !== KIOSK_VIEW_COUD_CHART || !settings.coudChartEnabled;
+        }
+        chartRangeTriggers.forEach((trigger) => {
+            trigger.setAttribute("aria-pressed", String(trigger.dataset.coudChartRange === activeChartRange));
+            trigger.disabled = chartRangePending || activeView !== KIOSK_VIEW_COUD_CHART;
+        });
     };
 
     const unsubscribe = subscribeKioskSelection(supabase, (selection) => {
         const wasActiveView = activeView;
         activeView = selection.kioskView;
+        activeChartRange = selection.chartRange;
         setButtons();
+        scheduleAutoClose(selection);
         if (wasActiveView !== activeView) {
             showSelectionStatus(activeView
                 ? `${labelForView(activeView)} am Empfangsbildschirm geöffnet.`
@@ -85,9 +120,24 @@ export function initWidgetTabletButtons() {
         }
     }));
 
+    chartRangeTriggers.forEach((trigger) => trigger.addEventListener("click", async () => {
+        const range = trigger.dataset.coudChartRange;
+        if (chartRangePending || activeView !== KIOSK_VIEW_COUD_CHART || range === activeChartRange) return;
+        chartRangePending = true;
+        setButtons();
+        showSelectionStatus(`Zeitraum ${trigger.textContent} wird am Empfangsbildschirm angezeigt ...`);
+        const saved = await setKioskChartRange(supabase, range);
+        chartRangePending = false;
+        setButtons();
+        if (!saved) {
+            showSelectionStatus("Zeitraum konnte nicht übertragen werden.", true);
+        }
+    }));
+
     return () => {
         unsubscribe();
         unsubscribeSettings();
+        clearAutoCloseTimer();
     };
 }
 

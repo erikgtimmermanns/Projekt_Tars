@@ -9,6 +9,7 @@ import { initTabletSelection } from '../tablet/tablet-display.js';
 import { initWidgetTabletButtons } from '../tablet/seekampf-overlay.js';
 import { initSeekampfOverlay } from './seekampf-overlay.js';
 import { initNasaApodOverlay } from './nasa-apod-overlay.js';
+import { initCoudChartOverlay } from './coud-chart-overlay.js';
 import { initKioskLayout } from './layout.js';
 import { initKioskWidgets } from './widget-display.js';
 
@@ -49,6 +50,7 @@ function startDashboard() {
     try { initWidgetTabletButtons(); } catch (e) { console.warn('initWidgetTabletButtons failed', e); }
     try { initSeekampfOverlay(); } catch (e) { console.warn('initSeekampfOverlay failed', e); }
     try { initNasaApodOverlay(); } catch (e) { console.warn('initNasaApodOverlay failed', e); }
+    try { initCoudChartOverlay(); } catch (e) { console.warn('initCoudChartOverlay failed', e); }
     try { initKioskWidgets(); } catch (e) { console.warn('initKioskWidgets failed', e); }
 }
 

@@ -1,10 +1,13 @@
 import { supabase } from "../shared/supabase.js";
 import { subscribeKioskSettings } from "../shared/kiosk-settings.js";
+import { subscribeKioskSelection } from "../shared/tablet-settings.js";
 import { setWidgetLayoutState } from "./layout.js";
 import { loadApod as fetchApod } from "./apod.js";
+import { renderCoudChart } from "./coud-chart.js";
 
 const WIDGET_SEEKAMPF = "seekampf";
 const WIDGET_NASA_APOD = "nasa-apod";
+const WIDGET_COUD_CHART = "coud-chart";
 const EXPLANATION_SCROLL_SPEED_PX_PER_SECOND = 8;
 const EXPLANATION_SCROLL_START_DELAY_MS = 5000;
 const EXPLANATION_SCROLL_END_PAUSE_MS = 6000;
@@ -89,13 +92,18 @@ export function initKioskWidgets() {
     const panel = document.getElementById("kiosk-widget-panel");
     const seekampfPanel = document.getElementById("seekampf-pinned-panel");
     const apodPanel = document.getElementById("nasa-apod-panel");
-    if (!panel || !seekampfPanel || !apodPanel) return () => {};
+    const coudPanel = document.getElementById("coud-chart-panel");
+    const coudFrame = coudPanel?.querySelector("[data-coud-chart-frame]");
+    const coudStatus = coudPanel?.querySelector("[data-coud-chart-status]");
+    if (!panel || !seekampfPanel || !apodPanel || !coudPanel || !coudFrame || !coudStatus) return () => {};
 
     let enabledWidgets = [];
     let activeIndex = 0;
     let intervalMs = 0;
     let timer = null;
     let apodPromise = null;
+    let coudChartRange = "1D";
+    let renderedCoudChartRange = null;
 
     const stopTimer = () => {
         if (timer) window.clearInterval(timer);
@@ -106,13 +114,31 @@ export function initKioskWidgets() {
         const active = enabledWidgets[activeIndex];
         seekampfPanel.hidden = active !== WIDGET_SEEKAMPF;
         apodPanel.hidden = active !== WIDGET_NASA_APOD;
+        coudPanel.hidden = active !== WIDGET_COUD_CHART;
         panel.hidden = !active;
         if (active === WIDGET_NASA_APOD) {
             startExplanationScroll(apodPanel.querySelector("[data-apod-explanation]"));
         } else {
             stopExplanationScroll(apodPanel.querySelector("[data-apod-explanation]"));
         }
+        if (active === WIDGET_COUD_CHART) renderCoudWidget();
         setWidgetLayoutState(Boolean(active));
+    };
+
+    const renderCoudWidget = () => {
+        if (renderedCoudChartRange === coudChartRange && coudFrame.childElementCount) return;
+        coudStatus.hidden = false;
+        coudStatus.classList.remove("error");
+        coudStatus.textContent = "COUD Aktienchart wird geladen ...";
+        renderCoudChart(coudFrame, coudChartRange, {
+            onError: () => {
+                coudStatus.hidden = false;
+                coudStatus.classList.add("error");
+                coudStatus.textContent = "TradingView-Chart konnte nicht geladen werden.";
+            }
+        });
+        renderedCoudChartRange = coudChartRange;
+        coudStatus.hidden = true;
     };
 
     const startTimer = () => {
@@ -142,6 +168,7 @@ export function initKioskWidgets() {
         const nextWidgets = [];
         if (settings.seekampfEnabled) nextWidgets.push(WIDGET_SEEKAMPF);
         if (settings.nasaApodEnabled) nextWidgets.push(WIDGET_NASA_APOD);
+        if (settings.coudChartEnabled) nextWidgets.push(WIDGET_COUD_CHART);
         const activeId = enabledWidgets[activeIndex];
         enabledWidgets = nextWidgets;
         activeIndex = Math.max(0, enabledWidgets.indexOf(activeId));
@@ -150,10 +177,15 @@ export function initKioskWidgets() {
         showActiveWidget();
         startTimer();
     });
+    const unsubscribeSelection = subscribeKioskSelection(supabase, (selection) => {
+        coudChartRange = selection.chartRange || "1D";
+        if (enabledWidgets[activeIndex] === WIDGET_COUD_CHART) renderCoudWidget();
+    });
 
     return () => {
         stopTimer();
         unsubscribe();
+        unsubscribeSelection();
         setWidgetLayoutState(false);
     };
 }

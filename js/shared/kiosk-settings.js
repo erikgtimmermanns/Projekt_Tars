@@ -39,6 +39,7 @@ function normalize(row) {
         rotateIntervalMs: seconds * 1000,
         seekampfEnabled,
         nasaApodEnabled: row?.nasa_apod_enabled === true,
+        coudChartEnabled: row?.coud_chart_enabled === true,
         widgetRotateIntervalMs: widgetSeconds * 1000,
         headerLanguage
     };
@@ -49,7 +50,7 @@ export async function fetchKioskSettings(supabase) {
     try {
         const { data, error } = await supabase
             .from(SETTINGS_TABLE)
-            .select("display_mode, rotate_interval_seconds, seekampf_pinned, seekampf_enabled, nasa_apod_enabled, widget_rotate_interval_seconds, header_language")
+            .select("display_mode, rotate_interval_seconds, seekampf_pinned, seekampf_enabled, nasa_apod_enabled, coud_chart_enabled, widget_rotate_interval_seconds, header_language")
             .eq("id", 1)
             .maybeSingle();
         if (error || !data) return normalize(null);

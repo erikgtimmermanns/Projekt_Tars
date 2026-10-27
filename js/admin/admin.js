@@ -40,6 +40,7 @@ const saveScreenBtn = document.getElementById("saveScreenBtn");
 const rotateIntervalInput = document.getElementById("rotateIntervalInput");
 const seekampfEnabledInput = document.getElementById("seekampfEnabledInput");
 const nasaApodEnabledInput = document.getElementById("nasaApodEnabledInput");
+const coudChartEnabledInput = document.getElementById("coudChartEnabledInput");
 const widgetRotateIntervalInput = document.getElementById("widgetRotateIntervalInput");
 const headerLanguageSelect = document.getElementById("headerLanguageSelect");
 const previewWidgetPanel = document.getElementById("previewWidgetPanel");
@@ -61,6 +62,7 @@ let pendingDisplayMode = DEFAULT_DISPLAY_MODE; // Auswahl in "Bildschirm konfigu
 let pendingRotateIntervalS = DEFAULT_ROTATE_INTERVAL_MS / 1000;
 let pendingSeekampfEnabled = false;
 let pendingNasaApodEnabled = false;
+let pendingCoudChartEnabled = false;
 let pendingWidgetRotateIntervalS = DEFAULT_WIDGET_ROTATE_INTERVAL_MS / 1000;
 let pendingHeaderLanguage = "de";
 let previewWidgetTimer = null;
@@ -210,6 +212,7 @@ function renderWidgetPreview() {
   const widgets = [];
   if (pendingSeekampfEnabled) widgets.push("seekampf");
   if (pendingNasaApodEnabled) widgets.push("nasa");
+  if (pendingCoudChartEnabled) widgets.push("coud");
   if (!widgets.length) {
     previewWidgetPanel.hidden = true;
     previewWidgetPanel.replaceChildren();
@@ -225,6 +228,10 @@ function renderWidgetPreview() {
       appendPreviewText(card, "p", "preview-widget-eyebrow", "Seekampf-Statistik");
       appendPreviewText(card, "h4", "preview-widget-title", "Allianzstatistik · MTG / AZB");
       appendPreviewText(card, "p", "preview-widget-copy", "Die aktuelle Allianzstatistik wird auf dem Kiosk geladen.");
+    } else if (widget === "coud") {
+      appendPreviewText(card, "p", "preview-widget-eyebrow", "TradingView");
+      appendPreviewText(card, "h4", "preview-widget-title", "COUD Aktienchart");
+      appendPreviewText(card, "p", "preview-widget-copy", "Der aktuelle COUD-Kurschart wird auf dem Kiosk angezeigt.");
     } else if (previewApod) {
       const image = document.createElement("img");
       image.className = "preview-apod-image";
@@ -322,6 +329,7 @@ async function loadScreenSettings() {
     pendingRotateIntervalS = Math.round(settings.rotateIntervalMs / 1000);
     pendingSeekampfEnabled = settings.seekampfEnabled;
     pendingNasaApodEnabled = settings.nasaApodEnabled;
+    pendingCoudChartEnabled = settings.coudChartEnabled;
     pendingWidgetRotateIntervalS = Math.round(settings.widgetRotateIntervalMs / 1000);
     pendingHeaderLanguage = settings.headerLanguage;
   }
@@ -329,6 +337,7 @@ async function loadScreenSettings() {
   rotateIntervalInput.value = pendingRotateIntervalS;
   seekampfEnabledInput.checked = pendingSeekampfEnabled;
   nasaApodEnabledInput.checked = pendingNasaApodEnabled;
+  coudChartEnabledInput.checked = pendingCoudChartEnabled;
   widgetRotateIntervalInput.value = pendingWidgetRotateIntervalS;
   headerLanguageSelect.value = pendingHeaderLanguage;
   renderPreview();
@@ -362,6 +371,10 @@ nasaApodEnabledInput.addEventListener("change", () => {
   pendingNasaApodEnabled = nasaApodEnabledInput.checked;
   renderPreview();
 });
+coudChartEnabledInput.addEventListener("change", () => {
+  pendingCoudChartEnabled = coudChartEnabledInput.checked;
+  renderPreview();
+});
 widgetRotateIntervalInput.addEventListener("input", () => {
   pendingWidgetRotateIntervalS = clampWidgetRotateSeconds(widgetRotateIntervalInput.value);
   renderPreview();
@@ -385,6 +398,7 @@ saveScreenBtn.addEventListener("click", async () => {
       rotate_interval_seconds: pendingRotateIntervalS,
       seekampf_enabled: pendingSeekampfEnabled,
       nasa_apod_enabled: pendingNasaApodEnabled,
+      coud_chart_enabled: pendingCoudChartEnabled,
       widget_rotate_interval_seconds: pendingWidgetRotateIntervalS,
       header_language: pendingHeaderLanguage
     })

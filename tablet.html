@@ -26,7 +26,11 @@
         hidden
       >
         <span class="widget-open-icon" aria-hidden="true">⚓</span>
-        <span>Seekampf</span>
+        <span class="widget-open-copy">
+          <span class="widget-open-label">Seekampf</span>
+          <span class="widget-open-action">Am Kiosk öffnen</span>
+        </span>
+        <span class="widget-open-arrow" aria-hidden="true">›</span>
       </button>
       <button
         class="widget-open"
@@ -36,9 +40,38 @@
         hidden
       >
         <span class="widget-open-icon" aria-hidden="true">✦</span>
-        <span>NASA Bild</span>
+        <span class="widget-open-copy">
+          <span class="widget-open-label">NASA Bild</span>
+          <span class="widget-open-action">Am Kiosk öffnen</span>
+        </span>
+        <span class="widget-open-arrow" aria-hidden="true">›</span>
+      </button>
+      <button
+        class="widget-open"
+        type="button"
+        data-kiosk-view="coud-chart"
+        aria-label="COUD Aktienchart auf dem Kiosk öffnen"
+        hidden
+      >
+        <span class="widget-open-icon" aria-hidden="true">↗</span>
+        <span class="widget-open-copy">
+          <span class="widget-open-label">COUD Chart</span>
+          <span class="widget-open-action">Am Kiosk öffnen</span>
+        </span>
+        <span class="widget-open-arrow" aria-hidden="true">›</span>
       </button>
     </aside>
+    <section id="coud-chart-controls" class="coud-chart-controls" aria-label="Zeitraum für COUD Aktienchart" hidden>
+      <p>Zeitraum</p>
+      <div class="coud-chart-range-list" role="group" aria-label="Chartzeitraum">
+        <button type="button" data-coud-chart-range="1D">1T</button>
+        <button type="button" data-coud-chart-range="1M">1M</button>
+        <button type="button" data-coud-chart-range="3M">3M</button>
+        <button type="button" data-coud-chart-range="12M">1J</button>
+        <button type="button" data-coud-chart-range="60M">5J</button>
+        <button type="button" data-coud-chart-range="ALL">Alle</button>
+      </div>
+    </section>
     <p id="selection-status" class="selection-status" role="status" aria-live="polite" hidden></p>
     </main>
 </body>

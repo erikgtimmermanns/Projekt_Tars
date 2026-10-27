@@ -2,6 +2,7 @@ import { supabase } from "../shared/supabase.js";
 import { subscribeKioskSettings } from "../shared/kiosk-settings.js";
 import {
     KIOSK_VIEW_ALLIANCE_COMPARISON,
+    getKioskViewAutoCloseDelay,
     setKioskViewSelection,
     subscribeKioskSelection
 } from "../shared/tablet-settings.js";
@@ -168,7 +169,24 @@ export function initSeekampfOverlay() {
     let isActive = false;
     let isPinned = false;
     let requestSequence = 0;
+    let autoCloseTimer = null;
     const elements = { status, statistics, alliances, pointGap, serverMetrics, updatedAt };
+
+    const clearAutoCloseTimer = () => {
+        if (autoCloseTimer !== null) window.clearTimeout(autoCloseTimer);
+        autoCloseTimer = null;
+    };
+
+    const scheduleAutoClose = (selection) => {
+        clearAutoCloseTimer();
+        if (!isActive) return;
+        autoCloseTimer = window.setTimeout(() => {
+            autoCloseTimer = null;
+            if (latestSelection.kioskView === KIOSK_VIEW_ALLIANCE_COMPARISON) {
+                void setKioskViewSelection(supabase, null);
+            }
+        }, getKioskViewAutoCloseDelay(selection.kioskViewAt));
+    };
 
     const loadStatistics = async (target = elements) => {
         const currentRequest = ++requestSequence;
@@ -209,8 +227,12 @@ export function initSeekampfOverlay() {
         if (isActive) {
             if (!dialog.open) dialog.showModal();
             if (!wasActive) void loadStatistics();
+            scheduleAutoClose(selection);
         } else if (dialog.open) {
+            clearAutoCloseTimer();
             dialog.close();
+        } else {
+            clearAutoCloseTimer();
         }
     };
 
@@ -236,12 +258,14 @@ export function initSeekampfOverlay() {
         if (!isActive) return;
         isActive = false;
         requestSequence++;
+        clearAutoCloseTimer();
         void setKioskViewSelection(supabase, null);
     });
 
     return () => {
         unsubscribe();
         unsubscribeSettings();
+        clearAutoCloseTimer();
         if (dialog.open) dialog.close();
     };
 }

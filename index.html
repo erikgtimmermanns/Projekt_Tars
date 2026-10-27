@@ -82,6 +82,11 @@
           </div>
         </div>
       </section>
+
+      <section class="coud-chart-panel kiosk-widget-card" id="coud-chart-panel" aria-label="COUD Aktienchart" hidden>
+        <p class="coud-chart-status" data-coud-chart-status role="status" aria-live="polite">COUD Aktienchart wird geladen ...</p>
+        <div class="coud-chart-frame" data-coud-chart-frame></div>
+      </section>
     </section>
 
     <section class="presentation-panel" id="presentation-panel" aria-label="Aktuelle Nachrichten">
@@ -239,6 +244,21 @@
                             </div>
                         </div>
                     </section>
+                </div>
+            </div>
+        </dialog>
+        <dialog id="coud-chart-dialog" class="coud-chart-dialog" aria-labelledby="coud-chart-dialog-title">
+            <div class="coud-chart-dialog-content">
+                <header class="coud-chart-dialog-header">
+                    <div>
+                        <p class="coud-chart-eyebrow">TradingView</p>
+                        <h2 id="coud-chart-dialog-title">COUD Aktienchart</h2>
+                    </div>
+                    <p class="coud-chart-dialog-hint">Zeitraum und Schließen am Tablet</p>
+                </header>
+                <div class="coud-chart-dialog-body">
+                    <p class="coud-chart-status" data-coud-chart-status role="status" aria-live="polite">COUD Aktienchart wird geladen ...</p>
+                    <div class="coud-chart-frame coud-chart-dialog-frame" data-coud-chart-frame></div>
                 </div>
             </div>
         </dialog>
