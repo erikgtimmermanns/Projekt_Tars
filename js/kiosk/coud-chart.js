@@ -1,60 +1,13 @@
-export const COUD_TRADINGVIEW_SCRIPT = "https://s3.tradingview.com/external-embedding/embed-widget-symbol-overview.js";
-
+// Der offizielle Symbol-Overview-Embed ist selbst ein iframe. Wir erzeugen ihn
+// direkt statt über TradingViews Loader-Skript: So bleibt seine Größe vollständig
+// an den sichtbaren Kiosk-Rahmen gebunden und ein fehlgeschlagener Script-Load
+// kann nicht mehr die gesamte Chartfläche leeren.
+const COUD_TRADINGVIEW_EMBED = "https://www.tradingview-widget.com/embed-widget/symbol-overview/?locale=en#";
 const MINIMUM_CHART_WIDTH = 280;
 const MINIMUM_CHART_HEIGHT = 180;
 
-export function renderCoudChart(target, range = "1D", { onError } = {}) {
-    if (!target) return;
-    const request = Number(target.dataset.coudRenderRequest || "0") + 1;
-    target.dataset.coudRenderRequest = String(request);
-    scheduleRender(target, { request, range, onError });
-}
-
-function scheduleRender(target, { request, range, onError }) {
-    let attempts = 0;
-    const waitForVisibleFrame = () => {
-        if (String(request) !== target.dataset.coudRenderRequest || !target.isConnected) return;
-        const { width, height } = target.getBoundingClientRect();
-        if (width < MINIMUM_CHART_WIDTH || height < MINIMUM_CHART_HEIGHT) {
-            if (++attempts < 120) window.requestAnimationFrame(waitForVisibleFrame);
-            else onError?.();
-            return;
-        }
-        // Der Dialog/Grid-Layout muss zwei Browserframes lang sichtbar sein,
-        // bevor TradingViews autosize den iframe mit der finalen Höhe erzeugt.
-        window.requestAnimationFrame(() => window.requestAnimationFrame(() => {
-            if (String(request) !== target.dataset.coudRenderRequest || !target.isConnected) return;
-            mountChart(target, { range, onError }, width, height);
-        }));
-    };
-    window.requestAnimationFrame(waitForVisibleFrame);
-}
-
-function mountChart(target, { range, onError }, width, height) {
-
-    const container = document.createElement("div");
-    container.className = "tradingview-widget-container coud-tradingview-container";
-
-    const chart = document.createElement("div");
-    chart.className = "tradingview-widget-container__widget";
-
-    const copyright = document.createElement("div");
-    copyright.className = "tradingview-widget-copyright coud-chart-copyright";
-    const link = document.createElement("a");
-    link.href = "https://www.tradingview.com/symbols/GETTEX-COUD/";
-    link.target = "_blank";
-    link.rel = "noopener nofollow";
-    link.textContent = "COUD stock price";
-    copyright.append(link, document.createTextNode(" by TradingView"));
-
-    const script = document.createElement("script");
-    script.type = "text/javascript";
-    script.src = COUD_TRADINGVIEW_SCRIPT;
-    script.async = true;
-    script.addEventListener("error", () => onError?.());
-    // Der iframe-Embed übernimmt diese Konfiguration beim Einfügen des Scripts.
-    // Bei einem Zeitraumwechsel wird gezielt ein neuer Container erzeugt.
-    script.textContent = JSON.stringify({
+function buildConfig(range) {
+    return {
         lineWidth: 2,
         lineType: 0,
         chartType: "area",
@@ -83,23 +36,54 @@ function mountChart(target, { range, onError }, width, height) {
         dateRanges: ["1d|1", "1m|30", "3m|60", "12m|1D", "60m|1W", "all|1M"],
         fontSize: "10",
         headerFontSize: "medium",
-        // TradingViews Symbol-Overview-Widget reagiert in verschachtelten
-        // Grid-/Dialog-Flächen nicht verlässlich auf 100%-Höhen. Die finale,
-        // sichtbare Rahmengröße wird daher explizit übergeben.
-        autosize: false,
-        width: String(Math.floor(width)),
-        height: String(Math.max(160, Math.floor(height - 24))),
+        autosize: true,
+        width: "100%",
+        height: "100%",
         noTimeScale: false,
-        // Das Tablet ist die einzige Steuerung für den Zeitraum.
         hideDateRanges: true,
         hideMarketStatus: false,
         hideSymbolLogo: false
-    });
+    };
+}
 
-    container.append(chart, copyright);
-    target.replaceChildren(container);
-    // Externe Scripts müssen erst nach dem Einfügen des Containers ins
-    // Dokument angehängt werden. Andernfalls wird der iframe-Embed je nach
-    // Browser nicht initialisiert.
-    container.append(script);
+export function renderCoudChart(target, range = "1D", { onError } = {}) {
+    if (!target) return;
+    const request = Number(target.dataset.coudRenderRequest || "0") + 1;
+    target.dataset.coudRenderRequest = String(request);
+    let attempts = 0;
+
+    const mountWhenVisible = () => {
+        if (String(request) !== target.dataset.coudRenderRequest || !target.isConnected) return;
+        const { width, height } = target.getBoundingClientRect();
+        if (width < MINIMUM_CHART_WIDTH || height < MINIMUM_CHART_HEIGHT) {
+            if (++attempts < 120) window.requestAnimationFrame(mountWhenVisible);
+            else onError?.();
+            return;
+        }
+
+        const frame = document.createElement("iframe");
+        frame.className = "coud-tradingview-embed";
+        frame.title = "COUD Aktienchart von TradingView";
+        frame.src = `${COUD_TRADINGVIEW_EMBED}${encodeURIComponent(JSON.stringify(buildConfig(range)))}`;
+        frame.loading = "eager";
+        frame.referrerPolicy = "strict-origin-when-cross-origin";
+        frame.setAttribute("allowtransparency", "true");
+        const container = document.createElement("div");
+        container.className = "coud-direct-embed-container";
+        const copyright = document.createElement("div");
+        copyright.className = "coud-chart-copyright";
+        const link = document.createElement("a");
+        link.href = "https://www.tradingview.com/symbols/GETTEX-COUD/";
+        link.target = "_blank";
+        link.rel = "noopener nofollow";
+        link.textContent = "COUD stock price";
+        copyright.append(link, document.createTextNode(" by TradingView"));
+        container.append(frame, copyright);
+        // Ein iframe-Load bestätigt nur das äußere Widget-Dokument; ein Fehler
+        // im fremden Börseninhalt soll die Kioskfläche daher nicht ausblenden.
+        target.replaceChildren(container);
+    };
+
+    // Das Ziel kann unmittelbar nach dialog.showModal() noch die Größe 0 haben.
+    window.requestAnimationFrame(() => window.requestAnimationFrame(mountWhenVisible));
 }
