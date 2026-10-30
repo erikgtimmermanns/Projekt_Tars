@@ -8,45 +8,13 @@ import { renderCoudChart } from "./coud-chart.js";
 const WIDGET_SEEKAMPF = "seekampf";
 const WIDGET_NASA_APOD = "nasa-apod";
 const WIDGET_COUD_CHART = "coud-chart";
-const EXPLANATION_SCROLL_SPEED_PX_PER_SECOND = 8;
-const EXPLANATION_SCROLL_START_DELAY_MS = 5000;
-const EXPLANATION_SCROLL_END_PAUSE_MS = 6000;
-const explanationScrollFrames = new WeakMap();
+const APOD_EXCERPT_MAX_LENGTH = 280;
 
-function stopExplanationScroll(element) {
-    const frame = explanationScrollFrames.get(element);
-    if (frame) window.cancelAnimationFrame(frame);
-    explanationScrollFrames.delete(element);
-}
-
-function startExplanationScroll(element) {
-    if (!element || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
-    stopExplanationScroll(element);
-    element.scrollTop = 0;
-
-    window.requestAnimationFrame(() => {
-        const maxScrollTop = element.scrollHeight - element.clientHeight;
-        if (maxScrollTop <= 1) return;
-
-        const scrollingDurationMs = maxScrollTop / EXPLANATION_SCROLL_SPEED_PX_PER_SECOND * 1000;
-        const cycleDurationMs = EXPLANATION_SCROLL_START_DELAY_MS
-            + scrollingDurationMs
-            + EXPLANATION_SCROLL_END_PAUSE_MS;
-        const startedAt = performance.now();
-        const tick = (now) => {
-            const elapsed = (now - startedAt) % cycleDurationMs;
-            if (elapsed <= EXPLANATION_SCROLL_START_DELAY_MS) {
-                element.scrollTop = 0;
-            } else if (elapsed <= EXPLANATION_SCROLL_START_DELAY_MS + scrollingDurationMs) {
-                element.scrollTop = (elapsed - EXPLANATION_SCROLL_START_DELAY_MS)
-                    / scrollingDurationMs * maxScrollTop;
-            } else {
-                element.scrollTop = maxScrollTop;
-            }
-            explanationScrollFrames.set(element, window.requestAnimationFrame(tick));
-        };
-        explanationScrollFrames.set(element, window.requestAnimationFrame(tick));
-    });
+function excerpt(value) {
+    const text = String(value || "").replace(/\s+/g, " ").trim();
+    if (text.length <= APOD_EXCERPT_MAX_LENGTH) return text;
+    const boundary = text.lastIndexOf(" ", APOD_EXCERPT_MAX_LENGTH);
+    return `${text.slice(0, boundary > 160 ? boundary : APOD_EXCERPT_MAX_LENGTH).trimEnd()} …`;
 }
 
 function formatApodDate(value) {
@@ -59,6 +27,7 @@ function renderApod(panel, data) {
     const image = panel.querySelector("[data-apod-image]");
     const title = panel.querySelector("[data-apod-title]");
     const explanation = panel.querySelector("[data-apod-explanation]");
+    const tabletHint = panel.querySelector("[data-apod-tablet-hint]");
     const meta = panel.querySelector("[data-apod-meta]");
     const status = panel.querySelector("[data-apod-status]");
     const content = panel.querySelector(".nasa-apod-content");
@@ -67,8 +36,9 @@ function renderApod(panel, data) {
     image.src = data.imageUrl;
     image.alt = data.alt || data.title || "NASA Astronomy Picture of the Day";
     title.textContent = data.title || "NASA Picture of the Day";
-    explanation.textContent = String(data.explanation || "").replace(/\s+/g, " ").trim();
-    startExplanationScroll(explanation);
+    const fullExplanation = String(data.explanation || "").replace(/\s+/g, " ").trim();
+    explanation.textContent = excerpt(fullExplanation);
+    if (tabletHint) tabletHint.hidden = !fullExplanation;
     const credit = data.copyright || data.credit;
     meta.textContent = [formatApodDate(data.date), credit ? `© ${credit}` : "NASA"].filter(Boolean).join(" · ");
     content.hidden = false;
@@ -116,11 +86,6 @@ export function initKioskWidgets() {
         apodPanel.hidden = active !== WIDGET_NASA_APOD;
         coudPanel.hidden = active !== WIDGET_COUD_CHART;
         panel.hidden = !active;
-        if (active === WIDGET_NASA_APOD) {
-            startExplanationScroll(apodPanel.querySelector("[data-apod-explanation]"));
-        } else {
-            stopExplanationScroll(apodPanel.querySelector("[data-apod-explanation]"));
-        }
         if (active === WIDGET_COUD_CHART) renderCoudWidget();
         setWidgetLayoutState(Boolean(active));
     };
