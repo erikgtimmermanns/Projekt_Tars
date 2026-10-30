@@ -265,6 +265,14 @@ body.time-night .screen::before {
     min-height: 0;
 }
 
+/* Das von TradingView erzeugte iframe erhält sonst beim Öffnen eines Dialogs
+   gelegentlich nur seine anfängliche, sehr kleine Höhe. */
+.coud-chart-frame .tradingview-widget-container__widget iframe {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+}
+
 .coud-chart-copyright {
     padding: 4px 8px 0;
     color: #9da7b3;
