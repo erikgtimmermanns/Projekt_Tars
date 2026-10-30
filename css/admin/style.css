@@ -626,8 +626,10 @@ a {
 .overlay-workspace-hint { margin: 0; color: var(--muted); font-size: 0.75rem; text-align: right; }
 
 .overlay-canvas {
-    aspect-ratio: 16 / 9;
-    min-height: 330px;
+    width: min(100%, 500px);
+    aspect-ratio: 9 / 16;
+    min-height: 650px;
+    margin-inline: auto;
     overflow: hidden;
     border: 1px solid #b8d4e9;
     border-radius: 14px;
@@ -726,8 +728,8 @@ a {
 .overlay-preview-switch button[aria-pressed="true"] { background: #fff; color: var(--primary); box-shadow: 0 1px 4px rgba(23, 50, 77, 0.12); }
 
 .overlay-device-preview {
-    width: min(100%, 1024px);
-    aspect-ratio: 16 / 9;
+    width: min(100%, 500px);
+    aspect-ratio: 9 / 16;
     justify-self: center;
     overflow: hidden;
     border: 8px solid #1b3041;
@@ -737,7 +739,7 @@ a {
     transition: width 180ms ease;
 }
 
-.overlay-device-preview[data-preview-scale="tablet"] { width: min(100%, 640px); }
+.overlay-device-preview[data-preview-scale="tablet"] { width: min(100%, 360px); }
 .overlay-device-preview .visitor-overlay-grid { display: grid; width: 100%; height: 100%; grid-template-columns: repeat(12, minmax(0, 1fr)); grid-template-rows: repeat(12, minmax(0, 1fr)); gap: 5px; padding: 12px; }
 .overlay-device-preview .visitor-overlay-block { display: grid; min-width: 0; min-height: 0; place-items: center; overflow: hidden; border: 1px solid #d7e2ea; border-radius: 8px; background: #fff; color: #78838d; font-size: 10px; font-weight: 700; text-transform: uppercase; }
 .overlay-device-preview .visitor-overlay-block img, .overlay-device-preview .visitor-overlay-block iframe { width: 100%; height: 100%; border: 0; object-fit: contain; }
@@ -777,7 +779,7 @@ a {
     .overlay-palette { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .overlay-palette h4,
     .overlay-palette p { grid-column: 1 / -1; }
-    .overlay-canvas { min-height: 250px; }
+    .overlay-canvas { min-height: 520px; }
     .overlay-heading, .overlay-kiosk-preview-head, .overlay-workspace-head { align-items: flex-start; flex-direction: column; }
     .overlay-history-actions { flex-wrap: wrap; }
     .overlay-workspace-hint { text-align: left; }

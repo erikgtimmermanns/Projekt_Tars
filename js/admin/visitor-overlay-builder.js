@@ -73,7 +73,7 @@ export function initVisitorOverlayBuilder() {
         const contentControl = block.type === "text"
             ? `<label>Text<textarea data-overlay-property="text" rows="4">${escapeHtml(block.text)}</textarea></label>`
             : (block.type === "image" || block.type === "video")
-                ? `<label>${block.type === "image" ? "Bild" : "Einbettungs"}-URL<input data-overlay-property="src" type="url" value="${escapeHtml(block.src)}" placeholder="https://…"></label><label>Beschreibung / Titel<input data-overlay-property="text" value="${escapeHtml(block.text)}"></label>`
+                ? `<label>${block.type === "image" ? "Bild" : "Einbettungs"}-URL<input data-overlay-property="src" type="url" value="${escapeHtml(block.src)}" placeholder="https://…"></label>${block.type === "video" ? '<p class="field-hint">YouTube- und Vimeo-Seitenlinks werden automatisch in Embed-URLs umgewandelt. Andere Anbieter müssen Einbettung erlauben.</p>' : ""}<label>Beschreibung / Titel<input data-overlay-property="text" value="${escapeHtml(block.text)}"></label>`
                 : `<p class="field-hint">Der Inhalt wird beim Tablet-Aufruf automatisch aus dem gewählten Besucherprofil befüllt.</p>`;
         properties.innerHTML = `
           <div class="overlay-property-title"><div><span>Ausgewählter Baustein</span><strong>${BLOCK_LABELS[block.type]}</strong></div><div><button type="button" class="icon-btn" data-overlay-action="duplicate" title="Duplizieren" aria-label="Duplizieren">⧉</button><button type="button" class="icon-btn is-danger" data-overlay-action="delete" title="Entfernen" aria-label="Entfernen">×</button></div></div>

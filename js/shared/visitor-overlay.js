@@ -29,11 +29,41 @@ function safeMediaUrl(value, type) {
     if (!url) return "";
     try {
         const parsed = new URL(url, window.location.origin);
-        if (parsed.protocol === "https:") return parsed.href;
+        if (parsed.protocol === "https:") return type === "video" ? normalizeVideoEmbedUrl(parsed) : parsed.href;
         return type === "image" && parsed.protocol === "data:" ? parsed.href : "";
     } catch {
         return "";
     }
+}
+
+// Redakteure kopieren häufig eine YouTube-/Vimeo-Seiten-URL statt der technischen
+// Embed-URL. Die bekannten Formate werden deshalb beim Laden und Speichern
+// verlustfrei in eine einbettbare Adresse überführt. Andere HTTPS-Embed-Anbieter
+// bleiben unverändert.
+function normalizeVideoEmbedUrl(url) {
+    const host = url.hostname.toLowerCase().replace(/^www\./, "");
+    if (host === "youtu.be") {
+        const id = url.pathname.split("/").filter(Boolean)[0];
+        return id ? `https://www.youtube.com/embed/${encodeURIComponent(id)}${url.search}` : url.href;
+    }
+    if (host === "youtube.com" || host === "m.youtube.com") {
+        if (url.pathname === "/watch" && url.searchParams.get("v")) {
+            const id = url.searchParams.get("v");
+            const parameters = new URLSearchParams(url.search);
+            parameters.delete("v");
+            const query = parameters.toString();
+            return `https://www.youtube.com/embed/${encodeURIComponent(id)}${query ? `?${query}` : ""}`;
+        }
+        if (/^\/shorts\//.test(url.pathname)) {
+            const id = url.pathname.split("/").filter(Boolean)[1];
+            return id ? `https://www.youtube.com/embed/${encodeURIComponent(id)}${url.search}` : url.href;
+        }
+    }
+    if (host === "vimeo.com") {
+        const id = url.pathname.split("/").filter(Boolean)[0];
+        return /^\d+$/.test(id || "") ? `https://player.vimeo.com/video/${id}${url.search}` : url.href;
+    }
+    return url.href;
 }
 
 export function normalizeVisitorOverlayLayout(value) {
