@@ -23,14 +23,24 @@ Unterstützte Blöcke des ersten Ausbaus:
 - `image` – Bild-URL oder hochgeladenes Bild
 - `video` – explizit eingebettete HTTPS-URL
 
-## Umsetzungsphasen
+## Umgesetzt
 
-1. **Fundament (dieser Schnitt):** Migration, RLS/Realtimes, gemeinsamer
-   Renderer, Admin-Baukasten mit Drag & Drop und Live-Vorschau.
-2. **Editor-Komfort:** Raster-Snapping, Größenänderung, Undo/Redo, Duplizieren,
-   Vorlagen und Medienbibliothek.
-3. **Betrieb:** Entwürfe/Veröffentlichen, Versionshistorie mit Rücksetzen,
-   Rechte für Redakteure sowie Telemetrie für fehlerhafte Medien.
+- Admin-Arbeitsfläche über die volle Breite statt einer eingequetschten
+  Unteransicht neben einer leeren Vorschau.
+- Drag & Drop, Raster-Snapping, Auswahl, Größenänderung, Duplizieren sowie
+  Undo/Redo (auch über Strg/Cmd+Z und Strg/Cmd+Y).
+- Echte Kiosk-Vorschau mit Display-/Tablet-Größe und Musterbesucher.
+- Bild-Upload und Medienbibliothek für bereits hochgeladene Overlay-Bilder.
+- Getrennte Entwurfs- und veröffentlichte Vorlage. Der Kiosk liest nur die
+  veröffentlichte Version; Entwürfe können gefahrlos gespeichert werden.
+- Versionshistorie: Jede Veröffentlichung wird gespeichert; alte Versionen
+  lassen sich zunächst als Entwurf wiederherstellen.
+
+Die vorhandene Authentifizierung bleibt bewusst das Berechtigungsmodell:
+angemeldete Admins dürfen das Overlay bearbeiten, wie sie auch Besucher und
+Kiosk-Einstellungen bearbeiten. Eine separate Rollenverwaltung würde eine
+übergreifende Benutzerverwaltung erfordern und ist kein stillschweigend
+hinzugefügtes Sicherheitsmodell.
 
 ## Realtime-Ablauf
 

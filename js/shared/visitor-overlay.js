@@ -75,6 +75,25 @@ export async function fetchVisitorOverlayLayout(supabase) {
     return normalizeVisitorOverlayLayout(data?.layout || DEFAULT_VISITOR_OVERLAY_LAYOUT);
 }
 
+export async function fetchVisitorOverlayConfiguration(supabase) {
+    if (!supabase) {
+        const fallback = normalizeVisitorOverlayLayout(DEFAULT_VISITOR_OVERLAY_LAYOUT);
+        return { publishedLayout: fallback, draftLayout: fallback, updatedAt: null };
+    }
+    const { data, error } = await supabase
+        .from(VISITOR_OVERLAY_TABLE)
+        .select("layout, draft_layout, updated_at")
+        .eq("kiosk_settings_id", VISITOR_OVERLAY_CONFIG_ID)
+        .maybeSingle();
+    if (error) throw error;
+    const publishedLayout = normalizeVisitorOverlayLayout(data?.layout || DEFAULT_VISITOR_OVERLAY_LAYOUT);
+    return {
+        publishedLayout,
+        draftLayout: normalizeVisitorOverlayLayout(data?.draft_layout || publishedLayout),
+        updatedAt: data?.updated_at || null
+    };
+}
+
 export function subscribeVisitorOverlayLayout(supabase, onChange) {
     if (!supabase) return () => {};
     const channel = supabase

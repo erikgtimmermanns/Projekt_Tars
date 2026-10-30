@@ -37,6 +37,7 @@ const konfigOverlaybtn = document.getElementById("konfigOverlaybtn");
 const visitorConfigView = document.getElementById("visitorConfigView");
 const screenConfigView = document.getElementById("screenConfigView");
 const overlayConfigView = document.getElementById("overlayConfigView");
+const adminGrid = document.querySelector(".admin-grid");
 const modeRadios = document.querySelectorAll('input[name="displayMode"]');
 const screenConfigMessage = document.getElementById("screenConfigMessage");
 const saveScreenBtn = document.getElementById("saveScreenBtn");
@@ -307,6 +308,7 @@ function fitPreviewStage() {
 // Styling gespiegelt: der Button der GERADE NICHT aktiven Ansicht ist auffälliger (primary),
 // der Button der aktiven Ansicht ist unauffälliger (secondary) — lädt zum Wechseln ein.
 function showVisitorConfig() {
+  adminGrid?.classList.remove("admin-grid--overlay-active");
   visitorConfigView.hidden = false;
   screenConfigView.hidden = true;
   overlayConfigView.hidden = true;
@@ -320,6 +322,7 @@ function showVisitorConfig() {
 }
 
 function showScreenConfig() {
+  adminGrid?.classList.remove("admin-grid--overlay-active");
   visitorConfigView.hidden = true;
   screenConfigView.hidden = false;
   overlayConfigView.hidden = true;
@@ -330,6 +333,7 @@ function showScreenConfig() {
 }
 
 function showOverlayConfig() {
+  adminGrid?.classList.add("admin-grid--overlay-active");
   visitorConfigView.hidden = true;
   screenConfigView.hidden = true;
   overlayConfigView.hidden = false;
