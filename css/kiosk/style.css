@@ -434,10 +434,9 @@ body.time-night .screen::before {
     height: 100vh;
     height: 100dvh;
     display: grid;
-    align-content: start;
-    justify-items: center;
-    padding: clamp(16px, 2.5vw, 40px);
-    overflow: auto;
+    place-items: center;
+    padding: 16px;
+    overflow: hidden;
     background: #f0f2f4;
 }
 
@@ -446,73 +445,22 @@ body.time-night .screen::before {
 }
 
 #visitor-welcome-card {
-    width: min(100%, 1720px);
-    min-height: 100%;
+    width: min(100%, 1080px);
+    aspect-ratio: 9 / 16;
+    min-height: 0;
     min-width: 0;
-    padding: clamp(20px, 3vw, 48px);
+    overflow: hidden;
+    padding: 0;
     border: 1px solid #d9dee4;
     border-radius: 24px;
     background: linear-gradient(145deg, #fff 0%, #fafbfc 100%);
     box-shadow: 0 18px 60px rgba(25, 39, 52, 0.12), inset 0 1px 0 #fff;
 }
 
-.visitor-overlay-grid {
-    display: grid;
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-    grid-template-rows: repeat(12, minmax(48px, 1fr));
-    gap: clamp(10px, 1.2vw, 20px);
-    min-height: calc(100dvh - clamp(72px, 8vw, 144px));
-}
-
-.visitor-overlay-block {
-    display: grid;
-    place-items: center;
-    min-width: 0;
-    min-height: 0;
-    overflow: hidden;
-    border-radius: 12px;
-    border: 1px solid #e4e8ec;
-    background: #fff;
-    color: #78838d;
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-}
-
-.visitor-overlay-block img,
-.visitor-overlay-block iframe {
-    width: 100%;
-    height: 100%;
-    border: 0;
-    object-fit: contain;
-}
-
-.visitor-overlay-block--video {
-    background: #101820;
-}
-
-.visitor-overlay-text {
-    width: 100%;
-    margin: 0;
-    color: #263746;
-    font-size: clamp(22px, 2vw, 42px);
-    font-weight: 500;
-    line-height: 1.15;
-    overflow-wrap: anywhere;
-    text-align: center;
-}
-
-.visitor-overlay-text--large { font-size: clamp(28px, 2.8vw, 56px); }
-.visitor-overlay-text--hero { color: #075e9f; font-size: clamp(40px, 4.5vw, 88px); font-weight: 700; }
-
 @media (max-width: 760px) {
     #visitor-welcome-card {
-        padding: 16px;
         border-radius: 18px;
     }
-
-    .visitor-overlay-grid { gap: 8px; min-height: calc(100dvh - 64px); }
 
 }
 

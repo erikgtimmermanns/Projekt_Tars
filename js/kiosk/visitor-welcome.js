@@ -1,6 +1,6 @@
 import { supabase } from "../shared/supabase.js";
 import { subscribeKioskSelection, setKioskSelection } from "../shared/tablet-settings.js";
-import { DEFAULT_VISITOR_OVERLAY_LAYOUT, fetchVisitorOverlayLayout, renderVisitorOverlay, subscribeVisitorOverlayLayout } from "../shared/visitor-overlay.js";
+import { DEFAULT_VISITOR_OVERLAY_LAYOUT, fetchVisitorOverlayLayout, fetchVisitorOverlayLayoutForVisitor, renderVisitorOverlay, subscribeVisitorOverlayAssignments, subscribeVisitorOverlayLayout } from "../shared/visitor-overlay.js";
 
 const WELCOME_TIMEOUT_MS = 60 * 1000;
 
@@ -11,7 +11,23 @@ let visitorsLoaded = false;
 let selectedVisitorId = null;
 let selectedAt = null;
 let timeout = null;
+let globalOverlayLayout = DEFAULT_VISITOR_OVERLAY_LAYOUT;
 let overlayLayout = DEFAULT_VISITOR_OVERLAY_LAYOUT;
+let overlayLayoutRequest = 0;
+
+async function refreshOverlayForSelectedVisitor() {
+    const visitorId = selectedVisitorId;
+    const request = ++overlayLayoutRequest;
+    if (!visitorId) {
+        overlayLayout = globalOverlayLayout;
+        renderWelcome();
+        return;
+    }
+    const layout = await fetchVisitorOverlayLayoutForVisitor(supabase, visitorId, globalOverlayLayout);
+    if (request !== overlayLayoutRequest || visitorId !== selectedVisitorId) return;
+    overlayLayout = layout;
+    renderWelcome();
+}
 
 function renderWelcome() {
     if (!overlay || !card) return;
@@ -31,6 +47,7 @@ function applySelection(selection) {
     selectedVisitorId = selection.visitorId;
     selectedAt = selection.selectedAt;
     renderWelcome();
+    void refreshOverlayForSelectedVisitor();
 
     if (!selectedVisitorId) return;
 
@@ -79,18 +96,22 @@ export function initVisitorWelcome() {
 
     void fetchVisitorOverlayLayout(supabase)
         .then((layout) => {
-            overlayLayout = layout;
-            renderWelcome();
+            globalOverlayLayout = layout;
+            void refreshOverlayForSelectedVisitor();
         })
         .catch((error) => console.warn("Besucher-Overlay konnte nicht geladen werden:", error.message || error));
     const unsubscribeSelection = subscribeKioskSelection(supabase, applySelection);
     const unsubscribeOverlay = subscribeVisitorOverlayLayout(supabase, (layout) => {
-        overlayLayout = layout;
-        renderWelcome();
+        globalOverlayLayout = layout;
+        void refreshOverlayForSelectedVisitor();
+    });
+    const unsubscribeAssignments = subscribeVisitorOverlayAssignments(supabase, ({ visitorId }) => {
+        if (visitorId === selectedVisitorId) void refreshOverlayForSelectedVisitor();
     });
     return () => {
         unsubscribeSelection();
         unsubscribeOverlay();
+        unsubscribeAssignments();
         window.clearTimeout(timeout);
     };
 }

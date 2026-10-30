@@ -33,6 +33,9 @@ Unterstützte Blöcke des ersten Ausbaus:
 - Bild-Upload und Medienbibliothek für bereits hochgeladene Overlay-Bilder.
 - Getrennte Entwurfs- und veröffentlichte Vorlage. Der Kiosk liest nur die
   veröffentlichte Version; Entwürfe können gefahrlos gespeichert werden.
+- Wahl zwischen globalem Standardoverlay und einem bestimmten Besucher. Eine
+  Besucherzuordnung übersteuert das Standardlayout nur für diesen Besucher;
+  ohne Zuordnung bleibt der globale Stand aktiv.
 - Versionshistorie: Jede Veröffentlichung wird gespeichert; alte Versionen
   lassen sich zunächst als Entwurf wiederherstellen.
 

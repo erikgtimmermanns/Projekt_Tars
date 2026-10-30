@@ -1,5 +1,5 @@
-import { bucketName, configIsReady, supabase } from "../shared/supabase.js";
-import { DEFAULT_VISITOR_OVERLAY_LAYOUT, fetchVisitorOverlayConfiguration, normalizeVisitorOverlayLayout, renderVisitorOverlay, VISITOR_OVERLAY_CONFIG_ID, VISITOR_OVERLAY_TABLE } from "../shared/visitor-overlay.js";
+import { bucketName, configIsReady, supabase, tableName } from "../shared/supabase.js";
+import { DEFAULT_VISITOR_OVERLAY_LAYOUT, fetchVisitorOverlayConfiguration, normalizeVisitorOverlayLayout, renderVisitorOverlay, VISITOR_OVERLAY_ASSIGNMENTS_TABLE, VISITOR_OVERLAY_CONFIG_ID, VISITOR_OVERLAY_TABLE } from "../shared/visitor-overlay.js";
 
 const REVISION_TABLE = "visitor_overlay_revisions";
 const sampleVisitor = { name: "Musterfirma GmbH", imageUrl: "" };
@@ -44,8 +44,10 @@ export function initVisitorOverlayBuilder() {
     const resetButton = document.getElementById("resetOverlayBtn");
     const undoButton = document.getElementById("undoOverlayBtn");
     const redoButton = document.getElementById("redoOverlayBtn");
+    const visitorSelect = document.getElementById("overlayVisitorSelect");
+    const unassignButton = document.getElementById("unassignOverlayBtn");
     const revisionList = document.getElementById("overlayRevisionList");
-    if (!canvas || !preview || !palette || !properties || !message || !saveButton || !publishButton || !resetButton || !undoButton || !redoButton || !revisionList) return { load: async () => {} };
+    if (!canvas || !preview || !palette || !properties || !message || !saveButton || !publishButton || !resetButton || !undoButton || !redoButton || !visitorSelect || !unassignButton || !revisionList) return { load: async () => {} };
 
     let layout = normalizeVisitorOverlayLayout(DEFAULT_VISITOR_OVERLAY_LAYOUT);
     let publishedLayout = layout;
@@ -55,6 +57,9 @@ export function initVisitorOverlayBuilder() {
     let redoStack = [];
     let revisions = [];
     let loaded = false;
+    let editingVisitorId = null;
+    let hasSpecificAssignment = false;
+    let globalPublishedLayout = layout;
 
     const showMessage = (type, text) => { message.className = `notice-box ${type}`; message.textContent = text; };
     const currentBlock = () => layout.blocks.find((block) => block.id === selectedId) || null;
@@ -115,6 +120,7 @@ export function initVisitorOverlayBuilder() {
         renderVisitorOverlay(canvas, layout, sampleVisitor);
         renderVisitorOverlay(preview, layout, sampleVisitor);
         preview.classList.toggle("has-draft", hasDraftChanges());
+        unassignButton.hidden = !editingVisitorId || !hasSpecificAssignment;
         canvas.querySelectorAll("[data-overlay-block-id]").forEach((element) => {
             const block = layout.blocks.find((item) => item.id === element.dataset.overlayBlockId);
             element.classList.toggle("is-selected", element.dataset.overlayBlockId === selectedId);
@@ -174,10 +180,59 @@ export function initVisitorOverlayBuilder() {
     }
 
     async function loadRevisions() {
-        const { data, error } = await supabase.from(REVISION_TABLE).select("id, layout, label, created_at").eq("kiosk_settings_id", VISITOR_OVERLAY_CONFIG_ID).order("created_at", { ascending: false }).limit(12);
+        let query = supabase.from(REVISION_TABLE).select("id, layout, label, created_at").eq("kiosk_settings_id", VISITOR_OVERLAY_CONFIG_ID);
+        query = editingVisitorId ? query.eq("visitor_id", editingVisitorId) : query.is("visitor_id", null);
+        const { data, error } = await query.order("created_at", { ascending: false }).limit(12);
         if (error) throw error;
         revisions = data || [];
         renderRevisions();
+    }
+
+    async function loadVisitors() {
+        const selectedValue = visitorSelect.value;
+        const { data, error } = await supabase.from(tableName).select("id, visitor_name, image_url").order("visitor_name", { ascending: true });
+        if (error) throw error;
+        visitorSelect.replaceChildren(new Option("Globales Standardoverlay", ""));
+        (data || []).forEach((visitor) => {
+            const option = new Option(visitor.visitor_name || "Unbenannter Besucher", String(visitor.id));
+            option.dataset.visitorName = visitor.visitor_name || "Besucher";
+            option.dataset.visitorImageUrl = visitor.image_url || "";
+            visitorSelect.append(option);
+        });
+        visitorSelect.value = Array.from(visitorSelect.options).some((option) => option.value === selectedValue) ? selectedValue : "";
+    }
+
+    function setPreviewVisitorName() {
+        const option = visitorSelect.selectedOptions[0];
+        sampleVisitor.name = editingVisitorId ? (option?.dataset.visitorName || option?.textContent || "Besucher") : "Musterfirma GmbH";
+        sampleVisitor.imageUrl = editingVisitorId ? (option?.dataset.visitorImageUrl || "") : "";
+    }
+
+    async function loadTarget() {
+        editingVisitorId = visitorSelect.value || null;
+        setPreviewVisitorName();
+        const config = await fetchVisitorOverlayConfiguration(supabase);
+        globalPublishedLayout = config.publishedLayout;
+        if (!editingVisitorId) {
+            layout = config.draftLayout;
+            publishedLayout = config.publishedLayout;
+            hasSpecificAssignment = false;
+        } else {
+            const { data, error } = await supabase
+                .from(VISITOR_OVERLAY_ASSIGNMENTS_TABLE)
+                .select("draft_layout, published_layout")
+                .eq("visitor_id", editingVisitorId)
+                .maybeSingle();
+            if (error) throw error;
+            hasSpecificAssignment = Boolean(data);
+            publishedLayout = normalizeVisitorOverlayLayout(data?.published_layout || globalPublishedLayout);
+            layout = normalizeVisitorOverlayLayout(data?.draft_layout || publishedLayout);
+        }
+        selectedId = null;
+        undoStack = [];
+        redoStack = [];
+        render();
+        await loadRevisions();
     }
 
     palette.addEventListener("dragstart", (event) => {
@@ -221,13 +276,22 @@ export function initVisitorOverlayBuilder() {
         preview.dataset.previewScale = button.dataset.previewScale;
         document.querySelectorAll("[data-preview-scale]").forEach((item) => item.setAttribute("aria-pressed", String(item === button)));
     }));
+    visitorSelect.addEventListener("change", () => {
+        if (!loaded) return;
+        void loadTarget().catch((error) => showMessage("error", error.message || "Besucher-Overlay konnte nicht geladen werden."));
+    });
     saveButton.addEventListener("click", async () => {
         if (!configIsReady || !supabase) return showMessage("error", "Supabase ist noch nicht konfiguriert.");
         saveButton.disabled = true;
         try {
-            const { error } = await supabase.from(VISITOR_OVERLAY_TABLE).update({ draft_layout: normalizeVisitorOverlayLayout(layout) }).eq("kiosk_settings_id", VISITOR_OVERLAY_CONFIG_ID);
+            const nextLayout = normalizeVisitorOverlayLayout(layout);
+            const { error } = editingVisitorId
+                ? await supabase.from(VISITOR_OVERLAY_ASSIGNMENTS_TABLE).upsert({ visitor_id: editingVisitorId, draft_layout: nextLayout }, { onConflict: "visitor_id" })
+                : await supabase.from(VISITOR_OVERLAY_TABLE).update({ draft_layout: nextLayout }).eq("kiosk_settings_id", VISITOR_OVERLAY_CONFIG_ID);
             if (error) throw error;
-            showMessage("success", "Entwurf gespeichert. Der Kiosk zeigt weiterhin die veröffentlichte Version.");
+            hasSpecificAssignment = hasSpecificAssignment || Boolean(editingVisitorId);
+            render();
+            showMessage("success", editingVisitorId ? "Besucher-Entwurf gespeichert. Der Kiosk zeigt weiterhin die veröffentlichte Version." : "Entwurf gespeichert. Der Kiosk zeigt weiterhin die veröffentlichte Version.");
         } catch (error) { showMessage("error", error.message || "Entwurf konnte nicht gespeichert werden."); }
         finally { saveButton.disabled = false; }
     });
@@ -236,29 +300,38 @@ export function initVisitorOverlayBuilder() {
         publishButton.disabled = true;
         try {
             const label = `Veröffentlicht am ${new Intl.DateTimeFormat("de-DE", { dateStyle: "short", timeStyle: "short" }).format(new Date())}`;
-            const { error } = await supabase.rpc("publish_visitor_overlay", { p_layout: normalizeVisitorOverlayLayout(layout), p_label: label });
+            const { error } = editingVisitorId
+                ? await supabase.rpc("publish_visitor_specific_overlay", { p_visitor_id: editingVisitorId, p_layout: normalizeVisitorOverlayLayout(layout), p_label: label })
+                : await supabase.rpc("publish_visitor_overlay", { p_layout: normalizeVisitorOverlayLayout(layout), p_label: label });
             if (error) throw error;
             publishedLayout = clone(layout);
+            hasSpecificAssignment = hasSpecificAssignment || Boolean(editingVisitorId);
             await loadRevisions();
             render();
-            showMessage("success", "Overlay veröffentlicht – die Änderung ist jetzt live auf dem Kiosk.");
+            showMessage("success", editingVisitorId ? "Besucher-Overlay veröffentlicht – es wird für diesen Besucher live verwendet." : "Overlay veröffentlicht – die Änderung ist jetzt live auf dem Kiosk.");
         } catch (error) { showMessage("error", error.message || "Overlay konnte nicht veröffentlicht werden."); }
         finally { publishButton.disabled = false; }
+    });
+    unassignButton.addEventListener("click", async () => {
+        if (!editingVisitorId || !hasSpecificAssignment || !supabase) return;
+        unassignButton.disabled = true;
+        try {
+            const { error } = await supabase.from(VISITOR_OVERLAY_ASSIGNMENTS_TABLE).delete().eq("visitor_id", editingVisitorId);
+            if (error) throw error;
+            hasSpecificAssignment = false;
+            await loadTarget();
+            showMessage("success", "Besucherzuordnung entfernt. Der Kiosk verwendet wieder das globale Standardoverlay.");
+        } catch (error) { showMessage("error", error.message || "Besucherzuordnung konnte nicht entfernt werden."); }
+        finally { unassignButton.disabled = false; }
     });
     resetButton.addEventListener("click", () => { selectedId = null; commit(DEFAULT_VISITOR_OVERLAY_LAYOUT); showMessage("success", "Standardlayout als Entwurf geladen. Zum Aktivieren veröffentlichen."); });
 
     async function load() {
         if (!configIsReady || !supabase) return;
         try {
-            const config = await fetchVisitorOverlayConfiguration(supabase);
-            layout = config.draftLayout;
-            publishedLayout = config.publishedLayout;
-            selectedId = null;
-            undoStack = [];
-            redoStack = [];
+            await loadVisitors();
             loaded = true;
-            render();
-            await loadRevisions();
+            await loadTarget();
         } catch (error) {
             showMessage("error", `${error.message || "Overlay-Konfiguration konnte nicht geladen werden."} Bitte die aktuelle Overlay-Migration in Supabase ausführen.`);
         }

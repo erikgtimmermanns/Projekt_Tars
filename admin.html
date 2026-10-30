@@ -6,6 +6,7 @@
   <title>Visitor Admin</title>
   <link rel="stylesheet" href="./css/admin/style.css">
   <link rel="stylesheet" href="./css/shared/visitor-panel.css">
+  <link rel="stylesheet" href="./css/shared/visitor-overlay.css">
 
   <!-- Google Font: Albert Sans (wie im Kiosk, sonst weicht der Zeilenumbruch der Vorschau ab) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -214,6 +215,11 @@
                   <p class="field-hint">Der Entwurf wird erst nach dem Veröffentlichen auf dem Kiosk sichtbar. Name und Logo werden beim Aufruf automatisch durch den gewählten Besucher ersetzt.</p>
                 </div>
                 <div class="overlay-history-actions">
+                  <label class="overlay-target-select">Overlay für
+                    <select id="overlayVisitorSelect" aria-label="Besucher für das Overlay auswählen">
+                      <option value="">Globales Standardoverlay</option>
+                    </select>
+                  </label>
                   <button type="button" class="secondary-btn" id="undoOverlayBtn" disabled>↶ Rückgängig</button>
                   <button type="button" class="secondary-btn" id="redoOverlayBtn" disabled>↷ Wiederholen</button>
                 </div>
@@ -245,7 +251,7 @@
                     <button type="button" data-preview-scale="tablet" aria-pressed="false">Tablet</button>
                   </div>
                 </div>
-                <div id="overlayDevicePreview" class="overlay-device-preview" data-preview-scale="desktop"></div>
+                <div id="overlayDevicePreview" class="overlay-device-preview visitor-overlay-surface" data-preview-scale="desktop"></div>
               </section>
               <section class="overlay-revisions" aria-labelledby="overlayRevisionTitle">
                 <div><h4 id="overlayRevisionTitle">Veröffentlichte Versionen</h4><p>Eine ältere Version wird als Entwurf geladen und erst beim Veröffentlichen aktiv.</p></div>
@@ -255,6 +261,7 @@
               <div style="display: flex; gap: 12px; flex-wrap: wrap;">
                 <button class="secondary-btn" type="button" id="saveOverlayBtn">Entwurf speichern</button>
                 <button class="primary-btn" type="button" id="publishOverlayBtn">Veröffentlichen</button>
+                <button class="secondary-btn" type="button" id="unassignOverlayBtn" hidden>Besucherzuordnung entfernen</button>
                 <button class="secondary-btn" type="button" id="resetOverlayBtn">Standardlayout laden</button>
               </div>
             </div>

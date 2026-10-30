@@ -1,0 +1,61 @@
+/* Eine einzige Maßbasis für Kiosk und Kiosk-Vorschau.
+   Alle Werte orientieren sich an der Breite der jeweiligen Hochkant-Bühne
+   (cqw), nicht an der Fenstergröße. */
+.visitor-overlay-surface {
+    container-type: inline-size;
+}
+
+.visitor-overlay-surface .visitor-overlay-grid {
+    display: grid;
+    width: 100%;
+    height: 100%;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-template-rows: repeat(12, minmax(0, 1fr));
+    gap: 1.35cqw;
+    padding: 1.8cqw;
+}
+
+.visitor-overlay-surface .visitor-overlay-block {
+    display: grid;
+    place-items: center;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+    border: 1px solid #e4e8ec;
+    border-radius: 1.25cqw;
+    background: #fff;
+    color: #78838d;
+    font-size: 1.4cqw;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.visitor-overlay-surface .visitor-overlay-block img,
+.visitor-overlay-surface .visitor-overlay-block iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    object-fit: contain;
+}
+
+.visitor-overlay-surface .visitor-overlay-block--video {
+    background: #101820;
+}
+
+.visitor-overlay-surface .visitor-overlay-text {
+    width: 100%;
+    margin: 0;
+    padding: 0.5cqw;
+    color: #263746;
+    font-size: 3.05cqw;
+    font-weight: 500;
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+    text-align: center;
+    text-transform: none;
+}
+
+.visitor-overlay-surface .visitor-overlay-text--large { font-size: 4.15cqw; }
+.visitor-overlay-surface .visitor-overlay-text--hero { color: #075e9f; font-size: 6.5cqw; font-weight: 700; }

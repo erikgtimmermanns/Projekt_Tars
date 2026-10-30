@@ -1,5 +1,6 @@
 export const VISITOR_OVERLAY_TABLE = "visitor_overlay_configs";
 export const VISITOR_OVERLAY_CONFIG_ID = 1;
+export const VISITOR_OVERLAY_ASSIGNMENTS_TABLE = "visitor_overlay_assignments";
 
 const GRID_COLUMNS = 12;
 const GRID_ROWS = 12;
@@ -131,6 +132,39 @@ export function subscribeVisitorOverlayLayout(supabase, onChange) {
         .on("postgres_changes", {
             event: "*", schema: "public", table: VISITOR_OVERLAY_TABLE, filter: "kiosk_settings_id=eq.1"
         }, (payload) => onChange(normalizeVisitorOverlayLayout(payload.new?.layout || DEFAULT_VISITOR_OVERLAY_LAYOUT)))
+        .subscribe();
+    return () => supabase.removeChannel(channel);
+}
+
+export async function fetchVisitorOverlayAssignment(supabase, visitorId) {
+    if (!supabase || visitorId == null) return null;
+    try {
+        const { data, error } = await supabase
+            .from(VISITOR_OVERLAY_ASSIGNMENTS_TABLE)
+            .select("draft_layout, published_layout, updated_at")
+            .eq("visitor_id", String(visitorId))
+            .maybeSingle();
+        if (error) throw error;
+        return data || null;
+    } catch (error) {
+        console.warn("Besucher-Overlay-Zuordnung konnte nicht geladen werden:", error.message || error);
+        return null;
+    }
+}
+
+export async function fetchVisitorOverlayLayoutForVisitor(supabase, visitorId, fallbackLayout = DEFAULT_VISITOR_OVERLAY_LAYOUT) {
+    const assignment = await fetchVisitorOverlayAssignment(supabase, visitorId);
+    return normalizeVisitorOverlayLayout(assignment?.published_layout || fallbackLayout);
+}
+
+export function subscribeVisitorOverlayAssignments(supabase, onChange) {
+    if (!supabase) return () => {};
+    const channel = supabase
+        .channel("visitor_overlay_assignment_changes")
+        .on("postgres_changes", { event: "*", schema: "public", table: VISITOR_OVERLAY_ASSIGNMENTS_TABLE }, (payload) => {
+            const row = payload.new?.visitor_id != null ? payload.new : payload.old;
+            onChange({ visitorId: row?.visitor_id == null ? null : String(row.visitor_id) });
+        })
         .subscribe();
     return () => supabase.removeChannel(channel);
 }
