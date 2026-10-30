@@ -446,9 +446,6 @@ body.time-night .screen::before {
 }
 
 #visitor-welcome-card {
-    display: grid;
-    grid-template-rows: auto auto 1fr;
-    gap: clamp(20px, 3vh, 40px);
     width: min(100%, 1720px);
     min-height: 100%;
     min-width: 0;
@@ -459,30 +456,23 @@ body.time-night .screen::before {
     box-shadow: 0 18px 60px rgba(25, 39, 52, 0.12), inset 0 1px 0 #fff;
 }
 
-.visitor-welcome-header {
+.visitor-overlay-grid {
     display: grid;
-    grid-template-columns: minmax(180px, 30%) minmax(0, 1fr);
-    align-items: center;
-    gap: clamp(24px, 4vw, 64px);
-    min-height: clamp(180px, 23vh, 360px);
-    padding: clamp(20px, 3vw, 44px);
-    border: 1px solid #e4e8ec;
-    border-radius: 16px;
-    background: #fff;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-template-rows: repeat(12, minmax(48px, 1fr));
+    gap: clamp(10px, 1.2vw, 20px);
+    min-height: calc(100dvh - clamp(72px, 8vw, 144px));
 }
 
-.visitor-welcome-logo {
+.visitor-overlay-block {
     display: grid;
-    width: 100%;
-    height: clamp(120px, 18vh, 260px);
     place-items: center;
-    border: 1px solid #edf0f2;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
     border-radius: 12px;
-    background-color: #fff;
-    background-image: none;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: contain;
+    border: 1px solid #e4e8ec;
+    background: #fff;
     color: #78838d;
     font-size: 14px;
     font-weight: 700;
@@ -490,61 +480,39 @@ body.time-night .screen::before {
     text-transform: uppercase;
 }
 
-.visitor-welcome-message {
-    margin: 0;
-    color: #263746;
-    font-size: clamp(28px, 3.2vw, 58px);
-    font-weight: 500;
-    line-height: 1.2;
-    overflow-wrap: anywhere;
-}
-
-.visitor-welcome-message strong {
-    color: #075e9f;
-    font-weight: 700;
-}
-
-.visitor-welcome-frame-area {
-    width: 100%;
-    max-width: 1600px;
-    height: auto;
-    aspect-ratio: 16 / 9;
-    overflow: hidden;
-    border: 1px solid #dce2e7;
-    border-radius: 16px;
-    background: #fff;
-    box-shadow: 0 4px 16px rgba(25, 39, 52, 0.05);
-}
-
-.visitor-welcome-frame {
-    display: block;
-    min-width: 0;
-    min-height: 0;
+.visitor-overlay-block img,
+.visitor-overlay-block iframe {
     width: 100%;
     height: 100%;
     border: 0;
-    background: #fff;
+    object-fit: contain;
 }
+
+.visitor-overlay-block--video {
+    background: #101820;
+}
+
+.visitor-overlay-text {
+    width: 100%;
+    margin: 0;
+    color: #263746;
+    font-size: clamp(22px, 2vw, 42px);
+    font-weight: 500;
+    line-height: 1.15;
+    overflow-wrap: anywhere;
+    text-align: center;
+}
+
+.visitor-overlay-text--large { font-size: clamp(28px, 2.8vw, 56px); }
+.visitor-overlay-text--hero { color: #075e9f; font-size: clamp(40px, 4.5vw, 88px); font-weight: 700; }
 
 @media (max-width: 760px) {
     #visitor-welcome-card {
         padding: 16px;
-        gap: 16px;
         border-radius: 18px;
     }
 
-    .visitor-welcome-header {
-        grid-template-columns: 1fr;
-        justify-items: center;
-        gap: 16px;
-        min-height: 0;
-        text-align: center;
-    }
-
-    .visitor-welcome-logo {
-        max-width: 280px;
-        height: clamp(100px, 16vh, 180px);
-    }
+    .visitor-overlay-grid { gap: 8px; min-height: calc(100dvh - 64px); }
 
 }
 

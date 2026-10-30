@@ -1,5 +1,6 @@
 import { supabase } from "../shared/supabase.js";
 import { subscribeKioskSelection, setKioskSelection } from "../shared/tablet-settings.js";
+import { DEFAULT_VISITOR_OVERLAY_LAYOUT, fetchVisitorOverlayLayout, renderVisitorOverlay, subscribeVisitorOverlayLayout } from "../shared/visitor-overlay.js";
 
 const WELCOME_TIMEOUT_MS = 60 * 1000;
 
@@ -10,6 +11,7 @@ let visitorsLoaded = false;
 let selectedVisitorId = null;
 let selectedAt = null;
 let timeout = null;
+let overlayLayout = DEFAULT_VISITOR_OVERLAY_LAYOUT;
 
 function renderWelcome() {
     if (!overlay || !card) return;
@@ -21,39 +23,7 @@ function renderWelcome() {
         return;
     }
 
-    const frame = document.createElement("iframe");
-    frame.className = "visitor-welcome-frame";
-    frame.title = "YouTube-Video für Besucher";
-    frame.src = "https://www.youtube.com/embed/wSGoUSwNb44?autoplay=1&mute=1&playsinline=1&controls=1&rel=0";
-    frame.allow = "autoplay; encrypted-media; picture-in-picture";
-    frame.allowFullscreen = true;
-    frame.loading = "eager";
-    frame.referrerPolicy = "strict-origin-when-cross-origin";
-
-    const header = document.createElement("header");
-    header.className = "visitor-welcome-header";
-
-    const logo = document.createElement("div");
-    logo.className = "visitor-welcome-logo";
-    if (visitor.imageUrl) {
-        logo.style.backgroundImage = `url(${JSON.stringify(visitor.imageUrl)})`;
-        logo.setAttribute("aria-label", `Logo ${visitor.name || "des Besuchers"}`);
-    } else {
-        logo.textContent = "Logo";
-    }
-
-    const message = document.createElement("p");
-    message.className = "visitor-welcome-message";
-    message.append(document.createTextNode("Hallo, "));
-    const name = document.createElement("strong");
-    name.textContent = visitor.name || "Besucher";
-    message.append(name, document.createTextNode("."));
-
-    header.append(logo, message);
-    const frameArea = document.createElement("div");
-    frameArea.className = "visitor-welcome-frame-area";
-    frameArea.append(frame);
-    card.replaceChildren(header, frameArea);
+    renderVisitorOverlay(card, overlayLayout, visitor);
 }
 
 function applySelection(selection) {
@@ -107,9 +77,20 @@ export function initVisitorWelcome() {
     card = document.getElementById("visitor-welcome-card");
     if (!overlay || !card) return () => {};
 
-    const unsubscribe = subscribeKioskSelection(supabase, applySelection);
+    void fetchVisitorOverlayLayout(supabase)
+        .then((layout) => {
+            overlayLayout = layout;
+            renderWelcome();
+        })
+        .catch((error) => console.warn("Besucher-Overlay konnte nicht geladen werden:", error.message || error));
+    const unsubscribeSelection = subscribeKioskSelection(supabase, applySelection);
+    const unsubscribeOverlay = subscribeVisitorOverlayLayout(supabase, (layout) => {
+        overlayLayout = layout;
+        renderWelcome();
+    });
     return () => {
-        unsubscribe();
+        unsubscribeSelection();
+        unsubscribeOverlay();
         window.clearTimeout(timeout);
     };
 }

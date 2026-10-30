@@ -82,6 +82,7 @@
         <div class="admin-select">
           <button class="secondary-btn" id="konfigUserbtn" type="button">Besucher konfigurieren</button>
           <button class="primary-btn" id="konfigScreenbtn" type="button">Bildschirm konfigurieren</button>
+          <button class="primary-btn" id="konfigOverlaybtn" type="button">Besucher-Overlay konfigurieren</button>
         </div>
         <div class="admin-grid">
           <div class="config-column">
@@ -202,6 +203,32 @@
 
               <div style="display: flex; gap: 12px; flex-wrap: wrap;">
                 <button class="primary-btn" type="button" id="saveScreenBtn">Bildschirm speichern</button>
+              </div>
+            </div>
+
+            <div class="card" id="overlayConfigView" hidden>
+              <h3>Besucher-Overlay Baukasten</h3>
+              <p class="field-hint">Dieses Layout erscheint auf dem Kiosk, wenn am Tablet ein Besucher gewählt wird. Besuchername und -logo werden automatisch eingesetzt.</p>
+              <div class="overlay-builder">
+                <aside class="overlay-palette" id="overlayPalette" aria-label="Overlay-Bausteine">
+                  <h4>Bausteine</h4>
+                  <p>In die Vorschau ziehen oder antippen.</p>
+                  <button type="button" draggable="true" data-overlay-type="text">T Text</button>
+                  <button type="button" draggable="true" data-overlay-type="visitor-name">Besuchername</button>
+                  <button type="button" draggable="true" data-overlay-type="visitor-logo">Besucherlogo</button>
+                  <button type="button" draggable="true" data-overlay-type="image">Bild</button>
+                  <button type="button" draggable="true" data-overlay-type="video">Video</button>
+                </aside>
+                <div class="overlay-workspace">
+                  <p class="overlay-preview-label">Live-Vorschau · Musterfirma GmbH</p>
+                  <div id="overlayCanvas" class="overlay-canvas" aria-label="Overlay-Vorschau und Baufläche"></div>
+                </div>
+                <aside class="overlay-properties" id="overlayProperties" aria-label="Eigenschaften"></aside>
+              </div>
+              <div id="overlayConfigMessage" class="notice-box"></div>
+              <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <button class="primary-btn" type="button" id="saveOverlayBtn">Overlay speichern</button>
+                <button class="secondary-btn" type="button" id="resetOverlayBtn">Standardlayout laden</button>
               </div>
             </div>
           </div>

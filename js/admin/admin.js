@@ -3,6 +3,7 @@ import { createVisitorDisplay } from "../shared/visitor-display.js";
 import { fetchKioskSettings, DEFAULT_DISPLAY_MODE, DEFAULT_ROTATE_INTERVAL_MS, DEFAULT_WIDGET_ROTATE_INTERVAL_MS } from "../shared/kiosk-settings.js";
 import { getTodayIso } from "../shared/visit-dates.js";
 import { createDatePicker } from "./date-picker.js";
+import { initVisitorOverlayBuilder } from "./visitor-overlay-builder.js";
 import { bucketName, configIsReady as configIsSet, supabase, tableName } from "../shared/supabase.js";
 console.log("Admin script loaded. Supabase config ready:", configIsSet, "Supabase object:", supabase, "Bucket:", bucketName, "Table:", tableName);
 
@@ -32,8 +33,10 @@ const templateSelect = document.getElementById("template_id");
 const visitDatePicker = createDatePicker(document.getElementById("visitDatePicker"));
 const konfigUserbtn = document.getElementById("konfigUserbtn");
 const konfigScreenbtn = document.getElementById("konfigScreenbtn");
+const konfigOverlaybtn = document.getElementById("konfigOverlaybtn");
 const visitorConfigView = document.getElementById("visitorConfigView");
 const screenConfigView = document.getElementById("screenConfigView");
+const overlayConfigView = document.getElementById("overlayConfigView");
 const modeRadios = document.querySelectorAll('input[name="displayMode"]');
 const screenConfigMessage = document.getElementById("screenConfigMessage");
 const saveScreenBtn = document.getElementById("saveScreenBtn");
@@ -69,6 +72,7 @@ let previewWidgetTimer = null;
 let previewWidgetIndex = 0;
 let previewApod = null;
 let previewApodRequest = null;
+let overlayBuilder = null;
 
 function clampRotateSeconds(value) {
   const seconds = Math.round(Number(value));
@@ -305,8 +309,10 @@ function fitPreviewStage() {
 function showVisitorConfig() {
   visitorConfigView.hidden = false;
   screenConfigView.hidden = true;
+  overlayConfigView.hidden = true;
   konfigUserbtn.className = "secondary-btn";
   konfigScreenbtn.className = "primary-btn";
+  konfigOverlaybtn.className = "primary-btn";
   previewDisplay.update([], null); // laufenden Rotations-/Stapel-Timer der Bildschirm-Vorschau beenden
   stopWidgetPreviewTimer();
   if (previewWidgetPanel) previewWidgetPanel.hidden = true;
@@ -316,9 +322,25 @@ function showVisitorConfig() {
 function showScreenConfig() {
   visitorConfigView.hidden = true;
   screenConfigView.hidden = false;
+  overlayConfigView.hidden = true;
   konfigScreenbtn.className = "secondary-btn";
   konfigUserbtn.className = "primary-btn";
+  konfigOverlaybtn.className = "primary-btn";
   loadScreenSettings(); // lädt die gespeicherte Einstellung und rendert danach die Vorschau
+}
+
+function showOverlayConfig() {
+  visitorConfigView.hidden = true;
+  screenConfigView.hidden = true;
+  overlayConfigView.hidden = false;
+  konfigOverlaybtn.className = "secondary-btn";
+  konfigUserbtn.className = "primary-btn";
+  konfigScreenbtn.className = "primary-btn";
+  previewDisplay.update([], null);
+  stopWidgetPreviewTimer();
+  if (previewWidgetPanel) previewWidgetPanel.hidden = true;
+  if (!overlayBuilder) overlayBuilder = initVisitorOverlayBuilder();
+  void overlayBuilder.load();
 }
 
 // Lädt die in der Datenbank gespeicherte Einstellung (nicht den evtl. noch ungespeicherten Formularstand)
@@ -345,6 +367,7 @@ async function loadScreenSettings() {
 
 konfigUserbtn.addEventListener("click", showVisitorConfig);
 konfigScreenbtn.addEventListener("click", showScreenConfig);
+konfigOverlaybtn.addEventListener("click", showOverlayConfig);
 
 // Nur die Vorschau ändert sich sofort; die Datenbank wird erst über "Bildschirm speichern" aktualisiert
 modeRadios.forEach(radio => {
