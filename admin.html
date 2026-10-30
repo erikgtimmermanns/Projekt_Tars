@@ -6,7 +6,6 @@
   <title>Visitor Admin</title>
   <link rel="stylesheet" href="./css/admin/style.css">
   <link rel="stylesheet" href="./css/shared/visitor-panel.css">
-  <link rel="stylesheet" href="./css/shared/visitor-overlay.css">
 
   <!-- Google Font: Albert Sans (wie im Kiosk, sonst weicht der Zeilenumbruch der Vorschau ab) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -243,16 +242,6 @@
                 </div>
                 <aside class="overlay-properties" id="overlayProperties" aria-label="Eigenschaften"></aside>
               </div>
-              <section class="overlay-kiosk-preview" aria-label="Kiosk-Vorschau">
-                <div class="overlay-kiosk-preview-head">
-                  <div><strong>Kiosk-Vorschau</strong><span>Veröffentlichter Stand</span></div>
-                  <div class="overlay-preview-switch" role="group" aria-label="Vorschaugröße">
-                    <button type="button" data-preview-scale="desktop" aria-pressed="true">Display</button>
-                    <button type="button" data-preview-scale="tablet" aria-pressed="false">Tablet</button>
-                  </div>
-                </div>
-                <div id="overlayDevicePreview" class="overlay-device-preview visitor-overlay-surface" data-preview-scale="desktop"></div>
-              </section>
               <section class="overlay-revisions" aria-labelledby="overlayRevisionTitle">
                 <div><h4 id="overlayRevisionTitle">Veröffentlichte Versionen</h4><p>Eine ältere Version wird als Entwurf geladen und erst beim Veröffentlichen aktiv.</p></div>
                 <div id="overlayRevisionList" class="overlay-revision-list" aria-live="polite"></div>

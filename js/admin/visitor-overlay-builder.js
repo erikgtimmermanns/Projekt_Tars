@@ -35,7 +35,6 @@ function formatRevisionDate(value) {
 
 export function initVisitorOverlayBuilder() {
     const canvas = document.getElementById("overlayCanvas");
-    const preview = document.getElementById("overlayDevicePreview");
     const palette = document.getElementById("overlayPalette");
     const properties = document.getElementById("overlayProperties");
     const message = document.getElementById("overlayConfigMessage");
@@ -47,7 +46,7 @@ export function initVisitorOverlayBuilder() {
     const visitorSelect = document.getElementById("overlayVisitorSelect");
     const unassignButton = document.getElementById("unassignOverlayBtn");
     const revisionList = document.getElementById("overlayRevisionList");
-    if (!canvas || !preview || !palette || !properties || !message || !saveButton || !publishButton || !resetButton || !undoButton || !redoButton || !visitorSelect || !unassignButton || !revisionList) return { load: async () => {} };
+    if (!canvas || !palette || !properties || !message || !saveButton || !publishButton || !resetButton || !undoButton || !redoButton || !visitorSelect || !unassignButton || !revisionList) return { load: async () => {} };
 
     let layout = normalizeVisitorOverlayLayout(DEFAULT_VISITOR_OVERLAY_LAYOUT);
     let publishedLayout = layout;
@@ -118,8 +117,6 @@ export function initVisitorOverlayBuilder() {
 
     function render() {
         renderVisitorOverlay(canvas, layout, sampleVisitor);
-        renderVisitorOverlay(preview, layout, sampleVisitor);
-        preview.classList.toggle("has-draft", hasDraftChanges());
         unassignButton.hidden = !editingVisitorId || !hasSpecificAssignment;
         canvas.querySelectorAll("[data-overlay-block-id]").forEach((element) => {
             const block = layout.blocks.find((item) => item.id === element.dataset.overlayBlockId);
@@ -272,10 +269,6 @@ export function initVisitorOverlayBuilder() {
     });
     undoButton.addEventListener("click", () => { if (!undoStack.length) return; redoStack.push(clone(layout)); layout = undoStack.pop(); selectedId = null; render(); });
     redoButton.addEventListener("click", () => { if (!redoStack.length) return; undoStack.push(clone(layout)); layout = redoStack.pop(); selectedId = null; render(); });
-    document.querySelectorAll("[data-preview-scale]").forEach((button) => button.addEventListener("click", () => {
-        preview.dataset.previewScale = button.dataset.previewScale;
-        document.querySelectorAll("[data-preview-scale]").forEach((item) => item.setAttribute("aria-pressed", String(item === button)));
-    }));
     visitorSelect.addEventListener("change", () => {
         if (!loaded) return;
         void loadTarget().catch((error) => showMessage("error", error.message || "Besucher-Overlay konnte nicht geladen werden."));
